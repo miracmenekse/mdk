@@ -155,32 +155,37 @@ export function planHtml(plan, simdi, gecmis, incelemeler) {
 
 export function modellerHtml(modeller) {
   if (!modeller || modeller.length === 0) return '<span class="bos">metrik yok</span>';
+  // maliyet sütunu yalnızca toplam maliyet 0'dan büyükse gösterilir (ücretsiz modelde $0 gürültüdür)
+  const maliyetGoster = modeller.some((m) => (m.maliyet || 0) > 0);
+  const yuzde = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
   const satirlar = modeller.map((m) =>
     '<tr>' +
+    `<td>${esc(m.yurutucu || 'opencode')}</td>` +
     `<td class="model">${esc(m.model)}</td>` +
     `<td class="sayi">${esc(m.deneme)}</td>` +
-    `<td class="sayi">${Math.round((m.ilkDenemeOrani || 0) * 100)}%</td>` +
+    `<td class="sayi">${yuzde(m.ilkDenemeOrani || 0)}</td>` +
+    `<td class="sayi">${yuzde(m.uyum)}</td>` +
     `<td class="sayi">${Math.round(m.token || 0).toLocaleString('tr-TR')}</td>` +
-    `<td class="sayi">${para(m.maliyet || 0)}</td>` +
+    (maliyetGoster ? `<td class="sayi">${para(m.maliyet || 0)}</td>` : '') +
     `<td class="sayi">${(m.ortSure || 0).toFixed(1)} sn</td>` +
     '</tr>').join('');
   return '<table><thead><tr>' +
-    '<th class="model">model</th><th>deneme</th><th>ilk denemede geçme</th><th>token</th><th>maliyet</th><th>ort. süre</th>' +
-    `</tr></thead><tbody>${satirlar}</tbody></table>`;
+    '<th>yürütücü</th><th class="model">model</th><th>deneme</th><th>ilk denemede geçme</th><th>uyum %</th><th>token</th>' +
+    (maliyetGoster ? '<th>maliyet</th>' : '') +
+    `<th>ort. süre</th></tr></thead><tbody>${satirlar}</tbody></table>`;
 }
 
 export function etkiHtml(etki) {
   if (!etki || etki.length === 0) return '<span class="bos">etki adımı yok</span>';
-  const maxMaliyet = Math.max(0, ...etki.map((e) => e.tahmin?.maliyet || 0));
+  const maxToken = Math.max(0, ...etki.map((e) => e.tahmin?.token || 0));
   return etki.map((e) => {
     const t = e.tahmin || { token: 0, maliyet: 0, guven: 'dusuk' };
     const guven = GUVEN[t.guven] ? t.guven : 'dusuk';
     const deger = Math.max(0, Math.min(5, Math.round(e.deger ?? 0)));
-    const degerOran = deger / 5;
-    const maliyetOran = maxMaliyet > 0 ? (t.maliyet || 0) / maxMaliyet : 0;
-    // değer / maliyet çubuğu: değer oranı + maliyet oranı yan yana
-    const degerW = degerOran * 100;
-    const maliyetW = Math.min(maliyetOran, 1 - degerOran) * 100;
+    // iki ayrı çubuk: değer (değer/5) ve tahmini token (en büyük token'a oran)
+    const degerW = (deger / 5) * 100;
+    const tokenW = maxToken > 0 ? ((t.token || 0) / maxToken) * 100 : 0;
+    const maliyetYaz = (t.maliyet || 0) > 0 ? ` · ${para(t.maliyet)}` : '';
     const src = '/dosya?yol=' + encodeURIComponent(e.dosya || '');
     return '<div class="etki-kart">' +
       '<div class="etki-ust">' +
@@ -189,12 +194,11 @@ export function etkiHtml(etki) {
       yildizlar(e.deger) +
       `<span class="rozet ${guven}">${GUVEN[guven]}</span>` +
       '</div>' +
-      `<div class="tahmin">~${Math.round(t.token || 0).toLocaleString('tr-TR')} token · ${para(t.maliyet || 0)}</div>` +
-      '<div class="dm">değer / maliyet' +
-      `<div class="dm-takip" title="değer %${Math.round(degerW)} · maliyet %${Math.round(maliyetW)}">` +
-      `<i class="deger" style="width:${degerW.toFixed(1)}%"></i>` +
-      `<i class="maliyet" style="width:${maliyetW.toFixed(1)}%"></i>` +
-      '</div></div>' +
+      `<div class="tahmin">~${Math.round(t.token || 0).toLocaleString('tr-TR')} token${maliyetYaz}</div>` +
+      '<div class="dm">' +
+      `<div class="dm-satir"><span>değer</span><div class="dm-takip"><i class="deger" style="width:${degerW.toFixed(1)}%"></i></div></div>` +
+      `<div class="dm-satir"><span>token</span><div class="dm-takip"><i class="token" style="width:${tokenW.toFixed(1)}%"></i></div></div>` +
+      '</div>' +
       '<div class="kroki">' +
       `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}#once"></iframe></div>` +
       `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}#sonra"></iframe></div>` +

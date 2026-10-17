@@ -5,7 +5,7 @@ const duz = (h) => h.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
 const m = (o) => ({ yurutucu: 'opencode', model: 'a/x', deneme: 3, gecen: 2, ilkDenemeOrani: 0.5, token: 600, maliyet: 0, ortSure: 20, uyum: 0.5, ...o });
 
 // model tablosu: yürütücü ve uyum sütunları; maliyet 0 ise sütun yok
-let h = duz(modellerHtml([m({}), m({ yurutucu: 'kodcu', model: 'sonnet', uyum: null })]));
+let h = duz(modellerHtml([m({}), m({ yurutucu: 'kodcu', model: 'sonnet', ilkDenemeOrani: 1, uyum: null })]));
 for (const s of ['yürütücü', 'model', 'deneme', 'ilk denemede geçme', 'uyum', 'token', 'ort. süre']) assert.ok(h.includes(s), `başlıkta ${s} yok`);
 assert.ok(!h.includes('maliyet'), 'tüm maliyetler 0 iken maliyet sütunu olmamalı');
 assert.ok(h.includes('kodcu') && h.includes('sonnet'));

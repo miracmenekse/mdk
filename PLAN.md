@@ -156,7 +156,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/ciz.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 23. Model tablosu ve etki çubuğu
+- [x] 23. Model tablosu ve etki çubuğu
   - Ne: `panel/ciz.mjs`: `modellerHtml`: sütunlar `yürütücü`, `model`, `deneme`, `ilk denemede geçme %`, `uyum %` (`null` ise `—`), `token`, `ort. süre`; `maliyet` sütunu yalnızca toplam maliyet 0'dan büyükse gösterilir (ücretsiz modelde $0 gürültüdür). `etkiHtml`: "değer / maliyet" çubuğu iki ayrı etiketli çubuk olur: değer (`değer/5`) ve tahmini token (`token / en büyük token`); metinde `~N token`, para yalnızca `maliyet > 0` ise yazılır; güven rozeti kalır.
   - Kapı: `node panel/modeller-ui.test.mjs`
   - Kapı: `node panel/ciz.test.mjs`
