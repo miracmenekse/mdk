@@ -4,9 +4,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from './plan.mjs';
 import { tahmin } from './tahmin.mjs';
+import { gecmis } from './gecmis.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {} };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [] };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -92,6 +93,8 @@ export function snapshot(dir) {
         uyum: incelenen.length > 0 ? uyumlu / incelenen.length : null,
       };
     });
+
+  sonuc.gecmis = gecmis(dir, satirlar);
 
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {

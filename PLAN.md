@@ -119,7 +119,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/durum.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 17. Geçmiş verisi
+- [x] 17. Geçmiş verisi
   - Ne: `panel/gecmis.mjs` → `export function gecmis(dir, satirlar)`: adım numarasına göre artan dizi; her öğe `{ no, denemeler: [{ yurutucu, model, deneme, gecti, neden, sure_sn, token }], commit: { sha, mesaj, tarih, dosya, eklenen, silinen } | null, inceleme: { inceleme, not } | null }`. Denemeler `tur` alanı olmayan metrik satırlarından, inceleme `tur === 'inceleme'` satırlarının sonuncusundan gelir. Commit: `child_process.execFileSync('git', ['log', '--format=@%h%x09%cI%x09%s', '--numstat'], { cwd: dir })` çıktısından mesajı `^adım (\d+):` ile eşleşen, adım başına EN YENİ commit (`sha` 7 karakter; `dosya`, `eklenen`, `silinen` numstat toplamı). git yoksa ya da hata verirse `commit: null`. `snapshot()` sonucuna `gecmis: gecmis(dir, satirlar)` ekle.
   - Kapı: `node panel/gecmis.test.mjs`
   - Kapı: `bash test/hepsi.sh`
