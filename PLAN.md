@@ -104,7 +104,7 @@ Not (2026-10-17): Parti A'da ücretsiz modeller "Rate limit exceeded" verdi; ça
 
 ## Veri ve araçlar
 Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 14-20 `kodcu` ile yapılır, parti C öncesi kota yeniden yoklanır. Kapı testleri her adımın başında `kodcu` tarafından verilen dosyalardan depoya kopyalanır.
-- [ ] 14. Ayrıştırıcıda çoklu kapı, bütçe ve onay
+- [x] 14. Ayrıştırıcıda çoklu kapı, bütçe ve onay
   - Ne: `panel/plan.mjs` `parse`: adım nesnesine `kapilar` (tüm `- Kapı:` komutları, dizi), `butce` (sayı ya da `null`) ve `onay` (`- Onay: evet` ile başlayan satır varsa `true`) ekle; `kapi` = `kapilar[0] ?? null` olarak kalır. `ayarlar`'a `butce` (dosya başındaki `Bütçe:` satırı, yoksa `null`) ekle.
   - Kapı: `node panel/plan.test.mjs`
   - Kapı: `bash test/hepsi.sh`
