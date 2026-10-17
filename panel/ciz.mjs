@@ -66,20 +66,86 @@ export function suAnHtml(simdi, simdiMs) {
     '</div>';
 }
 
-export function planHtml(plan, simdi) {
+export const SORUNLU_INCELEMELER = ['kismen', 'uyumsuz'];
+const INCELEME_ETIKET = { uyumlu: 'uyumlu', kismen: 'kısmen', uyumsuz: 'uyumsuz' };
+
+// ilk geçen deneme 1 değilse, hiç geçmediyse ya da inceleme sorunluysa true
+export function sorunluMu(gecmisAdim, inceleme) {
+  const d = gecmisAdim.denemeler || [];
+  const ilk = d.find((x) => x.gecti === true);
+  if (d.length > 0 && (!ilk || ilk.deneme > 1)) return true;
+  return !!inceleme && SORUNLU_INCELEMELER.includes(inceleme.inceleme);
+}
+
+function incelemeOf(no, g, incelemeler) {
+  return (incelemeler && incelemeler[no]) || (g && g.inceleme) || null;
+}
+
+function ozetHtml(g, inceleme) {
+  const ilk = g.denemeler.find((x) => x.gecti === true);
+  const parcalar = [];
+  if (g.denemeler.length > 0) {
+    parcalar.push(ilk ? `${ilk.deneme}. denemede geçti` : `geçmedi (${g.denemeler.length} deneme)`);
+  }
+  const etiket = inceleme ? INCELEME_ETIKET[inceleme.inceleme] || 'incelenmedi' : 'incelenmedi';
+  const sinif = inceleme && INCELEME_ETIKET[inceleme.inceleme] ? inceleme.inceleme : 'incelenmedi';
+  parcalar.push(`<span class="rozet ${sinif}">${esc(etiket)}</span>`);
+  if (g.commit) parcalar.push(`+${g.commit.eklenen}/−${g.commit.silinen}`, esc(g.commit.sha));
+  return parcalar.join(' · ');
+}
+
+function ayrintiHtml(g, inceleme, sorunlu) {
+  const acik = sorunlu ? ' open' : '';
+  let icerik = '';
+  if (g.commit) {
+    icerik += `<div class="commit">commit: ${esc(g.commit.sha)} ${esc(g.commit.mesaj)} · ${g.commit.dosya} dosya</div>`;
+  }
+  for (const d of g.denemeler) {
+    const sure = d.sure_sn ?? '—';
+    const token = Math.round(d.token || 0).toLocaleString('tr-TR');
+    icerik += `<div class="deneme">${d.deneme}. ${esc(d.model)} ${d.gecti ? '✓' : '✕'}` +
+      `${d.neden ? ' ' + esc(d.neden) : ''} · ${esc(sure)} sn · ${token} token</div>`;
+  }
+  if (inceleme && inceleme.not) icerik += `<div class="not">Claude notu: ${esc(inceleme.not)}</div>`;
+  return `<details class="ayrinti"${acik}><summary>${ozetHtml(g, inceleme)}</summary><div class="ayrinti-icerik">${icerik}</div></details>`;
+}
+
+function hukumHtml(gecmis, incelemeler) {
+  const metrikli = gecmis.filter((g) => g.denemeler.length > 0);
+  const sayac = { uyumlu: 0, kismen: 0, uyumsuz: 0, incelenmedi: 0 };
+  let ilk = 0;
+  for (const g of metrikli) {
+    const inc = incelemeOf(g.no, g, incelemeler);
+    const k = inc && INCELEME_ETIKET[inc.inceleme] ? inc.inceleme : 'incelenmedi';
+    sayac[k]++;
+    if (g.denemeler.find((x) => x.gecti === true)?.deneme === 1) ilk++;
+  }
+  return '<div class="hukum-kutu">' +
+    `<p id="hukum">${metrikli.length} adım: ${sayac.uyumlu} uyumlu, ${sayac.kismen} kısmen, ${sayac.uyumsuz} uyumsuz, ${sayac.incelenmedi} incelenmedi · ${ilk} ilk denemede geçti</p>` +
+    '<label class="sadece"><input type="checkbox" id="sadece-sorunlu"> sadece sorunlu</label>' +
+    '</div>';
+}
+
+export function planHtml(plan, simdi, gecmis, incelemeler) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
-  let html = '';
+  const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
+  let html = Array.isArray(gecmis) ? hukumHtml(gecmis, incelemeler) : '';
   for (const kat of plan.kategoriler) {
     html += `<div><h2>${esc(kat.ad)}</h2><ul class="adimlar">`;
     for (const a of kat.adimlar) {
       const durum = adimDurumu(a, simdi);
       const bilgi = [a.yurutucu, a.kapi].filter(Boolean).map(esc).join(' · ');
-      html += `<li class="${durum}">` +
+      const g = gecmisMap.get(a.no);
+      const inc = incelemeOf(a.no, g, incelemeler);
+      const sorunlu = !!g && sorunluMu(g, inc);
+      const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, sorunlu) : '';
+      html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}">` +
         '<div class="adim-ust">' +
         `<span class="no">${esc(a.no)}</span>` +
         `<span class="baslik">${esc(a.baslik)}</span>` +
         rozet(durum) + '</div>' +
         (bilgi ? `<div class="adim-alt">${bilgi}</div>` : '') +
+        ayrinti +
         '</li>';
     }
     html += '</ul></div>';

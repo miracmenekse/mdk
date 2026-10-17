@@ -150,6 +150,17 @@ td.sayi { font-variant-numeric: tabular-nums; }
   background: var(--kart);
 }
 .kroki .etiket { font-size: 12px; color: var(--soluk); margin-bottom: 4px; }
+.hukum-kutu { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; margin: 4px 0 8px; }
+#hukum { margin: 0; font-size: 13px; font-weight: 600; }
+.sadece { font-size: 13px; color: var(--soluk); white-space: nowrap; }
+.rozet.uyumlu { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.rozet.kismen { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+.rozet.uyumsuz { background: var(--maliyet); color: #fff; }
+.rozet.incelenmedi { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
+details.ayrinti { margin-top: 6px; font-size: 12px; color: var(--soluk); }
+details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
+.ayrinti-icerik { margin: 6px 0 2px 4px; padding-left: 10px; border-left: 2px solid var(--cizgi); }
+.ayrinti-icerik div { margin-bottom: 3px; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -181,6 +192,23 @@ const etkiEl = document.getElementById('etki');
 
 let sonSimdi = null;
 let zamanlayici = null;
+// süzgeç durumu: yeni veri gelince kutu ve satırlar bu değerden yeniden kurulur
+let sadeceSorunlu = false;
+
+function filtreUygula() {
+  const kutu = kategorilerEl.querySelector('#sadece-sorunlu');
+  if (kutu) kutu.checked = sadeceSorunlu;
+  kategorilerEl.querySelectorAll('li').forEach((li) => {
+    li.hidden = sadeceSorunlu && li.dataset.sorunlu !== '1';
+  });
+}
+
+kategorilerEl.addEventListener('change', (e) => {
+  if (e.target && e.target.id === 'sadece-sorunlu') {
+    sadeceSorunlu = e.target.checked;
+    filtreUygula();
+  }
+});
 
 // sayaç yalnızca durum 'calisiyor' iken akar
 function suAnCiz() {
@@ -197,7 +225,8 @@ function suAnCiz() {
 function ciz(d) {
   sonSimdi = d.simdi || null;
   suAnCiz();
-  kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi);
+  kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler);
+  filtreUygula();
   modellerEl.innerHTML = modellerHtml(d.modeller);
   etkiEl.innerHTML = etkiHtml(d.etki);
 }

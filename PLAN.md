@@ -147,7 +147,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/sunucu.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 22. Adım geçmişi görünümü
+- [x] 22. Adım geçmişi görünümü
   - Etki: etki/gecmis.html
   - Onay: evet (kullanıcının 2026-10-17 "tamamını yap, bitene kadar durma" talimatına dayanır; taslak etki/gecmis.html teslim turunda kullanıcı tarafından gözden geçirilecek)
   - Değer: 5
