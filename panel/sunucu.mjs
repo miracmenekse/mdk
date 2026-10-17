@@ -1,8 +1,8 @@
 // Canlı sunucu: REST + SSE ile panel verisini 127.0.0.1'de sunar.
 
 import { createServer } from 'node:http';
-import { watch, existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { watch, existsSync, readFileSync, realpathSync } from 'node:fs';
+import { join, resolve, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
 
@@ -77,6 +77,40 @@ export async function baslat(dir, port) {
       } else {
         yanit.writeHead(404).end('bulunamadı');
       }
+      return;
+    }
+
+    if (pathname === '/dosya') {
+      // ?yol=etki/... : proje içi .html dosyası; ".." ve mutlak yol reddedilir
+      const yol = new URL(istek.url, 'http://x').searchParams.get('yol') || '';
+      const gecerli =
+        yol !== '' &&
+        !yol.startsWith('/') &&
+        !isAbsolute(yol) &&
+        !yol.split(/[\\/]/).includes('..') &&
+        /\.html$/i.test(yol);
+      if (!gecerli) {
+        yanit.writeHead(400).end('geçersiz yol');
+        return;
+      }
+      let tam;
+      try {
+        tam = realpathSync(join(kok, yol));
+      } catch {
+        yanit.writeHead(404).end();
+        return;
+      }
+      const kokGercek = realpathSync(kok);
+      if (tam !== kokGercek && !tam.startsWith(kokGercek + sep)) {
+        yanit.writeHead(400).end('geçersiz yol');
+        return;
+      }
+      if (!existsSync(tam)) {
+        yanit.writeHead(404).end();
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      yanit.end(readFileSync(tam));
       return;
     }
 
