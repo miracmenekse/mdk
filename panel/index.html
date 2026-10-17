@@ -218,7 +218,10 @@ kategorilerEl.addEventListener('change', (e) => {
 // toggle kabarcıklanmaz; yakalama aşamasında dinlenir
 kategorilerEl.addEventListener('toggle', (e) => {
   if (e.target && e.target.matches && e.target.matches('details[data-no]')) {
-    acikTercih[e.target.dataset.no] = e.target.open;
+    // varsayılanla (sorunlu = açık) aynıysa tercih sayılmaz: innerHTML ile gelen açık öğe de toggle üretebiliyor
+    const varsayilan = e.target.closest('li')?.dataset.sorunlu === '1';
+    if (e.target.open === varsayilan) delete acikTercih[e.target.dataset.no];
+    else acikTercih[e.target.dataset.no] = e.target.open;
   }
 }, true);
 
