@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Kullanım (proje kökünde): op-adim.sh <adım-no> [plan-dosyası]
 # PLAN.md adımını ücretsiz modellerden başlayarak OpenCode'a yaptırır, "Kapı" komutuyla doğrular.
-# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul
+# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor
 set -uo pipefail
 # donmuş kopya: bir adım op-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
 if [ -z "${OP_DONMUS:-}" ]; then
@@ -33,6 +33,10 @@ git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
 git check-ignore -q .op-log || { echo ".gitignore'a .op-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
+# taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
+if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet' <<<"$blok"; then
+  echo "adım $N taslak onayı bekliyor: PLAN.md'ye \"- Onay: evet\" ekle"; exit 5
+fi
 
 # küçük JSON yardımcıları (jq yok)
 yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM=$3 node -e '

@@ -82,7 +82,7 @@ Not (2026-10-17): Parti A'da ücretsiz modeller "Rate limit exceeded" verdi; ça
   - Ne: `op-adim.sh`: bir adımda birden fazla `- Kapı: \`...\`` satırı olabilir. Hepsi sırayla çalışır, ilk başarısız olanda durur ve o kapının çıktısı `$log.kapi` dosyasına yazılır; hepsi 0 verirse adım geçer. Şu an `grep -m1` yalnızca ilkini alıyor. Hiç Kapı satırı yoksa mevcut davranış kalır (çıkış 4). Betikteki donmuş kopya ve kurcalama kontrolü bloklarına dokunma.
   - Kapı: `bash test/op-adim.test.sh temel coklu`
 
-- [ ] 10. Taslak onayı zorunluluğu
+- [x] 10. Taslak onayı zorunluluğu
   - Yürütücü: kodcu
   - Ne: `op-adim.sh`: adım bloğunda `- Etki:` satırı varsa ve `- Onay: evet` satırı yoksa, opencode'u HİÇ çağırmadan `adım N taslak onayı bekliyor: PLAN.md'ye "- Onay: evet" ekle` yazıp çıkış kodu 5 ile çık. Kontrol, git ağacı kontrollerinden sonra, deneme döngüsünden önce yapılır.
   - Kapı: `bash test/op-adim.test.sh temel coklu onay`
