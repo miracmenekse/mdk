@@ -171,7 +171,7 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Kapı: `node panel/ciz.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 28. Kayıt aracı durum.json'u günceller
+- [x] 28. Kayıt aracı durum.json'u günceller
   - Yürütücü: kodcu
   - Ne: `op-kayit.mjs`: çalıştırma kaydı (`--yurutucu ... --gecti ...`) yazıldığında `<dizin>/durum.json` da yazılır: `{ adim, baslik, model, deneme, durum, ts: Date.now() }`; `durum` = `gecti` (gecti true) ya da `eskale` (gecti false); `baslik` `<dizin>/PLAN.md` içindeki `- [ ] N. Başlık` ya da `- [x] N. Başlık` satırından alınır, PLAN.md ya da satır yoksa `null`. `--inceleme` kaydı `durum.json`'a dokunmaz. Hatalı kullanımda (çıkış 2) hiçbir dosya yazılmaz.
   - Kapı: `node test/kayit-durum.test.mjs`

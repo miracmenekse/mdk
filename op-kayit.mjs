@@ -3,7 +3,7 @@
 //   node op-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]
 //   node op-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]
 
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const YURUTUCULER = ['kodcu', 'claude', 'opencode'];
@@ -54,4 +54,25 @@ if (opt.inceleme !== undefined) {
   };
 }
 
-appendFileSync(join(opt.dizin ?? '.', 'metrikler.jsonl'), JSON.stringify(satir) + '\n');
+const dizin = opt.dizin ?? '.';
+appendFileSync(join(dizin, 'metrikler.jsonl'), JSON.stringify(satir) + '\n');
+
+// Panel "Şu an" kartı için: yalnızca deneme kayıtları durum.json'u günceller
+if (satir.tur === undefined) {
+  let baslik = null;
+  try {
+    const plan = readFileSync(join(dizin, 'PLAN.md'), 'utf8');
+    const m = plan.match(new RegExp(`^- \\[[ xX]\\] ${adim}\\. (.+)$`, 'm'));
+    if (m) baslik = m[1].trim();
+  } catch {
+    // PLAN.md yoksa başlık null kalır
+  }
+  writeFileSync(join(dizin, 'durum.json'), JSON.stringify({
+    adim,
+    baslik,
+    model: satir.model,
+    deneme: satir.deneme,
+    durum: satir.gecti ? 'gecti' : 'eskale',
+    ts,
+  }));
+}
