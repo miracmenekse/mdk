@@ -109,7 +109,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/plan.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 15. Kayıt aracı (kodcu satırları ve inceleme sonucu)
+- [x] 15. Kayıt aracı (kodcu satırları ve inceleme sonucu)
   - Ne: Proje kökünde `op-kayit.mjs`. Kullanım 1: `node op-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]` → `<dizin>/metrikler.jsonl` dosyasına `{ts, adim, yurutucu, model, deneme (varsayılan 1), gecti, sure_sn, token, maliyet: 0, neden}` satırı ekler. Kullanım 2: `node op-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]` → `{tur: "inceleme", ts, adim, inceleme, not}` ekler. Eksik ya da geçersiz değerde kullanımı stderr'e yazıp çıkış 2 ile dur (dosyaya yazma). Varsayılan dizin `.`. Yalnızca Node yerleşik modülleri.
   - Kapı: `node test/kayit.test.mjs`
   - Kapı: `bash test/hepsi.sh`
