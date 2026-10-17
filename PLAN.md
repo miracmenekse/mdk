@@ -205,7 +205,7 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Ne: Geçmiş kararının gözleminden `personalar.md`'yi rafine et (çıktı biçimi, "diğerlerinin önermeyeceği seçenek" şartı); `ba-pm-bakis` becerisini, proje `CLAUDE.md`'sini ve bellek notlarını güncelle.
   - Kapı: `grep -q 'Çıktı biçimi' personalar.md && grep -q 'önermeyeceği' personalar.md`
 
-- [ ] 26. Uçtan uca doğrulama
+- [x] 26. Uçtan uca doğrulama
   - Yürütücü: claude
   - Ne: Tüm kapılar yeşil, panel yeniden başlatılmış ve gerçek veriyle ekran görüntüsünde kontrol edilmiş, kullanıcı için uygulama turu hazır.
   - Kapı: `bash test/hepsi.sh && node kapi-denetle.mjs`
