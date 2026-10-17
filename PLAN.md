@@ -134,7 +134,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `bash test/op-panel.test.sh`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 20. Kapı denetleyici
+- [x] 20. Kapı denetleyici
   - Ne: Proje kökünde `kapi-denetle.mjs`: `export function denetle(planMetni)` → `[{ no, seviye: 'HATA'|'UYARI'|'BİLGİ', mesaj }]`; `panel/plan.mjs` `parse` kullan. Kural: bitmemiş ve yürütücüsü `opencode` olan her adım için: kapısı yoksa HATA; hiçbir kapı bir test dosyası ya da betik çalıştırmıyorsa (`/\.test\.|(^|[ \/])test\/|npm test|node --test/` ile eşleşen kapı yok) UYARI ("kapı yalnızca varlık kontrolü olabilir"); `etki` var ve `onay` yok ise BİLGİ ("taslak onayı bekliyor"). Doğrudan çalıştırılırsa (`node kapi-denetle.mjs [PLAN.md]`) her bulguyu `adım N: SEVİYE: mesaj` satırı olarak yazdırır, hiç bulgu yoksa `kapılar tamam`; HATA varsa çıkış 1, aksi halde 0.
   - Kapı: `node test/kapi-denetle.test.mjs`
   - Kapı: `bash test/hepsi.sh`
