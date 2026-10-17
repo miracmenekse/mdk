@@ -124,7 +124,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/gecmis.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 18. Karşılaştırma tablosu
+- [x] 18. Karşılaştırma tablosu
   - Ne: Proje kökünde `karsilastir.mjs`: `export function tablo(modeller)` hizalı metin tablosu döndürür (sütunlar: `yürütücü`, `model`, `deneme`, `ilk%`, `ort.sn`, `token`, `uyum%`; `uyum` null ise `-`); `modeller` boşsa `metrik yok`. Doğrudan çalıştırılırsa (`node karsilastir.mjs [dizin]`, varsayılan `.`) `snapshot(dizin).modeller` ile tabloyu yazdırır.
   - Kapı: `node test/karsilastir.test.mjs`
   - Kapı: `bash test/hepsi.sh`
