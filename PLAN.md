@@ -46,7 +46,12 @@ Biçim: `PLAN.md` adımları `- [ ] N. Başlık` satırıdır; altındaki `- Kap
   - Kapı: `node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
 
 ## Süreç
-- [ ] 8. BA/PM bakışı becerisi
+- [x] 8. BA/PM bakışı becerisi
   - Yürütücü: claude
   - Ne: `~/.claude/skills/ba-pm-bakis/SKILL.md` ve proje içinde `personalar.md`: plan yazarken problem+hipotez, iş değeri, akış/kullanım kolaylığı, risk bölümleri; UI/akış kararlarında bağımsız bakışlarla (kullanıcı, farklı personalar, benchmark) seçenek üretme ve karşılaştırma tablosu; en fazla 3 soru, varsayılanlı.
   - Kapı: `test -f ~/.claude/skills/ba-pm-bakis/SKILL.md && test -f personalar.md`
+
+## Sonraki iyileştirmeler
+- Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
+- Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.
+- Gözlem: adım 7 yaklaşık 730 bin token harcadı (diğerleri 40-140 bin); adım başına token bütçesi ve dar adım kuralı düşünülebilir.
