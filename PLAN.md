@@ -140,7 +140,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `bash test/hepsi.sh`
 
 ## Panel arayüzü
-- [ ] 21. Çizim modülü ve ekran görüntüsü hataları
+- [x] 21. Çizim modülü ve ekran görüntüsü hataları
   - Ne: `panel/index.html` içindeki çizim fonksiyonlarını `panel/ciz.mjs` ES modülüne taşı. Saf fonksiyonlar (HTML string döndürür, DOM'a dokunmaz): `suAnHtml(simdi, simdiMs)`, `planHtml(plan, simdi)`, `modellerHtml(modeller)`, `etkiHtml(etki)`. `panel/sunucu.mjs`'e `GET /ciz.mjs` rotası ekle (`text/javascript; charset=utf-8`, yalnızca bu dosya). `index.html` `<script type="module">` ile `import { ... } from '/ciz.mjs'` kullanır; DOM'a yazma ve `EventSource` kalır, bölüm kimlikleri (`simdi`, `kategoriler`, `modeller`, `etki`) değişmez. Düzelt: (1) "Şu an" kartında etiket ve değer yapışık görünüyor ("adımEtki sekmesi"): etiket küçük ve ayrı satırda, değer altında; (2) durum etiketi Türkçe: `gecti` → `geçti`, `calisiyor` → `çalışıyor`, `eskale` → `eskale`; (3) süre sayacı yalnızca `durum === 'calisiyor'` iken `geçen süre` gösterir ve `index.html`'deki `setInterval` yalnızca o durumda çalışır; diğer durumlarda `ts` değerinden `bitiş: SS:DD:SN` (yerel saat) gösterilir; (4) yürütücüsü `opencode` olmayan bitmemiş adım `eskale` değil `bekliyor` rozeti alır ve yürütücü adı satırda görünür; `eskale` rozeti yalnızca `simdi.durum === 'eskale' && simdi.adim === adım.no` iken verilir.
   - Kapı: `node panel/ciz.test.mjs`
   - Kapı: `node panel/arayuz.test.mjs`

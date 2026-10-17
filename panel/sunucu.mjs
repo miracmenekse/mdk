@@ -114,6 +114,18 @@ export async function baslat(dir, port) {
       return;
     }
 
+    if (pathname === '/ciz.mjs') {
+      // yalnızca çizim modülü; diğer panel dosyaları sunulmaz
+      const dosya = join(fileURLToPath(new URL('.', import.meta.url)), 'ciz.mjs');
+      if (existsSync(dosya)) {
+        yanit.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+        yanit.end(readFileSync(dosya));
+      } else {
+        yanit.writeHead(404).end();
+      }
+      return;
+    }
+
     yanit.writeHead(404).end();
   });
 
