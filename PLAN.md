@@ -129,7 +129,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node test/karsilastir.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 19. Panel başlat/durdur betiği
+- [x] 19. Panel başlat/durdur betiği
   - Ne: `op-panel.sh start|stop|durum [dizin] [port]` (dizin varsayılan `.`, port 4747). `start`: `setsid nohup node <bu betiğin dizini>/panel/sunucu.mjs <dizin> <port> >"<dizin>/.op-log/panel.log" 2>&1 &` ile başlat, pid'i `<dizin>/.op-log/panel.pid` dosyasına yaz; pid dosyasındaki süreç yaşıyorsa "zaten çalışıyor" yaz, çıkış 0. `stop`: pid'e `kill`, pid dosyasını sil; yoksa "çalışmıyor", çıkış 0. `durum`: çalışıyorsa `çalışıyor pid=<n> http://127.0.0.1:<port>` yazıp 0, değilse `çalışmıyor` yazıp 1. `pkill -f` KULLANMA.
   - Kapı: `bash test/op-panel.test.sh`
   - Kapı: `bash test/hepsi.sh`
