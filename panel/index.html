@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>opencode-akis paneli</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --zemin: #f6f7f9;
+  --kart: #ffffff;
+  --metin: #1c2128;
+  --soluk: #5b6572;
+  --cizgi: #dde1e6;
+  --vurgu: #2563eb;
+  --vurgu-metin: #1d4ed8;
+  --rozet-bitti-z: #dcfce7;
+  --rozet-bitti-m: #166534;
+  --rozet-calisiyor-z: #dbeafe;
+  --rozet-calisiyor-m: #1d4ed8;
+  --rozet-bekliyor-z: #e5e7eb;
+  --rozet-bekliyor-m: #4b5563;
+  --rozet-eskale-z: #fef3c7;
+  --rozet-eskale-m: #92400e;
+  --bos: #9ca3af;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zemin: #111418;
+    --kart: #1a1f24;
+    --metin: #e6e9ec;
+    --soluk: #9aa4af;
+    --cizgi: #2c333a;
+    --vurgu: #60a5fa;
+    --vurgu-metin: #93c5fd;
+    --rozet-bitti-z: #14311f;
+    --rozet-bitti-m: #86efac;
+    --rozet-calisiyor-z: #172a4d;
+    --rozet-calisiyor-m: #93c5fd;
+    --rozet-bekliyor-z: #2c333a;
+    --rozet-bekliyor-m: #b6bfc9;
+    --rozet-eskale-z: #3a2e12;
+    --rozet-eskale-m: #fcd34d;
+    --bos: #6b7480;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--zemin);
+  color: var(--metin);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 720px; margin: 0 auto; padding: 12px 14px 40px; }
+h1 { font-size: 18px; margin: 10px 0 2px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--soluk); margin: 22px 0 8px; }
+.baglanti { font-size: 12px; color: var(--soluk); }
+.baglanti.yok { color: #b45309; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .baglanti.yok { color: #fbbf24; } }
+.kart {
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+#simdi .bos { color: var(--bos); font-style: italic; }
+.ana { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.ana span { color: var(--soluk); font-size: 12px; display: block; }
+.ana b { font-size: 14px; font-weight: 600; }
+.model { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.rozet {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.rozet.bitti { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.rozet.calisiyor { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
+.rozet.bekliyor { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
+.rozet.eskale { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+ul.adimlar { list-style: none; margin: 0; padding: 0; }
+ul.adimlar li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+ul.adimlar li.calisiyor { border-color: var(--vurgu); }
+ul.adimlar .no { color: var(--soluk); font-variant-numeric: tabular-nums; min-width: 2ch; }
+ul.adimlar .baslik { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+ul.adimlar li.bitti .baslik, ul.adimlar li.bitti .no { color: var(--soluk); }
+.adim-bilgi { color: var(--soluk); font-size: 12px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--kart);
+  border: 1px solid var(--cizgi);
+  border-radius: 10px;
+  overflow: hidden;
+  display: block;
+}
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--cizgi); font-size: 13px; }
+th { color: var(--soluk); font-weight: 600; font-size: 12px; }
+tr:last-child td { border-bottom: none; }
+table .model { max-width: 220px; overflow-wrap: anywhere; }
+table td, table th { white-space: nowrap; }
+table td.model, table th.model { white-space: normal; }
+td.sayi { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<main>
+  <h1>opencode-akis</h1>
+  <p class="baglanti" id="baglanti">bağlanıyor…</p>
+
+  <h2>Şu an</h2>
+  <section id="simdi" class="kart"><span class="bos">boşta</span></section>
+
+  <h2>Adımlar</h2>
+  <section id="kategoriler"></section>
+
+  <h2>Modeller</h2>
+  <section id="modeller"></section>
+</main>
+
+<script>
+const baglantiEl = document.getElementById('baglanti');
+const simdiEl = document.getElementById('simdi');
+const kategorilerEl = document.getElementById('kategoriler');
+const modellerEl = document.getElementById('modeller');
+
+const ROZETLER = { bitti: 'bitti', calisiyor: 'çalışıyor', bekliyor: 'bekliyor', eskale: 'eskale' };
+
+function rozet(adi) {
+  return '<span class="rozet ' + adi + '">' + ROZETLER[adi] + '</span>';
+}
+
+function sure(ts) {
+  if (!ts) return '—';
+  let ms = ts;
+  if (ts < 1e12) ms = ts * 1000;
+  const sn = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+  const dk = Math.floor(sn / 60);
+  const kalanSn = sn % 60;
+  return dk > 0 ? dk + ' dk ' + kalanSn + ' sn' : kalanSn + ' sn';
+}
+
+function suAnCiz(simdi) {
+  if (!simdi) {
+    simdiEl.innerHTML = '<span class="bos">boşta</span>';
+    return;
+  }
+  const durum = simdi.durum || 'calisiyor';
+  const etiket = { calisiyor: 'çalışıyor', bekliyor: 'bekliyor', bitti: 'bitti' }[durum] || durum;
+  simdiEl.innerHTML =
+    '<div class="ana">' +
+    '<span>adım<b>' + (simdi.baslik ? simdi.baslik : simdi.adim ?? '—') + '</b></span>' +
+    '<span>model<b class="model">' + esc(simdi.model || '—') + '</b></span>' +
+    '<span>deneme<b>' + esc(String(simdi.deneme ?? '—')) + '</b></span>' +
+    '<span>durum<b>' + esc(etiket) + '</b></span>' +
+    '<span>geçen süre<b id="sure">' + sure(simdi.ts) + '</b></span>' +
+    '</div>';
+  if (simdi.ts) {
+    clearInterval(simdiZaman);
+    simdiZaman = setInterval(() => {
+      const el = document.getElementById('sure');
+      if (el) el.textContent = sure(simdi.ts);
+    }, 1000);
+  }
+}
+
+let simdiZaman = null;
+let sonSimdi = null;
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function adimDurumu(a, simdi) {
+  if (a.bitti) return 'bitti';
+  if (simdi && simdi.adim === a.no) return 'calisiyor';
+  if ((a.yurutucu || '').toLowerCase() !== 'opencode') return 'eskale';
+  return 'bekliyor';
+}
+
+function planCiz(plan, simdi) {
+  if (!plan || !Array.isArray(plan.kategoriler)) {
+    kategorilerEl.innerHTML = '<span class="bos">PLAN.md bulunamadı</span>';
+    return;
+  }
+  let html = '';
+  for (const kat of plan.kategoriler) {
+    html += '<div><h2>' + esc(kat.ad) + '</h2><ul class="adimlar">';
+    for (const a of kat.adimlar) {
+      const durum = adimDurumu(a, simdi);
+      const bilgi = [a.yurutucu, a.kapi ? a.kapi : null].filter(Boolean).map(esc).join(' · ');
+      html += '<li class="' + durum + '">' +
+        '<span class="no">' + esc(String(a.no)) + '</span>' +
+        '<span class="baslik">' + esc(a.baslik) + '</span>' +
+        (bilgi ? '<span class="adim-bilgi">' + bilgi + '</span>' : '') +
+        rozet(durum) + '</li>';
+    }
+    html += '</ul></div>';
+  }
+  kategorilerEl.innerHTML = html || '<span class="bos">adım yok</span>';
+}
+
+function para(n) {
+  if (n >= 1) return '$' + n.toFixed(2);
+  if (n > 0) return '$' + n.toFixed(4);
+  return '$0';
+}
+
+function modellerCiz(modeller) {
+  if (!modeller || modeller.length === 0) {
+    modellerEl.innerHTML = '<span class="bos">metrik yok</span>';
+    return;
+  }
+  let html = '<table><thead><tr>' +
+    '<th class="model">model</th><th>deneme</th><th>ilk denemede geçme</th><th>token</th><th>maliyet</th><th>ort. süre</th>' +
+    '</tr></thead><tbody>';
+  for (const m of modeller) {
+    html += '<tr>' +
+      '<td class="model">' + esc(m.model) + '</td>' +
+      '<td class="sayi">' + m.deneme + '</td>' +
+      '<td class="sayi">' + Math.round((m.ilkDenemeOrani || 0) * 100) + '%</td>' +
+      '<td class="sayi">' + Math.round(m.token || 0).toLocaleString('tr-TR') + '</td>' +
+      '<td class="sayi">' + para(m.maliyet || 0) + '</td>' +
+      '<td class="sayi">' + (m.ortSure || 0).toFixed(1) + ' sn</td>' +
+      '</tr>';
+  }
+  modellerEl.innerHTML = html + '</tbody></table>';
+}
+
+function ciz(d) {
+  sonSimdi = d.simdi || null;
+  suAnCiz(sonSimdi);
+  planCiz(d.plan, sonSimdi);
+  modellerCiz(d.modeller);
+}
+
+function baglantiYok() {
+  baglantiEl.textContent = 'bağlantı yok';
+  baglantiEl.classList.add('yok');
+}
+
+function baglantiVar() {
+  baglantiEl.textContent = 'canlı';
+  baglantiEl.classList.remove('yok');
+}
+
+function dinle() {
+  const es = new EventSource('/olay');
+  es.onmessage = (e) => {
+    try {
+      ciz(JSON.parse(e.data));
+      baglantiVar();
+    } catch {
+      baglantiYok();
+    }
+  };
+  es.onerror = () => {
+    baglantiYok();
+  };
+}
+
+dinle();
+</script>
+</body>
+</html>
