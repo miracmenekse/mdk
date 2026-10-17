@@ -76,25 +76,31 @@ Karar: 5 + 8 + 6'nın birleşimi: ayrı bölüm yok, her adım satırına özet 
 Taslak: etki/gecmis.html. Uygulama maliyeti tahmini: bir veri adımı (~60-140k token) + bir arayüz adımı (adım 7 gibi yüksek olabilir, bütçeli).
 
 ## Çalıştırıcı sertleştirme
+Not (2026-10-17): Parti A'da ücretsiz modeller "Rate limit exceeded" verdi; çalıştırıcı bunu 6 × 900 sn "kapı geçmedi" sandı (0 token, boş günlük). Bu adımlar eskale edildi, `kodcu` yapar. Yanıt vermeme tespiti adım 11'e eklendi.
 - [ ] 9. Çoklu kapı
+  - Yürütücü: kodcu
   - Ne: `op-adim.sh`: bir adımda birden fazla `- Kapı: \`...\`` satırı olabilir. Hepsi sırayla çalışır, ilk başarısız olanda durur ve o kapının çıktısı `$log.kapi` dosyasına yazılır; hepsi 0 verirse adım geçer. Şu an `grep -m1` yalnızca ilkini alıyor. Hiç Kapı satırı yoksa mevcut davranış kalır (çıkış 4). Betikteki donmuş kopya ve kurcalama kontrolü bloklarına dokunma.
   - Kapı: `bash test/op-adim.test.sh temel coklu`
 
 - [ ] 10. Taslak onayı zorunluluğu
+  - Yürütücü: kodcu
   - Ne: `op-adim.sh`: adım bloğunda `- Etki:` satırı varsa ve `- Onay: evet` satırı yoksa, opencode'u HİÇ çağırmadan `adım N taslak onayı bekliyor: PLAN.md'ye "- Onay: evet" ekle` yazıp çıkış kodu 5 ile çık. Kontrol, git ağacı kontrollerinden sonra, deneme döngüsünden önce yapılır.
   - Kapı: `bash test/op-adim.test.sh temel coklu onay`
 
 - [ ] 11. Süreç grubu, süre sınırı ve başarısızlık nedeni
-  - Ne: `op-adim.sh`: `timeout` yerine `opencode run` komutunu `setsid ... </dev/null >"$log" 2>"$log.err" &` ile arka planda başlat, `pid=$!` al. Her `POLL` saniyede (ortam değişkeni, varsayılan 3) `kill -0 $pid` ile kontrol et; `SURE` saniyeyi aşarsa süreç grubunu öldür: `kill -TERM -- -$pid`, 2 sn sonra `kill -KILL -- -$pid`. Süreç bitince `wait $pid` yap; bitişte grupta (`pgrep -g $pid`) yetim süreç kalmadığından emin ol, kalmışsa KILL. Metrik satırına `neden` alanı ekle: başarılıysa `null`; değilse `"sure"` (süre aşımı), `"kurcalama"` ya da `"kapi"` (öncelik bu sırada). Başarısızlık mesajına nedeni yaz.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure`
+  - Yürütücü: kodcu
+  - Ne: `op-adim.sh`: `timeout` yerine `opencode run` komutunu `setsid ... </dev/null >"$log" 2>"$log.err" &` ile arka planda başlat, `pid=$!` al. Her `POLL` saniyede (ortam değişkeni, varsayılan 3) `kill -0 $pid` ile kontrol et; `SURE` saniyeyi aşarsa süreç grubunu öldür: `kill -TERM -- -$pid`, 2 sn sonra `kill -KILL -- -$pid`. Süreç bitince `wait $pid` yap; bitişte grupta (`pgrep -g $pid`) yetim süreç kalmadığından emin ol, kalmışsa KILL. Metrik satırına `neden` alanı ekle: başarılıysa `null`; değilse `"sure"` (süre aşımı), `"kurcalama"` ya da `"kapi"` (öncelik bu sırada). Başarısızlık mesajına nedeni yaz. Ayrıca sağlayıcı sessizliği: `ILK` (ortam değişkeni, varsayılan 90) saniye içinde günlüğe (`$log`) hiç olay yazılmazsa (dosya boş) süreç grubunu aynı şekilde öldür, `neden` = `"yanit_yok"`, o modelin kalan denemelerini atla ve sıradaki modele geç (sessiz modeli yeniden denemek boşuna; ücretsiz kota dolunca OpenCode çıkmadan sessizce bekliyor). Tüm modeller `yanit_yok` ile biterse çıkış kodu 6 (eskale 2 değil), durum `"saglayici"`, mesaj "sağlayıcı yanıt vermiyor". Başlık satırındaki çıkış kodu açıklamasına 6'yı ekle.
+  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok`
 
 - [ ] 12. Token bütçesi
+  - Yürütücü: kodcu
   - Ne: `op-adim.sh`: adım bloğunda `- Bütçe: N` (token) ya da dosyanın başında `Bütçe: N` satırı varsa (adım satırı önceliklidir), bekleme döngüsünde her turda günlükteki `step_finish` olaylarının `part.tokens.total` toplamını (mevcut `topla` fonksiyonu) hesapla; N'yi aşarsa süreç grubunu aynı şekilde öldür ve `neden` alanına `"butce"` yaz. Bütçe yoksa kontrol yapma. Kontrol adım sınırında olduğundan tek adım bütçeyi biraz aşabilir; bunu betikte `# ponytail:` yorumuyla not et.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure butce butce_ok`
+  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok`
 
 - [ ] 13. SORUN.md ve model sırası
+  - Yürütücü: kodcu
   - Ne: `op-adim.sh`: (1) Deneme bitince depo kökünde `SORUN.md` varsa onu `.op-log/sorun-N-<epoch>.md` olarak kopyala, kapı geçse bile denemeyi başarısız say (`neden: "sorun"`), bir sonraki denemenin `ipucu`na `SORUN.md` içeriğini ekle, sonra mevcut geri alma akışı (reset + clean) çalışsın. (2) `ONCE=<model>` ortam değişkeni verilirse ve model `Modeller` listesindeyse onu listenin başına al; listede yoksa yok say.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure butce butce_ok sorun once`
+  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok sorun once`
 
 ## Veri ve araçlar
 - [ ] 14. Ayrıştırıcıda çoklu kapı, bütçe ve onay

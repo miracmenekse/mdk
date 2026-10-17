@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/op-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure butce butce_ok sorun once"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok butce butce_ok sorun once"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -100,6 +100,22 @@ c_sure() {
   kontrol '[ "$SN" -lt 25 ]'
   kontrol '[ "$(neden_listesi)" = sure ]'
   kontrol '! yetim 31338'   # süreç grubu temizlenmeli
+}
+c_yanit_yok() {
+  # sağlayıcı sessiz (kota/ağ): ilk olay ILK sn içinde gelmezse süreç öldürülür, neden yanit_yok;
+  # tüm modeller sessizse çıkış 6 (model hatası değil), biri yanıt verirse normal akış
+  setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`')" 'davran(){ (sleep 31339 &); sleep 60; }'; commit0
+  ILK=2 SURE=60 kos
+  kontrol '[ "$KOD" = 6 ]'
+  kontrol '[ "$SN" -lt 25 ]'
+  kontrol '[ "$(neden_listesi)" = yanit_yok,yanit_yok ]'   # model başına tek deneme: sessiz modeli tekrar denemek boşuna
+  kontrol '! yetim 31339'
+  kontrol '[ "$(git rev-parse HEAD)" = "$CP" ]'
+  setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`')" 'davran(){ if [ "$1" = m/a ]; then (sleep 31339 &); sleep 60; else echo x > cikti.txt; fi; }'; commit0
+  ILK=2 SURE=60 kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(neden_listesi)" = yanit_yok,- ]'
+  kontrol '! yetim 31339'
 }
 c_butce() {
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`
