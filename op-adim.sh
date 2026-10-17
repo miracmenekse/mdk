@@ -50,7 +50,7 @@ for m in "${MODELLER[@]}"; do
     timeout "$SURE" opencode run -m "$m" --format json \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
-$ipucu" >"$log" 2>"$log.err"
+$ipucu" </dev/null >"$log" 2>"$log.err"   # stdin kapalı: timeout'un süreç grubunda tty okuması takılıyordu
     bash -c "$kapi" >"$log.kapi" 2>&1; kod=$?
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal < <(topla "$log")
