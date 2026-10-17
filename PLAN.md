@@ -164,7 +164,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
 ## Ekran görüntüsünden bulunanlar (2026-10-17, gerçek tarayıcı)
 Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
 
-- [ ] 27. Adım satırı düzeni
+- [x] 27. Adım satırı düzeni
   - Yürütücü: kodcu
   - Ne: `panel/ciz.mjs` `planHtml`: her adım `<li>` içinde iki bölüm: `<div class="adim-ust">` (no, başlık, rozet) ve hemen ardından `<div class="adim-alt">` (yürütücü adı ve kapı komutu, küçük gri, uzun komutu kırar). `panel/index.html` CSS: `ul.adimlar li` artık doğrudan flex değil; `.adim-ust { display: flex; ... }` içinde `.baslik { flex: 1 }`; `.adim-alt { ...; overflow-wrap: anywhere }`. Görsel stil (kenarlık, rozet renkleri, boşluklar) korunur. Mevcut `panel/ciz.test.mjs` geçmeye devam eder.
   - Kapı: `node panel/duzen.test.mjs`

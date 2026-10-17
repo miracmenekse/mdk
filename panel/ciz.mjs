@@ -75,10 +75,12 @@ export function planHtml(plan, simdi) {
       const durum = adimDurumu(a, simdi);
       const bilgi = [a.yurutucu, a.kapi].filter(Boolean).map(esc).join(' · ');
       html += `<li class="${durum}">` +
+        '<div class="adim-ust">' +
         `<span class="no">${esc(a.no)}</span>` +
         `<span class="baslik">${esc(a.baslik)}</span>` +
-        (bilgi ? `<span class="adim-bilgi">${bilgi}</span>` : '') +
-        rozet(durum) + '</li>';
+        rozet(durum) + '</div>' +
+        (bilgi ? `<div class="adim-alt">${bilgi}</div>` : '') +
+        '</li>';
     }
     html += '</ul></div>';
   }

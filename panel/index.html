@@ -86,9 +86,6 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: v
 .rozet.yuksek { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
 ul.adimlar { list-style: none; margin: 0; padding: 0; }
 ul.adimlar li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   background: var(--kart);
   border: 1px solid var(--cizgi);
   border-radius: 8px;
@@ -97,9 +94,10 @@ ul.adimlar li {
 }
 ul.adimlar li.calisiyor { border-color: var(--vurgu); }
 ul.adimlar .no { color: var(--soluk); font-variant-numeric: tabular-nums; min-width: 2ch; }
-ul.adimlar .baslik { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.adim-ust { display: flex; align-items: center; gap: 10px; }
+.adim-ust .baslik { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 ul.adimlar li.bitti .baslik, ul.adimlar li.bitti .no { color: var(--soluk); }
-.adim-bilgi { color: var(--soluk); font-size: 12px; }
+.adim-alt { color: var(--soluk); font-size: 12px; margin-top: 4px; overflow-wrap: anywhere; }
 table {
   width: 100%;
   border-collapse: collapse;
