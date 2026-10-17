@@ -3,6 +3,10 @@
 # PLAN.md adımını ücretsiz modellerden başlayarak OpenCode'a yaptırır, "Kapı" komutuyla doğrular.
 # Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul
 set -uo pipefail
+# donmuş kopya: bir adım op-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
+if [ -z "${OP_DONMUS:-}" ]; then
+  mkdir -p .op-log && cp "$0" .op-log/op-adim.run.sh && OP_DONMUS=1 exec bash .op-log/op-adim.run.sh "$@"
+fi
 N=${1:?adım no}; PLAN=${2:-PLAN.md}
 DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
@@ -26,6 +30,7 @@ IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' '
 
 # geri alma güvenliği: temiz git ağacı şart (kontrol noktası = HEAD)
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
+git check-ignore -q .op-log || { echo ".gitignore'a .op-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
 
@@ -51,7 +56,15 @@ for m in "${MODELLER[@]}"; do
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
 $ipucu" </dev/null >"$log" 2>"$log.err"   # stdin kapalı: timeout'un süreç grubunda tty okuması takılıyordu
-    bash -c "$kapi" >"$log.kapi" 2>&1; kod=$?
+    # kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
+    git add -A
+    kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|\.test\.[a-z]+$|^PLAN\.md$' || true)
+    if [ -n "$kurcalama" ]; then
+      printf 'kurcalama: kapı dosyaları değiştirilmiş, kapı çalıştırılmadı:\n%s\nKapı dosyalarını değiştirme.\n' "$kurcalama" >"$log.kapi"
+      echo "adım $N: $m deneme $d kurcalama tespit edildi"; kod=1
+    else
+      bash -c "$kapi" >"$log.kapi" 2>&1; kod=$?
+    fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal < <(topla "$log")
     yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ $kod = 0 ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos}"

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: adım geçmişi</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — adım satırı yalnızca başlık ve "bitti" rozeti gösterir; ne olduğu görünmez</figcaption>
+  <svg id="once" viewBox="0 0 640 230" role="img" aria-label="Geçmiş eklenmeden önce adım listesi">
+    <text x="16" y="28" font-size="13" fill="#757575">ADIMLAR</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="40" width="608" height="40"/><rect x="16" y="88" width="608" height="40"/><rect x="16" y="136" width="608" height="40"/>
+    </g>
+    <g font-size="14" fill="#424242">
+      <text x="28" y="65">1  PLAN.md ayrıştırıcı</text><text x="28" y="113">4  Arayüz</text><text x="28" y="161">7  Etki sekmesi</text>
+    </g>
+    <g fill="#bdbdbd"><rect x="540" y="50" width="70" height="20"/><rect x="540" y="98" width="70" height="20"/><rect x="540" y="146" width="70" height="20"/></g>
+    <g font-size="12" fill="#424242"><text x="558" y="64">bitti</text><text x="558" y="112">bitti</text><text x="558" y="160">bitti</text></g>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — üstte tek cümlelik hüküm; her satırda özet; sorunlu adım (4) açık gelir, incelenmemiş adım gri "incelenmedi" der</figcaption>
+  <svg id="sonra" viewBox="0 0 640 380" role="img" aria-label="Geçmiş eklendikten sonra adım listesi">
+    <text x="16" y="28" font-size="13" fill="#757575">ADIMLAR</text>
+    <rect class="degisen" x="16" y="36" width="608" height="30" stroke-width="2"/>
+    <text class="degisen-text" x="28" y="56" font-size="12">3 adım: 1 uyumlu, 1 kısmen, 1 incelenmedi · 2 ilk denemede geçti</text>
+    <rect x="500" y="42" width="116" height="18" fill="#fff" stroke="#757575"/>
+    <text class="degisen-text" x="512" y="55" font-size="11">☐ sadece sorunlu</text>
+    <rect x="16" y="76" width="608" height="52" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="28" y="97" font-size="14" fill="#424242">1  PLAN.md ayrıştırıcı</text>
+    <text class="degisen-text" x="28" y="118" font-size="12">1. denemede geçti · uyumlu · +69/−0 · 0c3a930</text>
+    <rect x="16" y="136" width="608" height="150" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="28" y="157" font-size="14" fill="#424242">4  Arayüz</text>
+    <rect class="degisen" x="24" y="164" width="592" height="116" stroke-width="2"/>
+    <g class="degisen-text" font-size="12">
+      <text x="32" y="184">2. denemede geçti · kısmen · +142/−3 · 5ab12cd</text>
+      <text x="32" y="206">dnm 1  glm-5.3  ✕ kapı   82 sn · 12k token</text>
+      <text x="32" y="226">dnm 2  glm-5.3  ✓       123 sn · 126k token</text>
+      <text x="32" y="248">commit: adım 4: Arayüz · 2 dosya</text>
+      <text x="32" y="268">Claude: durum etiketi çevrilmemiş</text>
+    </g>
+    <rect x="16" y="294" width="608" height="52" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="28" y="315" font-size="14" fill="#424242">7  Etki sekmesi</text>
+    <rect class="degisen" x="28" y="322" width="560" height="18" stroke-width="1.5"/>
+    <text class="degisen-text" x="36" y="335" font-size="12">1. denemede geçti · incelenmedi (gri) · +132/−2 · 9fe01aa</text>
+  </svg>
+</figure>
+
+</body>
+</html>
