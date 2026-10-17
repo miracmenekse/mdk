@@ -186,6 +186,14 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Kapı: `node panel/gecmis-ui.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
+- [ ] 30. Etki taslağı: önce ve sonra ayrı gösterilir
+  - Yürütücü: kodcu
+  - Ne: Gerçek tarayıcıda etki sekmesinin "önce" ve "sonra" kutularının ikisi de taslağın tamamını gösteriyordu (`#once`/`#sonra` bağlantısı yalnızca kaydırır). `panel/sunucu.mjs` `/dosya`: isteğe bağlı `goster=once|sonra` parametresi; verilirse yanıtın `<head>` kapanışından önce şu kural eklenir: `body > figure { display: none } body > figure:has(#<bölüm>) { display: block }` (bölümü olmayanlar gizlenir, içerik silinmez); `goster` yoksa dosya aynen döner; başka değer 400. Yol koruması aynen kalır. `panel/ciz.mjs` `etkiHtml`: iframe adresleri `#once`/`#sonra` yerine `&goster=once` ve `&goster=sonra` kullanır.
+  - Kapı: `node panel/etki-goster.test.mjs`
+  - Kapı: `node panel/ciz.test.mjs`
+  - Kapı: `node panel/sunucu.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Süreç (Claude)
 - [x] 24. İnceleme kayıtları ve karşılaştırma verisi
   - Yürütücü: claude
