@@ -202,8 +202,8 @@ export function etkiHtml(etki) {
       `<div class="dm-satir"><span>token</span><div class="dm-takip"><i class="token" style="width:${tokenW.toFixed(1)}%"></i></div></div>` +
       '</div>' +
       '<div class="kroki">' +
-      `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}#once"></iframe></div>` +
-      `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}#sonra"></iframe></div>` +
+      `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}&goster=once"></iframe></div>` +
+      `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}&goster=sonra"></iframe></div>` +
       '</div>' +
       '</div>';
   }).join('');

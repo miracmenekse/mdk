@@ -109,8 +109,20 @@ export async function baslat(dir, port) {
         yanit.writeHead(404).end();
         return;
       }
+      // ?goster=once|sonra : yalnız o <svg id> figürü görünür (içerik silinmez); sabit stil, kullanıcı girdisi yazılmaz
+      const goster = new URL(istek.url, 'http://x').searchParams.get('goster');
+      let icerik = readFileSync(tam);
+      if (goster !== null) {
+        if (goster !== 'once' && goster !== 'sonra') {
+          yanit.writeHead(400).end('geçersiz goster');
+          return;
+        }
+        const stil = `<style>body > figure { display: none } body > figure:has(#${goster}) { display: block }</style>`;
+        const metin = icerik.toString('utf8');
+        icerik = Buffer.from(metin.includes('</head>') ? metin.replace('</head>', stil + '</head>') : stil + metin, 'utf8');
+      }
       yanit.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      yanit.end(readFileSync(tam));
+      yanit.end(icerik);
       return;
     }
 
