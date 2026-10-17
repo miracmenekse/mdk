@@ -21,8 +21,8 @@ blok=$(awk -v n="$N" '
 baslik=$(head -1 <<<"$blok" | sed -E 's/^- \[.\] [0-9]+\.\s*//')
 head -1 <<<"$blok" | grep -q '^- \[x\]' && { echo "adım $N zaten bitmiş"; exit 0; }
 
-kapi=$(grep -m1 -oP '^\s*- Kapı: `\K[^`]+' <<<"$blok")
-[ -n "$kapi" ] || { echo "adım $N için Kapı yok"; exit 4; }
+mapfile -t KAPILAR < <(grep -oP '^\s*- Kapı: `\K[^`]+' <<<"$blok")
+[ ${#KAPILAR[@]} -gt 0 ] || { echo "adım $N için Kapı yok"; exit 4; }
 yur=$(grep -m1 -oP '^\s*- Yürütücü: \K\S+' <<<"$blok" || grep -m1 -oP '^Yürütücü: \K\S+' "$PLAN")
 [ "${yur:-kodcu}" = opencode ] || { echo "adım $N yürütücüsü ${yur:-kodcu}"; exit 3; }
 IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' ')"
@@ -63,7 +63,10 @@ $ipucu" </dev/null >"$log" 2>"$log.err"   # stdin kapalı: timeout'un süreç gr
       printf 'kurcalama: kapı dosyaları değiştirilmiş, kapı çalıştırılmadı:\n%s\nKapı dosyalarını değiştirme.\n' "$kurcalama" >"$log.kapi"
       echo "adım $N: $m deneme $d kurcalama tespit edildi"; kod=1
     else
-      bash -c "$kapi" >"$log.kapi" 2>&1; kod=$?
+      kod=0
+      for k in "${KAPILAR[@]}"; do   # ilk başarısız kapıda dur; o kapının çıktısı $log.kapi'de kalır
+        bash -c "$k" >"$log.kapi" 2>&1 || { kod=$?; break; }
+      done
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal < <(topla "$log")

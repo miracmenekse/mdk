@@ -77,7 +77,7 @@ Taslak: etki/gecmis.html. Uygulama maliyeti tahmini: bir veri adımı (~60-140k 
 
 ## Çalıştırıcı sertleştirme
 Not (2026-10-17): Parti A'da ücretsiz modeller "Rate limit exceeded" verdi; çalıştırıcı bunu 6 × 900 sn "kapı geçmedi" sandı (0 token, boş günlük). Bu adımlar eskale edildi, `kodcu` yapar. Yanıt vermeme tespiti adım 11'e eklendi.
-- [ ] 9. Çoklu kapı
+- [x] 9. Çoklu kapı
   - Yürütücü: kodcu
   - Ne: `op-adim.sh`: bir adımda birden fazla `- Kapı: \`...\`` satırı olabilir. Hepsi sırayla çalışır, ilk başarısız olanda durur ve o kapının çıktısı `$log.kapi` dosyasına yazılır; hepsi 0 verirse adım geçer. Şu an `grep -m1` yalnızca ilkini alıyor. Hiç Kapı satırı yoksa mevcut davranış kalır (çıkış 4). Betikteki donmuş kopya ve kurcalama kontrolü bloklarına dokunma.
   - Kapı: `bash test/op-adim.test.sh temel coklu`
