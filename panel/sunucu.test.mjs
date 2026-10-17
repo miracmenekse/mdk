@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { baslat } from './sunucu.mjs';
@@ -26,6 +26,19 @@ const ikinci = await Promise.race([
   new Promise((_, ret) => setTimeout(() => ret(new Error('dosya değişince olay gelmedi')), 4000)),
 ]);
 assert.match(ikinci, /calisiyor/);
+
+// çizim modülü yalnızca kendi dosyasıdır
+const m = await fetch(`${kok}/ciz.mjs`);
+assert.equal(m.status, 200);
+assert.match(m.headers.get('content-type'), /javascript/);
+assert.equal((await fetch(`${kok}/sunucu.mjs`)).status, 404, 'başka panel dosyaları sunulmamalı');
+
+// etki taslağı rotası: proje içi .html; kaçış denemeleri reddedilir
+mkdirSync(join(d, 'etki'));
+writeFileSync(join(d, 'etki', 'a.html'), '<p>taslak</p>');
+assert.equal((await fetch(`${kok}/dosya?yol=etki/a.html`)).status, 200);
+assert.equal((await fetch(`${kok}/dosya?yol=../x.html`)).status, 400);
+assert.equal((await fetch(`${kok}/dosya?yol=/etc/passwd`)).status, 400);
 
 await rd.cancel();
 await s.kapat();
