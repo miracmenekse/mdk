@@ -161,6 +161,23 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node panel/ciz.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
+## Ekran görüntüsünden bulunanlar (2026-10-17, gerçek tarayıcı)
+Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
+
+- [ ] 27. Adım satırı düzeni
+  - Yürütücü: kodcu
+  - Ne: `panel/ciz.mjs` `planHtml`: her adım `<li>` içinde iki bölüm: `<div class="adim-ust">` (no, başlık, rozet) ve hemen ardından `<div class="adim-alt">` (yürütücü adı ve kapı komutu, küçük gri, uzun komutu kırar). `panel/index.html` CSS: `ul.adimlar li` artık doğrudan flex değil; `.adim-ust { display: flex; ... }` içinde `.baslik { flex: 1 }`; `.adim-alt { ...; overflow-wrap: anywhere }`. Görsel stil (kenarlık, rozet renkleri, boşluklar) korunur. Mevcut `panel/ciz.test.mjs` geçmeye devam eder.
+  - Kapı: `node panel/duzen.test.mjs`
+  - Kapı: `node panel/ciz.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 28. Kayıt aracı durum.json'u günceller
+  - Yürütücü: kodcu
+  - Ne: `op-kayit.mjs`: çalıştırma kaydı (`--yurutucu ... --gecti ...`) yazıldığında `<dizin>/durum.json` da yazılır: `{ adim, baslik, model, deneme, durum, ts: Date.now() }`; `durum` = `gecti` (gecti true) ya da `eskale` (gecti false); `baslik` `<dizin>/PLAN.md` içindeki `- [ ] N. Başlık` ya da `- [x] N. Başlık` satırından alınır, PLAN.md ya da satır yoksa `null`. `--inceleme` kaydı `durum.json`'a dokunmaz. Hatalı kullanımda (çıkış 2) hiçbir dosya yazılmaz.
+  - Kapı: `node test/kayit-durum.test.mjs`
+  - Kapı: `node test/kayit.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Süreç (Claude)
 - [ ] 24. İnceleme kayıtları ve karşılaştırma verisi
   - Yürütücü: claude
