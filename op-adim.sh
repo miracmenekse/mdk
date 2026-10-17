@@ -29,6 +29,8 @@ yur=$(grep -m1 -oP '^\s*- Yürütücü: \K\S+' <<<"$blok" || grep -m1 -oP '^Yür
 [ "${yur:-kodcu}" = opencode ] || { echo "adım $N yürütücüsü ${yur:-kodcu}"; exit 3; }
 IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' ')"
 [ ${#MODELLER[@]} -gt 0 ] || { echo "PLAN'da Modeller satırı yok"; exit 4; }
+# token bütçesi: adım satırı önceliklidir, yoksa dosya başındaki Bütçe; ikisi de yoksa denetim yok
+butce=$(grep -m1 -oP '^\s*- Bütçe: \K[0-9]+' <<<"$blok" || grep -m1 -oP '^Bütçe: \K[0-9]+' "$PLAN" || true)
 
 # geri alma güvenliği: temiz git ağacı şart (kontrol noktası = HEAD)
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
@@ -53,7 +55,7 @@ topla() { node -e '                       // step_finish olaylarından token+mal
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 export OPENCODE_CONFIG_CONTENT='{"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}}'
 
-ipucu=""; SAGLAYICI=1
+ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0
 for m in "${MODELLER[@]}"; do
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
@@ -69,6 +71,8 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       el=$(( $(date +%s) - t0 ))
       if [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
+      elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli
+        read -r tok _ < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce
       fi
       [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
     done
@@ -88,7 +92,7 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       fi
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
-    read -r tok mal < <(topla "$log")
+    read -r tok mal < <(topla "$log"); harcanan=$((harcanan + tok))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
     yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
@@ -104,9 +108,13 @@ $(tail -c 1500 "$log.kapi")" ;;
     git reset -q --hard "$CP"; git clean -fdq    # temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
     echo "adım $N: $m deneme $d başarısız ($neden)"
     [ "$neden" = yanit_yok ] || SAGLAYICI=0
+    [ "$neden" = butce ] && { durdu=butce; break 2; }   # bütçe bitti: daha fazla deneme yok
     [ "$neden" = yanit_yok ] && break   # sessiz modeli yeniden denemek boşuna: sıradaki modele geç
   done
 done
+if [ "$durdu" = butce ]; then
+  yaz_durum "" 0 eskale; echo "adım $N eskale: token bütçesi ($butce) aşıldı (harcanan $harcanan)"; exit 2
+fi
 if [ $SAGLAYICI = 1 ]; then
   yaz_durum "" 0 saglayici; echo "adım $N: sağlayıcı yanıt vermiyor (tüm modeller $ILK sn içinde olay üretmedi)"; exit 6
 fi
