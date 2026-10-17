@@ -19,6 +19,7 @@ Gerçek OpenCode işi yalnızca adım 1-7'de oldu (glm-5.3-flash-free, ilk denem
 - Claude'un planlama token'ı ölçülmüyor (aday: claude-view / claude-monitor; doğrulanmadı). OpenCode oturum tekrarı için aday: opencode-observability (yan yana, eklentisiz).
 - Metrikte 22/23 ve 27/28 aynı süre/token'ı paylaşıyor (kodcu tek çağrıda iki adım yaptı, bölünmüş tahmin).
 - Etki sekmesi gerçek bir etki adımıyla denendi mi: adım 22 `Etki:` taşıyordu ama panelin etki bölümü bitmiş adımları listelemiyor; etki sekmesi hâlâ gerçek bekleyen etki adımıyla görülmedi.
+- Panel: model tablosu `neden: yanit_yok` satırlarını model başarısızlığı gibi sayıyor (kota sessizliği %0 görünüyor); adım satırı planın `Yürütücü`'sünü yazıyor, gerçekte işi `kodcu` yapmış olsa bile (demo bunu gösterdi).
 
 ## Tuzaklar
 - `opencode run` stdin kapalı (`</dev/null`) çalışmalı; yoksa `timeout` altında takılır.
