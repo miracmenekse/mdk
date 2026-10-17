@@ -10,6 +10,8 @@ fi
 N=${1:?adım no}; PLAN=${2:-PLAN.md}
 DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
+POLL=${POLL:-3}       # süreç izleme aralığı, saniye
+ILK=${ILK:-90}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
 LOGD=.op-log; mkdir -p "$LOGD"
 
 # adım bloğu: "- [ ] N." satırından bir sonraki adım/kategoriye kadar
@@ -51,39 +53,61 @@ topla() { node -e '                       // step_finish olaylarından token+mal
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 export OPENCODE_CONFIG_CONTENT='{"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}}'
 
-ipucu=""
+ipucu=""; SAGLAYICI=1
 for m in "${MODELLER[@]}"; do
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
-    log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s)
-    timeout "$SURE" opencode run -m "$m" --format json \
+    log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
+    # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
+    setsid opencode run -m "$m" --format json \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
-$ipucu" </dev/null >"$log" 2>"$log.err"   # stdin kapalı: timeout'un süreç grubunda tty okuması takılıyordu
+$ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tty okuması takılıyordu
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null; do
+      sleep "$POLL"
+      el=$(( $(date +%s) - t0 ))
+      if [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
+      elif [ "$el" -ge "$SURE" ]; then neden=sure
+      fi
+      [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
+    done
+    wait "$pid" 2>/dev/null
+    pgrep -g "$pid" >/dev/null && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
     # kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
     git add -A
-    kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|\.test\.[a-z]+$|^PLAN\.md$' || true)
-    if [ -n "$kurcalama" ]; then
-      printf 'kurcalama: kapı dosyaları değiştirilmiş, kapı çalıştırılmadı:\n%s\nKapı dosyalarını değiştirme.\n' "$kurcalama" >"$log.kapi"
-      echo "adım $N: $m deneme $d kurcalama tespit edildi"; kod=1
-    else
-      kod=0
-      for k in "${KAPILAR[@]}"; do   # ilk başarısız kapıda dur; o kapının çıktısı $log.kapi'de kalır
-        bash -c "$k" >"$log.kapi" 2>&1 || { kod=$?; break; }
-      done
+    if [ -z "$neden" ]; then
+      kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|\.test\.[a-z]+$|^PLAN\.md$' || true)
+      if [ -n "$kurcalama" ]; then
+        printf 'kurcalama: kapı dosyaları değiştirilmiş, kapı çalıştırılmadı:\n%s\nKapı dosyalarını değiştirme.\n' "$kurcalama" >"$log.kapi"
+        neden=kurcalama
+      else
+        for k in "${KAPILAR[@]}"; do   # ilk başarısız kapıda dur; o kapının çıktısı $log.kapi'de kalır
+          bash -c "$k" >"$log.kapi" 2>&1 || { neden=kapi; break; }
+        done
+      fi
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal < <(topla "$log")
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ $kod = 0 ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos}"
-    if [ $kod = 0 ]; then
+    nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
       echo "adım $N geçti ($m, deneme $d)"; exit 0
     fi
-    ipucu="Önceki deneme kapıyı geçemedi. Kapı çıktısının sonu:
-$(tail -c 1500 "$log.kapi")"
+    case $neden in
+      kapi|kurcalama) ipucu="Önceki deneme kapıyı geçemedi. Kapı çıktısının sonu:
+$(tail -c 1500 "$log.kapi")" ;;
+      sure)           ipucu="Önceki deneme $SURE sn içinde bitmedi; işi daha küçük tut." ;;
+    esac
     git reset -q --hard "$CP"; git clean -fdq    # temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
-    echo "adım $N: $m deneme $d kapıdan geçemedi"
+    echo "adım $N: $m deneme $d başarısız ($neden)"
+    [ "$neden" = yanit_yok ] || SAGLAYICI=0
+    [ "$neden" = yanit_yok ] && break   # sessiz modeli yeniden denemek boşuna: sıradaki modele geç
   done
 done
+if [ $SAGLAYICI = 1 ]; then
+  yaz_durum "" 0 saglayici; echo "adım $N: sağlayıcı yanıt vermiyor (tüm modeller $ILK sn içinde olay üretmedi)"; exit 6
+fi
 yaz_durum "" 0 eskale; echo "adım $N eskale: tüm modeller tükendi"; exit 2
