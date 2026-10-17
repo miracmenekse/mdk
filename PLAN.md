@@ -33,7 +33,7 @@ Biçim: `PLAN.md` adımları `- [ ] N. Başlık` satırıdır; altındaki `- Kap
   - Kapı: `node panel/arayuz.test.mjs`
 
 ## Etki görünümü
-- [ ] 5. Etki taslağı örneği
+- [x] 5. Etki taslağı örneği
   - Ne: `etki/ORNEK.html` yaz: gri tonlu, düşük çözünürlüklü "önce / sonra" kroki. İki `<svg>`: `id="once"` ve `id="sonra"`; sonrada değişen bölgeler `class="degisen"` ile renkli vurgulanır. Script yok, 6000 karakterden kısa. Bir örnek ekran seç (ör. basit bir rapor sayfasına filtre eklenmesi).
   - Kapı: `node etki/ornek.test.mjs`
 

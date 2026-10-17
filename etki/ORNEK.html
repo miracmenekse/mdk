@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: rapor sayfasına filtre</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  /* tüm çizim gri tonlu; yalnızca değişen bölgeler renkli */
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — rapor sayfası: başlık + kayıt tablosu (gri kroki)</figcaption>
+  <svg id="once" viewBox="0 0 640 420" role="img" aria-label="Filtre eklenmeden önce rapor sayfası">
+    <rect x="16" y="16" width="608" height="40" fill="#9e9e9e"/>
+    <text x="32" y="41" font-size="16" fill="#ffffff">Rapor</text>
+    <text x="310" y="92" font-size="18" fill="#424242">Satış özeti</text>
+    <rect x="16" y="110" width="608" height="28" fill="#757575"/>
+    <text x="28" y="129" font-size="13" fill="#ffffff">Müşteri</text>
+    <text x="260" y="129" font-size="13" fill="#ffffff">Bölge</text>
+    <text x="560" y="129" font-size="13" fill="#ffffff">Tutar</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="138" width="608" height="36"/>
+      <rect x="16" y="174" width="608" height="36"/>
+      <rect x="16" y="210" width="608" height="36"/>
+      <rect x="16" y="246" width="608" height="36"/>
+      <rect x="16" y="282" width="608" height="36"/>
+    </g>
+    <g font-size="13" fill="#616161">
+      <text x="28" y="160">Acme Ltd</text><text x="260" y="160">Marmara</text><text x="540" y="160">1.200 TL</text>
+      <text x="28" y="196">Yılmaz AŞ</text><text x="260" y="196">Ege</text><text x="540" y="196">890 TL</text>
+      <text x="28" y="232">Beta Gıda</text><text x="260" y="232">Akdeniz</text><text x="540" y="232">640 TL</text>
+      <text x="28" y="268">Delta Tek</text><text x="260" y="268">İç Anadolu</text><text x="540" y="268">450 TL</text>
+      <text x="28" y="304">Ege Kimya</text><text x="260" y="304">Karadeniz</text><text x="540" y="304">310 TL</text>
+    </g>
+    <rect x="16" y="336" width="608" height="22" fill="#eeeeee"/>
+    <text x="28" y="351" font-size="12" fill="#757575">5 kayıt gösteriliyor</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — üstte filtre çubuğu, durum satırında sonuç sayısı (kutu dolgusu sayısı)
+  </figcaption>
+  <svg id="sonra" viewBox="0 0 640 420" role="img" aria-label="Filtre eklendikten sonra rapor sayfası">
+    <rect x="16" y="16" width="608" height="40" fill="#9e9e9e"/>
+    <text x="32" y="41" font-size="16" fill="#ffffff">Rapor</text>
+    <text x="310" y="92" font-size="18" fill="#424242">Satış özeti</text>
+    <!-- değişim 1: tablonun üstüne filtre çubuğu -->
+    <rect class="degisen" x="16" y="104" width="608" height="34" stroke-width="2"/>
+    <rect x="28" y="111" width="360" height="20" fill="#ffffff" stroke="#757575"/>
+    <text class="degisen-text" x="36" y="125" font-size="12">bölge veya müşteri ara…</text>
+    <rect x="404" y="111" width="70" height="20" fill="#bdbdbd"/>
+    <text class="degisen-text" x="418" y="125" font-size="12">Uygula</text>
+    <rect x="484" y="111" width="70" height="20" fill="#e0e0e0"/>
+    <text x="498" y="125" font-size="12" fill="#424242">Temizle</text>
+    <rect x="16" y="148" width="608" height="28" fill="#757575"/>
+    <text x="28" y="167" font-size="13" fill="#ffffff">Müşteri</text>
+    <text x="260" y="167" font-size="13" fill="#ffffff">Bölge</text>
+    <text x="560" y="167" font-size="13" fill="#ffffff">Tutar</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="176" width="608" height="36"/>
+      <rect class="degisen" x="16" y="212" width="608" height="36" stroke-width="2"/>
+      <rect x="16" y="248" width="608" height="36"/>
+      <rect class="degisen" x="16" y="284" width="608" height="36" stroke-width="2"/>
+      <rect x="16" y="320" width="608" height="36"/>
+    </g>
+    <g font-size="13" fill="#616161">
+      <text x="28" y="198">Acme Ltd</text><text x="260" y="198">Marmara</text><text x="540" y="198">1.200 TL</text>
+      <text x="28" y="234">Yılmaz AŞ</text><text x="260" y="234">Ege</text><text x="540" y="234">890 TL</text>
+      <text x="28" y="270">Beta Gıda</text><text x="260" y="270">Akdeniz</text><text x="540" y="270">640 TL</text>
+      <text x="28" y="306">Delta Tek</text><text x="260" y="306">İç Anadolu</text><text x="540" y="306">450 TL</text>
+      <text x="28" y="342">Ege Kimya</text><text x="260" y="342">Karadeniz</text><text x="540" y="342">310 TL</text>
+    </g>
+    <!-- değişim 3: durum satırı canlı sonuç sayısı gösterir -->
+    <rect class="degisen" x="16" y="368" width="608" height="22" stroke-width="1.5"/>
+    <text class="degisen-text" x="28" y="383" font-size="12">"Ege" filtresi aktif · 2 kayıt · anında güncellenir</text>
+  </svg>
+</figure>
+
+</body>
+</html>
