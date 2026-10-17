@@ -29,6 +29,10 @@ yur=$(grep -m1 -oP '^\s*- Yürütücü: \K\S+' <<<"$blok" || grep -m1 -oP '^Yür
 [ "${yur:-kodcu}" = opencode ] || { echo "adım $N yürütücüsü ${yur:-kodcu}"; exit 3; }
 IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' ')"
 [ ${#MODELLER[@]} -gt 0 ] || { echo "PLAN'da Modeller satırı yok"; exit 4; }
+# ONCE=<model>: listede varsa bu çalıştırmada önce o denenir (listede yoksa yok sayılır)
+if [ -n "${ONCE:-}" ] && [[ " ${MODELLER[*]} " == *" $ONCE "* ]]; then
+  SIRA=("$ONCE"); for x in "${MODELLER[@]}"; do [ "$x" = "$ONCE" ] || SIRA+=("$x"); done; MODELLER=("${SIRA[@]}")
+fi
 # token bütçesi: adım satırı önceliklidir, yoksa dosya başındaki Bütçe; ikisi de yoksa denetim yok
 butce=$(grep -m1 -oP '^\s*- Bütçe: \K[0-9]+' <<<"$blok" || grep -m1 -oP '^Bütçe: \K[0-9]+' "$PLAN" || true)
 
@@ -55,7 +59,7 @@ topla() { node -e '                       // step_finish olaylarından token+mal
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 export OPENCODE_CONFIG_CONTENT='{"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}}'
 
-ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0
+ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0; sorun_icerik=""
 for m in "${MODELLER[@]}"; do
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
@@ -80,6 +84,11 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
     pgrep -g "$pid" >/dev/null && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
     # kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
     git add -A
+    # SORUN.md: model bir sorun bildirdiyse kapı geçse bile deneme başarısız; içerik sonraki denemeye ipucu olur
+    if [ -f SORUN.md ]; then   # kopya her zaman alınır (reset/clean silmeden önce); etiket yalnızca önceliği boşsa
+      cp SORUN.md "$LOGD/sorun-$N-$(date +%s).md"; sorun_icerik=$(cat SORUN.md)
+      [ -n "$neden" ] || neden=sorun
+    fi
     if [ -z "$neden" ]; then
       kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|\.test\.[a-z]+$|^PLAN\.md$' || true)
       if [ -n "$kurcalama" ]; then
@@ -104,6 +113,8 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       kapi|kurcalama) ipucu="Önceki deneme kapıyı geçemedi. Kapı çıktısının sonu:
 $(tail -c 1500 "$log.kapi")" ;;
       sure)           ipucu="Önceki deneme $SURE sn içinde bitmedi; işi daha küçük tut." ;;
+      sorun)          ipucu="Önceki deneme SORUN.md bıraktı; sorunu gider ve adımı yeniden yap. SORUN.md:
+$sorun_icerik" ;;
     esac
     git reset -q --hard "$CP"; git clean -fdq    # temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
     echo "adım $N: $m deneme $d başarısız ($neden)"
