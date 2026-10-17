@@ -36,3 +36,15 @@ Yeni persona eklerken şu üç satırı doldur: **Optimize eder**, **Sorusu**, *
 ## Benchmark (persona değil, kanıt)
 - **Yöntem:** benzer 3 ürünün aynı sorunu nasıl çözdüğünü web aramasıyla bul, her birine kaynak ver.
 - Bulunamayan yerde "doğrulanamadı" yaz; uydurma.
+
+## Çıktı biçimi (alt ajana verilir)
+Her persona ayrı bir alt ajanda çalışır; ona yalnızca problem, kısıtlar ve kendi kartı verilir (kullanıcının önerisi ve diğer personalar verilmez). Biçim sabittir, aksi halde genel öğüt listesi yazar:
+
+`Seçenek A — <ad>: <3 cümle>. Tık/adım sayısı: <n>. Kullanıcıya değer: <1 cümle>. Risk: <1 cümle>.` (en fazla 2 seçenek, toplam ≤150 kelime)
+
+**Ayırt edicilik şartı:** her persona, diğer personaların büyük olasılıkla önermeyeceği en az bir seçenek vermelidir; kendi "Körlüğü" satırındaki riski seçeneğin Risk alanında açıkça yazmalıdır.
+
+## Gözlem (Geçmiş görünümü kararı, 2026-10-17)
+4 persona + benchmark 8 seçenek verdi ama hepsi aynı desene yakınsadı: özet satır + açılır ayrıntı, sorunlular öne. Gerçek ayrım tek eksendeydi (ayrı bölüm mü, satıra gömülü mü). Sonraki kararlarda: personalara önce "hangi eksende ayrışabilirsiniz?" diye sor, ayrışma eksenini planda yaz; ortak desen çıkarsa onu "güvenli taban" olarak kabul edip yalnızca ayrışan eksende karar ver.
+Benchmark ajanı kaynaksız iddia yazmadı, doğrulayamadığını (Argo) açıkça "doğrulanamadı" dedi; bu davranış korunmalı.
+Kalıcı kural: persona kartlarına yeni persona eklerken `Optimize eder / Sorusu / Körlüğü` üç satırı zorunlu.

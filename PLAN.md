@@ -187,12 +187,12 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Kapı: `bash test/hepsi.sh`
 
 ## Süreç (Claude)
-- [ ] 24. İnceleme kayıtları ve karşılaştırma verisi
+- [x] 24. İnceleme kayıtları ve karşılaştırma verisi
   - Yürütücü: claude
   - Ne: Her partiden sonra Claude diff'i plana karşı inceler, sonucu `node op-kayit.mjs <adım> --inceleme ...` ile kaydeder; eskale olan adımı `kodcu`'ya verir ve sonucunu `op-kayit.mjs --yurutucu kodcu` ile kaydeder; bazı adımlarda `ONCE=` ile 2. ve 3. model denenir.
   - Kapı: `test "$(grep -c '"tur":"inceleme"' metrikler.jsonl)" -ge 10`
 
-- [ ] 25. Personaları ve süreç belgelerini güncelle
+- [x] 25. Personaları ve süreç belgelerini güncelle
   - Yürütücü: claude
   - Ne: Geçmiş kararının gözleminden `personalar.md`'yi rafine et (çıktı biçimi, "diğerlerinin önermeyeceği seçenek" şartı); `ba-pm-bakis` becerisini, proje `CLAUDE.md`'sini ve bellek notlarını güncelle.
   - Kapı: `grep -q 'Çıktı biçimi' personalar.md && grep -q 'önermeyeceği' personalar.md`
