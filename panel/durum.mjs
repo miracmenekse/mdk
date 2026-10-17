@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from './plan.mjs';
+import { tahmin } from './tahmin.mjs';
 
 export function snapshot(dir) {
   const sonuc = { plan: null, simdi: null, modeller: [], etki: [] };
@@ -70,6 +71,21 @@ export function snapshot(dir) {
     maliyet: m.maliyet,
     ortSure: m.deneme > 0 ? m.sure / m.deneme : 0,
   }));
+
+  if (sonuc.plan) {
+    for (const k of sonuc.plan.kategoriler) {
+      for (const a of k.adimlar) {
+        if (a.bitti || !a.etki) continue;
+        sonuc.etki.push({
+          no: a.no,
+          baslik: a.baslik,
+          dosya: a.etki,
+          deger: a.deger,
+          tahmin: tahmin(satirlar, 1),
+        });
+      }
+    }
+  }
 
   return sonuc;
 }
