@@ -1,0 +1,75 @@
+// Durum birleştirici: PLAN.md + durum.json + metrikler.jsonl → anlık görüntü.
+
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse } from './plan.mjs';
+
+export function snapshot(dir) {
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [] };
+
+  try {
+    sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
+  } catch {
+    sonuc.plan = null;
+  }
+
+  try {
+    sonuc.simdi = JSON.parse(readFileSync(join(dir, 'durum.json'), 'utf8'));
+  } catch {
+    sonuc.simdi = null;
+  }
+
+  let satirlar = [];
+  try {
+    satirlar = readFileSync(join(dir, 'metrikler.jsonl'), 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((s) => {
+        try {
+          return JSON.parse(s);
+        } catch {
+          return null; // bozuk satır atlanır
+        }
+      })
+      .filter(Boolean);
+  } catch {
+    satirlar = [];
+  }
+
+  const harita = new Map();
+  for (const s of satirlar) {
+    if (typeof s.model !== 'string' || !s.model) continue;
+    const m = harita.get(s.model) ?? {
+      model: s.model,
+      deneme: 0,
+      gecen: 0,
+      ilkToplam: 0,
+      ilkGecen: 0,
+      token: 0,
+      maliyet: 0,
+      sure: 0,
+    };
+    m.deneme += 1;
+    if (s.gecti === true) m.gecen += 1;
+    if (s.deneme === 1) {
+      m.ilkToplam += 1;
+      if (s.gecti === true) m.ilkGecen += 1;
+    }
+    m.token += Number(s.token) || 0;
+    m.maliyet += Number(s.maliyet) || 0;
+    m.sure += Number(s.sure_sn) || 0;
+    harita.set(s.model, m);
+  }
+
+  sonuc.modeller = [...harita.values()].map((m) => ({
+    model: m.model,
+    deneme: m.deneme,
+    gecen: m.gecen,
+    ilkDenemeOrani: m.ilkToplam > 0 ? m.ilkGecen / m.ilkToplam : 0,
+    token: m.token,
+    maliyet: m.maliyet,
+    ortSure: m.deneme > 0 ? m.sure / m.deneme : 0,
+  }));
+
+  return sonuc;
+}
