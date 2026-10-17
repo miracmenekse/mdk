@@ -2,7 +2,7 @@
 // Tüm kullanıcı metni esc ile kaçışlanır.
 
 const ROZETLER = { bitti: 'bitti', calisiyor: 'çalışıyor', bekliyor: 'bekliyor', eskale: 'eskale' };
-const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor' };
+const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor' };
 const GUVEN = { dusuk: 'düşük', orta: 'orta', yuksek: 'yüksek' };
 
 function esc(s) {

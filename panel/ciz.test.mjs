@@ -26,6 +26,7 @@ assert.ok(!duz(h).includes('geçen süre'));
 assert.match(duz(h), /bitiş/);
 assert.match(duz(h), /\d\d:\d\d:\d\d/);
 assert.ok(duz(suAnHtml({ ...calisiyor, durum: 'eskale' }, t0)).includes('eskale'));
+assert.ok(duz(suAnHtml({ ...calisiyor, durum: 'saglayici' }, t0)).includes('sağlayıcı yanıt vermiyor'), 'saglayici durumu Türkçe olmalı');
 
 // (4) rozetler
 const plan = { ayarlar: {}, kategoriler: [{ ad: 'K', adimlar: [
