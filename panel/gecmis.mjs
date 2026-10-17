@@ -10,6 +10,7 @@ function commitHaritasi(dir) {
     cikti = execFileSync('git', ['log', '--format=@%h%x09%cI%x09%s', '--numstat'], {
       cwd: dir,
       encoding: 'utf8',
+    maxBuffer: 256 * 1024 * 1024, // uzun geçmişte varsayılan 1 MB aşılınca tüm commit bilgisi sessizce kaybolmasın
       stdio: ['ignore', 'pipe', 'ignore'],
     });
   } catch {

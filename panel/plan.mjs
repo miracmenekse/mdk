@@ -48,7 +48,7 @@ export function parse(text) {
       continue;
     }
 
-    const onay = satir.match(/^\s*-\s+Onay:\s*evet/i);
+    const onay = satir.match(/^\s*-\s+Onay:\s*evet\b/i);
     if (onay && adim) {
       adim.onay = true;
       continue;

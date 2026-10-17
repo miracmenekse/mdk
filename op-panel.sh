@@ -17,8 +17,15 @@ case "$komut" in
     fi
     mkdir -p "$DIZIN/.op-log"
     setsid nohup node "$KOK/panel/sunucu.mjs" "$DIZIN" "$PORT" >"$DIZIN/.op-log/panel.log" 2>&1 &
-    echo $! >"$PIDF"
-    echo "başlatıldı pid=$! http://127.0.0.1:$PORT"
+    pid=$!
+    echo $pid >"$PIDF"
+    sleep 0.4   # port doluysa süreç hemen düşer; "başlatıldı" yalanı söylememek için canlılığı doğrula
+    if ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$PIDF"
+      echo "başlatılamadı (port $PORT dolu olabilir): $(tail -n 2 "$DIZIN/.op-log/panel.log")" >&2
+      exit 1
+    fi
+    echo "başlatıldı pid=$pid http://127.0.0.1:$PORT"
     ;;
   stop)
     if ! calisiyor; then

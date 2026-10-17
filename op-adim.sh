@@ -42,7 +42,7 @@ git check-ignore -q .op-log || { echo ".gitignore'a .op-log/, durum.json, metrik
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
 # taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
-if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet' <<<"$blok"; then
+if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet\b' <<<"$blok"; then
   echo "adım $N taslak onayı bekliyor: PLAN.md'ye \"- Onay: evet\" ekle"; exit 5
 fi
 
