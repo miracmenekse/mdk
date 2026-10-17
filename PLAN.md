@@ -114,7 +114,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `node test/kayit.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 16. Durum: yürütücü bazlı model tablosu ve incelemeler
+- [x] 16. Durum: yürütücü bazlı model tablosu ve incelemeler
   - Ne: `panel/durum.mjs`: (a) `tur === 'inceleme'` satırları deneme istatistiğine girmez; (b) `modeller` `yurutucu`+`model` çiftine göre gruplanır (`yurutucu` alanı yoksa `'opencode'` say), sıralama yürütücü sonra model; her öğe `{ yurutucu, model, deneme, gecen, ilkDenemeOrani, token, maliyet, ortSure, uyum }`. `uyum`: grubun en az bir `gecti: true` satırı olan adımları içinde, son inceleme sonucu `uyumlu` olanların, incelemesi olan adımlara oranı (hiç incelenmiş adım yoksa `null`); (c) `snapshot()` sonucuna `incelemeler` ekle: `{ [adim]: { inceleme, not, ts } }`, her adımın SON inceleme satırı.
   - Kapı: `node panel/durum.test.mjs`
   - Kapı: `bash test/hepsi.sh`
