@@ -94,8 +94,8 @@ function ozetHtml(g, inceleme) {
   return parcalar.join(' · ');
 }
 
-function ayrintiHtml(g, inceleme, sorunlu) {
-  const acik = sorunlu ? ' open' : '';
+function ayrintiHtml(g, inceleme, acikMi, no) {
+  const acik = acikMi ? ' open' : '';
   let icerik = '';
   if (g.commit) {
     icerik += `<div class="commit">commit: ${esc(g.commit.sha)} ${esc(g.commit.mesaj)} · ${g.commit.dosya} dosya</div>`;
@@ -107,7 +107,7 @@ function ayrintiHtml(g, inceleme, sorunlu) {
       `${d.neden ? ' ' + esc(d.neden) : ''} · ${esc(sure)} sn · ${token} token</div>`;
   }
   if (inceleme && inceleme.not) icerik += `<div class="not">Claude notu: ${esc(inceleme.not)}</div>`;
-  return `<details class="ayrinti"${acik}><summary>${ozetHtml(g, inceleme)}</summary><div class="ayrinti-icerik">${icerik}</div></details>`;
+  return `<details class="ayrinti" data-no="${esc(no)}"${acik}><summary>${ozetHtml(g, inceleme)}</summary><div class="ayrinti-icerik">${icerik}</div></details>`;
 }
 
 function hukumHtml(gecmis, incelemeler) {
@@ -126,7 +126,8 @@ function hukumHtml(gecmis, incelemeler) {
     '</div>';
 }
 
-export function planHtml(plan, simdi, gecmis, incelemeler) {
+// acik: { [adımNo]: true|false } kullanıcı tercihi; yoksa sorunlu olan açılır
+export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
   let html = Array.isArray(gecmis) ? hukumHtml(gecmis, incelemeler) : '';
@@ -138,7 +139,8 @@ export function planHtml(plan, simdi, gecmis, incelemeler) {
       const g = gecmisMap.get(a.no);
       const inc = incelemeOf(a.no, g, incelemeler);
       const sorunlu = !!g && sorunluMu(g, inc);
-      const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, sorunlu) : '';
+      const acikMi = typeof acik[a.no] === 'boolean' ? acik[a.no] : sorunlu;
+      const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, acikMi, a.no) : '';
       html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}">` +
         '<div class="adim-ust">' +
         `<span class="no">${esc(a.no)}</span>` +

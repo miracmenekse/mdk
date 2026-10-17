@@ -197,6 +197,8 @@ let sonSimdi = null;
 let zamanlayici = null;
 // süzgeç durumu: yeni veri gelince kutu ve satırlar bu değerden yeniden kurulur
 let sadeceSorunlu = false;
+// kullanıcının açıp kapattığı ayrıntılar: { [adımNo]: true|false }, her çizimde planHtml'e verilir
+const acikTercih = {};
 
 function filtreUygula() {
   const kutu = kategorilerEl.querySelector('#sadece-sorunlu');
@@ -213,6 +215,13 @@ kategorilerEl.addEventListener('change', (e) => {
   }
 });
 
+// toggle kabarcıklanmaz; yakalama aşamasında dinlenir
+kategorilerEl.addEventListener('toggle', (e) => {
+  if (e.target && e.target.matches && e.target.matches('details[data-no]')) {
+    acikTercih[e.target.dataset.no] = e.target.open;
+  }
+}, true);
+
 // sayaç yalnızca durum 'calisiyor' iken akar
 function suAnCiz() {
   clearInterval(zamanlayici);
@@ -228,7 +237,7 @@ function suAnCiz() {
 function ciz(d) {
   sonSimdi = d.simdi || null;
   suAnCiz();
-  kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler);
+  kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler, acikTercih);
   filtreUygula();
   modellerEl.innerHTML = modellerHtml(d.modeller);
   etkiEl.innerHTML = etkiHtml(d.etki);

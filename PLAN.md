@@ -179,7 +179,7 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Kapı: `node test/kayit.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 29. Açık ayrıntılar canlı güncellemede korunur
+- [x] 29. Açık ayrıntılar canlı güncellemede korunur
   - Yürütücü: kodcu
   - Ne: `panel/ciz.mjs` `planHtml(plan, simdi, gecmis, incelemeler, acik)`: 5. parametre `{ [adımNo]: true|false }` (yoksa `{}`) her adımın `<details>` varsayılanını (sorunlu = açık) ezer; `<details>` etiketi `data-no="<adım no>"` taşır. `panel/index.html`: kullanıcı bir `<details>`'i açıp kapatınca (`toggle` olayı, `data-no` olan öğelerde) tercih bir nesnede tutulur ve her çizimde `planHtml`'in 5. argümanı olarak verilir. Mevcut testler geçmeye devam eder.
   - Kapı: `node panel/acik.test.mjs`
