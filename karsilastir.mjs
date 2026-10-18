@@ -14,8 +14,8 @@ export function tablo(modeller) {
     m.model,
     String(m.deneme),
     yuzde(m.ilkDenemeOrani),
-    String(Math.round(m.ortSure)),
-    String(m.token),
+    m.ortSure == null ? '-' : String(Math.round(m.ortSure)), // ölçülmemiş süre/token 0 değil
+    m.token == null ? '-' : String(m.token),
     yuzde(m.uyum),
   ]);
   const hepsi = [basliklar, ...satirlar];
