@@ -96,7 +96,7 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
         neden=kurcalama
       else
         for k in "${KAPILAR[@]}"; do   # ilk başarısız kapıda dur; o kapının çıktısı $log.kapi'de kalır
-          bash -c "$k" >"$log.kapi" 2>&1 || { neden=kapi; break; }
+          env -u OP_DONMUS bash -c "$k" >"$log.kapi" 2>&1 || { neden=kapi; break; }   # OP_DONMUS iç değişken: kapıdaki op-adim.test.sh donmuş kopya vakasını bozuyordu
         done
       fi
     fi
