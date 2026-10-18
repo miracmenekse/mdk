@@ -4,6 +4,13 @@
 const ROZETLER = { bitti: 'bitti', calisiyor: 'çalışıyor', bekliyor: 'bekliyor', eskale: 'eskale' };
 const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor' };
 const GUVEN = { dusuk: 'düşük', orta: 'orta', yuksek: 'yüksek' };
+// model tablosu veri güveni: [simge + metin, açıklama]
+const VERI = {
+  olculdu: ['● ölçüldü', 'Tüm denemelerde süre ve token ölçüldü'],
+  kismi: ['◑ kısmi', 'Bazı denemelerde süre ya da token ölçülmedi; değerler yalnız ölçülenlerden'],
+  tahmin: ['◐ tahmin', 'Bazı süre/token değerleri tahmini (bölünmüş ölçüm)'],
+  'veri-yok': ['○ veri yok', 'Süre ve token hiç ölçülmedi ya da gerçek deneme yok'],
+};
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -160,21 +167,28 @@ export function modellerHtml(modeller) {
   // maliyet sütunu yalnızca toplam maliyet 0'dan büyükse gösterilir (ücretsiz modelde $0 gürültüdür)
   const maliyetGoster = modeller.some((m) => (m.maliyet || 0) > 0);
   const yuzde = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`);
-  const satirlar = modeller.map((m) =>
-    '<tr>' +
-    `<td>${esc(m.yurutucu || 'opencode')}</td>` +
-    `<td class="model">${esc(m.model)}</td>` +
-    `<td class="sayi">${esc(m.deneme)}</td>` +
-    `<td class="sayi">${yuzde(m.ilkDenemeOrani || 0)}</td>` +
-    `<td class="sayi">${yuzde(m.uyum)}</td>` +
-    `<td class="sayi">${Math.round(m.token || 0).toLocaleString('tr-TR')}</td>` +
-    (maliyetGoster ? `<td class="sayi">${para(m.maliyet || 0)}</td>` : '') +
-    `<td class="sayi">${(m.ortSure || 0).toFixed(1)} sn</td>` +
-    '</tr>').join('');
+  const satirlar = modeller.map((m) => {
+    // sessizlik (kota) başarısızlık değil: deneme sayısının yanında ayrı not
+    const sessiz = m.sessiz > 0 ? ` <span class="sessiz">${esc(m.sessiz)} sessiz</span>` : '';
+    const deneme = m.sessiz > 0 && !m.deneme ? sessiz.trim() : esc(m.deneme ?? 0) + sessiz;
+    // eski biçimde etiket yoksa varsayılan "ölçüldü"
+    const etiket = VERI[m.etiket] ? m.etiket : 'olculdu';
+    return '<tr>' +
+      `<td>${esc(m.yurutucu || 'opencode')}</td>` +
+      `<td class="model">${esc(m.model)}</td>` +
+      `<td class="sayi">${deneme}</td>` +
+      `<td class="sayi">${yuzde(m.ilkDenemeOrani)}</td>` +
+      `<td class="sayi">${yuzde(m.uyum)}</td>` +
+      `<td class="sayi">${m.token == null ? '—' : esc(Math.round(m.token).toLocaleString('tr-TR'))}</td>` +
+      (maliyetGoster ? `<td class="sayi">${para(m.maliyet || 0)}</td>` : '') +
+      `<td class="sayi">${m.ortSure == null ? '—' : esc(m.ortSure.toFixed(1)) + ' sn'}</td>` +
+      `<td><span class="guven ${etiket}" title="${esc(VERI[etiket][1])}">${esc(VERI[etiket][0])}</span></td>` +
+      '</tr>';
+  }).join('');
   return '<table><thead><tr>' +
     '<th>yürütücü</th><th class="model">model</th><th>deneme</th><th>ilk denemede geçme</th><th>uyum %</th><th>token</th>' +
     (maliyetGoster ? '<th>maliyet</th>' : '') +
-    `<th>ort. süre</th></tr></thead><tbody>${satirlar}</tbody></table>`;
+    `<th>ort. süre</th><th>veri</th></tr></thead><tbody>${satirlar}</tbody></table>`;
 }
 
 export function etkiHtml(etki) {

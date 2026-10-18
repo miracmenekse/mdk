@@ -104,15 +104,16 @@ table {
   background: var(--kart);
   border: 1px solid var(--cizgi);
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
   display: block;
 }
-th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--cizgi); font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--cizgi); font-size: 13px; }
 th { color: var(--soluk); font-weight: 600; font-size: 12px; }
 tr:last-child td { border-bottom: none; }
 table .model { max-width: 220px; overflow-wrap: anywhere; }
-table td, table th { white-space: nowrap; }
-table td.model, table th.model { white-space: normal; }
+table td { white-space: nowrap; }
+/* başlıklar sarılabilir; model adı harf harf kırılmasın diye en az genişlik */
+table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
 #etki .bos { color: var(--bos); font-style: italic; }
 .etki-kart {
@@ -160,6 +161,13 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .rozet.kismen { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
 .rozet.uyumsuz { background: var(--maliyet); color: #fff; }
 .rozet.incelenmedi { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
+/* model tablosu veri güveni; renk tek başına anlam taşımaz, simge + metin var */
+.guven { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; cursor: help; }
+.guven.olculdu { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.guven.kismi { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
+.guven.tahmin { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+.guven.veri-yok { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
+.sessiz { font-size: 11px; color: var(--soluk); white-space: nowrap; }
 details.ayrinti { margin-top: 6px; font-size: 12px; color: var(--soluk); }
 details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 .ayrinti-icerik { margin: 6px 0 2px 4px; padding-left: 10px; border-left: 2px solid var(--cizgi); }
