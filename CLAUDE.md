@@ -28,6 +28,15 @@ Gerçek OpenCode işi yalnızca adım 1-7'de oldu (glm-5.3-flash-free, ilk denem
 - `Modeller:` = glm (gerçek adımda 7/8), deepseek-v4.1-flash, space-bunny, beam. `mimo` yavaşlığı, `lightning` sessizliği yüzünden çıkarıldı. Kolay görevler doygun: ayrım için gerçek zor adımlar (çok dosyalı taşıma, UI) `ONCE=<model>` ile koşulup `karsilastir.mjs` ile okunacak.
 - `kodcu` alt ajanı artık `fable` (en yetkin Claude); eskale işleri buna gider.
 
+## Adım 31 model karşılaştırması (2026-10-18, gerçek zor adım, n=1-2, gürültülü)
+Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşuldu. Kapı 1 = `persona-denetle.test.mjs`, kapı 2 = `bash test/hepsi.sh`.
+- **Çalıştırıcı hatası bulundu ve düzeltildi (e61e11c):** `op-adim.sh` kapıları `OP_DONMUS=1` ile çalıştırıyordu; kapı 2'deki `op-adim.test.sh` bunu devralıp `donmus` vakasında düşüyordu. Yani bu kapı hiçbir model için geçemezdi; ilk dört koşu bu yüzden kapı 2'de eledi. Ders: ilk kez çalıştırılan kapıyı gerçek ortamda (çalıştırıcı içinden) bir kez dene.
+- Kapı 1 sonuçları (iki koşu): deepseek-v4.1-flash 2/2 (236-238 sn; 644k/192k token), space-bunny 2/2 (293-345 sn; 608k/796k), glm-5.3-flash 1/2 (ikincisi 600 sn sınırında kesildi; 270k/571k), beam 1/2 (ilk koşuda koda düz metin sızdırdı, sözdizimi hatası; 425k).
+- Düzeltilmiş çalıştırıcıyla tam geçen tek koşu: **beam-free**, 275 sn, 587k token; diff'i plana karşı gözden geçirildi, uyumlu. Commit `bench/adim31-beam` dalında (068beaa), ana dala alınmadı. Diğer üç model o koşuda `yanit_yok` verdi.
+- Token farkı büyük: aynı model aynı adımda 192k ile 796k arasında harcadı; `Bütçe: 600000` sınırda, adım başına bütçe gevşetilebilir ya da adım bölünmeli.
+- **Kota gözlemi:** art arda ~20 koşudan sonra 10 modelden 6'sı 60 sn'de sessizdi (glm, deepseek, space-bunny, mimo, super-vl, big-pickle); yanıt verenler beam, longcat, nemotron-ultra, lightning (49 sn). Kullanım miktarı sessizliği açıklamıyor (mimo/big-pickle az kullanıldı, beam çok kullanıldı): model başına kısa süreli hız sınırı ya da sağlayıcı kapasitesi olabilir. Paralel koşu yüklemeyi hızlandırıyor ama kotayı da çabuk bitiriyor; modelleri art arda, aralıklı koş.
+- Henüz denenmedi: longcat, nemotron-ultra (kolay görevlerde 505k token), lightning (yavaş) zor adımda.
+
 ## Tuzaklar
 - `opencode run` stdin kapalı (`</dev/null`) çalışmalı; yoksa `timeout` altında takılır.
 - Süreç durdururken `pkill -f` kullanma (kendi kabuğunu da öldürür), PID ile öldür.
