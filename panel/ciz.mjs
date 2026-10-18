@@ -208,3 +208,44 @@ export function etkiHtml(etki) {
       '</div>';
   }).join('');
 }
+
+const ROLLER = { altlik: 'altlık', ornek: 'örnek', 'yan-yana': 'yan yana', izle: 'izle', kullanma: 'kullanma' };
+// null/undefined → "—"; "null" yazılmaz
+const yaz = (v) => esc(v ?? '—');
+
+// suz.kategori verilirse yalnız o kategorideki adaylar; birleşimler her zaman görünür
+export function arastirmaHtml(veri, suz = {}) {
+  const adaylar = veri?.adaylar || [];
+  const birlesimler = veri?.birlesimler || [];
+  if (adaylar.length === 0 && birlesimler.length === 0) return '<span class="bos">Araştırma verisi yok</span>';
+  let html = '';
+  if (veri.not) html += `<p class="ara-not">${esc(veri.not)}</p>`;
+  if (veri.oneri) html += `<p class="ara-oneri"><b>Öneri:</b> ${esc(veri.oneri)}</p>`;
+  html += '<h3>Birleşim önerileri</h3>';
+  html += birlesimler.map((b) =>
+    '<div class="etki-kart">' +
+    `<div class="etki-ust"><span class="baslik">${yaz(b.ad)}</span>${yildizlar(b.deger)}<span class="rozet bekliyor">efor ${yaz(b.efor)}</span></div>` +
+    `<div class="adim-alt">${(b.parcalar || []).map(esc).join(' + ')}</div>` +
+    `<div class="ara-alan"><span>ne</span> ${yaz(b.ne)}</div>` +
+    `<div class="ara-alan"><span>neden</span> ${yaz(b.neden)}</div>` +
+    `<div class="ara-alan"><span>panelde</span> ${yaz(b.panelde)}</div>` +
+    `<div class="ara-alan"><span>risk</span> ${yaz(b.risk)}</div>` +
+    '</div>').join('') || '<span class="bos">birleşim yok</span>';
+  const liste = suz.kategori ? adaylar.filter((a) => a.kategori === suz.kategori) : adaylar;
+  html += `<h3>Adaylar (${liste.length})</h3>`;
+  html += liste.map((a) => {
+    const kanit = a.kanit === 'doğrulanamadı' ? `<span class="rozet eskale">${esc(a.kanit)}</span>` : yaz(a.kanit);
+    return '<div class="etki-kart">' +
+      '<div class="etki-ust">' +
+      `<a class="baslik model" href="https://github.com/${esc(a.repo)}" target="_blank" rel="noopener noreferrer">${esc(a.repo)}</a>` +
+      `<span class="rozet calisiyor">${esc(ROLLER[a.rol] || a.rol)}</span>` +
+      '</div>' +
+      `<div class="adim-alt">${[a.kategori, a.yildiz == null ? '—' : `★ ${a.yildiz}`, a.lisans, a.son, a.dil].map(yaz).join(' · ')}</div>` +
+      `<div class="ara-alan"><span>ne</span> ${yaz(a.ne)}</div>` +
+      `<div class="ara-alan"><span>alınacak</span> ${yaz(a.alinacak)}</div>` +
+      `<div class="ara-alan"><span>risk</span> ${yaz(a.risk)}</div>` +
+      `<div class="ara-alan"><span>kanıt</span> ${kanit}</div>` +
+      '</div>';
+  }).join('') || '<span class="bos">bu kategoride aday yok</span>';
+  return html;
+}

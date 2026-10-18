@@ -57,6 +57,17 @@ export async function baslat(dir, port) {
       return;
     }
 
+    if (pathname === '/api/arastirma') {
+      // dosya yoksa ya da bozuksa boş şema; sunucu düşmez
+      let veri = { adaylar: [], birlesimler: [] };
+      try {
+        veri = JSON.parse(readFileSync(join(kok, 'arastirma', 'arastirma.json'), 'utf8'));
+      } catch {}
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify(veri));
+      return;
+    }
+
     if (pathname === '/olay') {
       yanit.writeHead(200, {
         'content-type': 'text/event-stream',
