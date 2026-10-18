@@ -171,6 +171,36 @@
       "rol": "kullanma", "alinacak": "Yok. Büyük kütüphane; adım akışı için düz HTML/SVG yeter.", "risk": "Panele eklenemez (dış kaynak yasağı).", "kanit": "özet"
     },
     {
+      "repo": "JayantDevkar/claude-code-karma", "kategori": "tasarim-ornegi", "yildiz": 332, "lisans": "Apache-2.0", "son": "2026-10-12", "dil": "Python",
+      "ne": "Claude Code oturumlarını ~/.claude/ dosyalarından okuyan yerel pano: oturum tarayıcısı, zaman çizelgesi, oturum başına sekmeler (Görevler, Dosyalar, Araçlar, Kabuklar, Analitik), araç dağılımı halka grafiği. Ekran görüntüsü (Araç analitiği) incelendi.",
+      "rol": "ornek", "alinacak": "(1) Üstte dört büyük sayı şeridi (KPI), (2) 7g / 30g / 90g zaman aralığı düğmeleri, (3) 'Toplam / Günlük ort. / Son etkin' üçlü küçük kartlar, (4) araç türüne göre renkli etkinlik eğilimi çizgisi, (5) koyu tema, tek vurgu rengi (mor) ve düğme grupları. Hepsi sıfır bağımlılıkla elle SVG/CSS ile yapılabilir.",
+      "risk": "Claude Code verisini okur, OpenCode'u görmez; yalnız görsel ve bilgi mimarisi örneği. Not: Claude Code oturum verisi ~30 gün sonra silinir (README uyarısı), bizim metrikler.jsonl bu sınıra tabi değil.", "kanit": "README + ekran görüntüsü okundu"
+    },
+    {
+      "repo": "foyzulkarim/claude-lens", "kategori": "tasarim-ornegi", "yildiz": 253, "lisans": "MIT", "son": "2026-08-05", "dil": "TypeScript",
+      "ne": "Claude Code için yerel gözlem panosu: token, maliyet, önbellek başarımı, araç çağrıları, eğilimler. Her metrik üç güven katmanından birini taşır: 🟢 gözlenen, 🟡 tahmin, 🔴 kilitli (kurulum gerektirir). Fastify + WebSocket, `npx` ile açılır.",
+      "rol": "ornek", "alinacak": "Güven katmanı etiketi: bizdeki 'tahmin güveni' rozetinin (düşük/orta/yüksek) tüm sayılara yayılmış hâli. Panelde her sayının yanında 'ölçüldü / tahmin / veri yok' etiketi. WebSocket'le 'yalnız yenile' sinyali, veri taşımaz (bizde SSE tam veri yolluyor, ihtiyaç olursa hafifletilir).",
+      "risk": "Sayfa düzenini ekran görüntüsünden değil README'den biliyoruz. Altlık olarak ağır (Fastify, derleme).", "kanit": "README okundu"
+    },
+    {
+      "repo": "Arindam200/cc-lens", "kategori": "tasarim-ornegi", "yildiz": 598, "lisans": "MIT", "son": "2026-06-27", "dil": "TypeScript",
+      "ne": "Claude Code yerel analitik panosu: Genel bakış, Oturumlar, Maliyetler, İçgörüler, Projeler, Araçlar, Etkinlik, Çalışma alanı, Ekip, Plan/Görevler, Dışa aktarma. Ekran görüntüsü (Projeler) incelendi: sol kenar çubuğu menüsü, proje kartları.",
+      "rol": "ornek", "alinacak": "(1) Sol kenar menüsü: bizim tek uzun sayfa (Şu an, Adımlar, Modeller, Etki, Araştırma) bölüm sayısı arttıkça kaydırmayı zorlaştırıyor, kenar menü ya da sekme çözer. (2) Her proje için kart: başlık, etiketler (MCP/Agent), oturum sayısı, süre, araç başına yatay çubuk ve altta tahmini maliyet: bizim 'model kartı' (model, deneme, geçen, token, maliyet) için doğrudan şablon. (3) Izgara / Eğilimler anahtarı, arama kutusu, sıralama. (4) 'Insights/budgets' ve 'Wrapped' özet kartı fikri.",
+      "risk": "Son push haziran (4 ay önce). Düzen bizim tek sayfaya uyar ama 12 sayfalık menü bizde aşırı olur: 3-4 sekme yeter.", "kanit": "README + ekran görüntüsü okundu"
+    },
+    {
+      "repo": "xiaolai/claudepot-app", "kategori": "tasarim-ornegi", "yildiz": 124, "lisans": "ISC", "son": "2026-10-12", "dil": "Rust",
+      "ne": "Claude Code ve Claude Desktop için masaüstü kontrol paneli (Rust): hesap değiştirme, çalışan her oturumun canlı görünümü ('hangisi sizi bekliyor'), kullanım eşiğinde otomatik hesap döndürme, zamanlanmış istemler, geçmiş arama, güvenli proje yeniden adlandırma, disk temizliği.",
+      "rol": "ornek", "alinacak": "'Canlı görünüm' fikri: bizdeki 'Şu an' kartı tek adımı gösteriyor; birden çok paralel `opencode run` olursa (ön yoklamada 10 paralel çalıştı) her biri için 'çalışıyor / sağlayıcı yanıt vermiyor / sizi bekliyor' satırı. Eşik uyarısı: PLAN.md `Bütçe:` aşılmadan önce panelde uyarı.",
+      "risk": "Masaüstü uygulama, hesap/anahtarlık işleri bizimle ilgisiz. Yalnız canlı görünüm ve eşik uyarısı örnek.", "kanit": "README okundu"
+    },
+    {
+      "repo": "artokun/comfyui-mcp-panel", "kategori": "tasarim-ornegi", "yildiz": 129, "lisans": "MIT", "son": "2026-10-14", "dil": "JavaScript",
+      "ne": "ComfyUI kenar çubuğuna gömülü otonom ajan paneli (Claude ya da ChatGPT seçilebilir). Ajanın yaptığı her düzenleme için canlı etkinlik kartı, çoklu sekme, 12 dil, sağdan sola diller dahil. README'ye göre sınırlı bakım modunda.",
+      "rol": "ornek", "alinacak": "'Ajanın her eylemi için canlı etkinlik kartı' deseni: adımın deneme akışını (model, deneme no, kapı sonucu, süre) kart kartı akıtmak. Çok dilli plural kuralı bizde gerekmez.",
+      "risk": "ComfyUI'ye özel, görsel örnek görmedim (yalnız README). Bakım sınırlı.", "kanit": "README okundu"
+    },
+    {
       "repo": "awesome-opencode/awesome-opencode", "kategori": "kaynak-liste", "yildiz": 10643, "lisans": "CC0-1.0", "son": "2026-07-03", "dil": "JavaScript",
       "ne": "OpenCode eklentileri, ajanlar, temalar ve projelerin derlemesi. Aşağıdaki Ensemble ve Mission Control gibi paralel ajan araçlarının listesi burada.",
       "rol": "izle", "alinacak": "Yeni araç çıkınca ilk bakılacak yer. Bu araştırmada listelenen 'OpenCode Ensemble' ve 'OpenCode Mission Control' yalnız arama özetinden biliniyor, depoları ayrıca doğrulanmadı.",
@@ -225,7 +255,23 @@
       "neden": "Açık iş: 'Claude'un planlama token'ı ölçülmüyor'. agents-observe oturum başına token ve maliyet kırılımı veriyor (v0.9.7). Böylece planlama (Claude) ile kodlama (OpenCode) maliyeti iki ayrı panelde ama yan yana görünür.",
       "panelde": "Üst kısımda 'Claude planlama oturumu' bağlantı kartı.",
       "efor": "S", "deger": 3, "risk": "Claude Code'a kanca (hook) ekler: kurmadan önce kancaları okuyup onay vermek gerekir. Kullanıcı kendi makinesinde kurar, biz kurmayız."
+    },
+    {
+      "ad": "Panel görsel dili: KPI şeridi, sekmeler, model kartları",
+      "parcalar": ["JayantDevkar/claude-code-karma", "Arindam200/cc-lens"],
+      "ne": "Üç değişiklik: (a) üstte dört büyük sayı: biten adım, ilk denemede geçme %, toplam token, ödenen maliyet; (b) tek uzun sayfa yerine sekmeler (Akış, Modeller, Etki, Araştırma) ve 7g/30g/tümü düğmeleri; (c) model tablosu yerine model kartı: model adı, deneme/geçen, token, ortalama süre, araç çubukları, altta maliyet.",
+      "neden": "İki örnek de aynı düzene yakınsıyor: önce dört sayı, sonra aralık düğmeleri, sonra kart ızgarası. Panelde bölüm sayısı arttı (Şu an, Adımlar, Modeller, Etki, Araştırma), kaydırarak bulmak zorlaşıyor. Bu, veri değiştirmeden okunurluğu artırır.",
+      "panelde": "Üstte KPI şeridi, altında sekme çubuğu; mevcut bölümler sekme içine taşınır, çizim fonksiyonları (ciz.mjs) aynı kalır.",
+      "efor": "M", "deger": 4, "risk": "Mevcut ekran testleri (duzen, gecmis-ui, modeller-ui) yeniden yazılabilir. Önce Araştırma sekmesi bitmeli; ekran görüntüsü kapısı şart."
+    },
+    {
+      "ad": "Güven etiketli sayılar (ölçüldü / tahmin / veri yok)",
+      "parcalar": ["foyzulkarim/claude-lens", "splunk/token-meter"],
+      "ne": "Panelde gösterilen her sayıya küçük etiket: ölçüldü (çalıştırıcı ya da opencode.db'den), tahmin (bölünmüş süre/token, liste fiyatı), veri yok (0 yazılmaz). Mevcut `tahmin()`in düşük/orta/yüksek güveni aynı etikete bağlanır.",
+      "neden": "İki açık hata aynı kökten: kota sessizliği (`yanit_yok`) %0 başarı gibi görünüyor, 22/23 ve 27/28 adımları bölünmüş tahmini ölçülmüş gibi gösteriyor. Etiket sayının ne kadar güvenilir olduğunu söyler; sunumda 'şüpheci jüri' sorusuna hazır cevap verir.",
+      "panelde": "Sayıların yanında küçük nokta (yeşil/sarı/gri) ve üzerine gelince açıklama.",
+      "efor": "S", "deger": 4, "risk": "Etiket kuralları net yazılmazsa süs olur: önce hangi alanın hangi etiketi aldığı tek tabloda belirlenmeli."
     }
   ],
-  "oneri": "Sıra: (2) Tasarruf kartı ve (1) Telemetri aynı veri kaynağını kullanır, birlikte yapılabilir; en yüksek değer. Ardından (3) Matris, çünkü veri zaten elde. (5) Isı haritası telemetri gelince anlam kazanır. (4) Pano ve (6) Claude yan yana en sona: değer var ama günlük işi hızlandırmıyor. Langfuse, Phoenix, Helicone ve OpenLIT önerilmez: Docker ve veritabanı gerektirir, panelimizin sıfır bağımlılık kuralına ters."
+  "oneri": "Sıra: (2) Tasarruf kartı ve (1) Telemetri aynı veri kaynağını kullanır, birlikte yapılabilir; en yüksek değer. Ardından (3) Matris, çünkü veri zaten elde. (5) Isı haritası telemetri gelince anlam kazanır. (4) Pano ve (6) Claude yan yana en sona: değer var ama günlük işi hızlandırmıyor. Örnek aldığınız beş depodan çıkan iki birleşim: 'Güven etiketli sayılar' (claude-lens) açık iki hatayı kökten kapatır ve ucuzdur, 'Panel görsel dili' (karma + cc-lens) Araştırma sekmesi bittikten sonra sekmelere geçişle birlikte yapılmalı; claudepot ve comfyui paneli yalnız tek tek fikir verir (canlı görünüm, etkinlik kartı). Langfuse, Phoenix, Helicone ve OpenLIT önerilmez: Docker ve veritabanı gerektirir, panelimizin sıfır bağımlılık kuralına ters."
 }
