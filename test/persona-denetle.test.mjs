@@ -83,6 +83,14 @@ assert.match(r.stdout, /Denetçi: UYARI: /);
 r = spawnSync(process.execPath, [KOMUT, yaz('iyi.md', iyi), '--sayim'], { encoding: 'utf8' });
 assert.match(r.stdout, /^proje-gelistirme\/Minimalist: kullanım 1, kazanma 1$/m);
 assert.match(r.stdout, /^sunum\/Anlatıcı: kullanım 0, kazanma 0$/m);
+// dosya verilmeden: bayrak dosya adı sayılmaz, bulunulan dizindeki personalar.md okunur (plan kapıları böyle çağırır)
+yaz('personalar.md', iyi);
+r = spawnSync(process.execPath, [KOMUT, '--sayim'], { encoding: 'utf8', cwd: d });
+assert.equal(r.status, 0);
+assert.match(r.stdout, /^proje-gelistirme\/Denetçi: kullanım 1, kazanma 0$/m);
+r = spawnSync(process.execPath, [KOMUT], { encoding: 'utf8', cwd: d });
+assert.equal(r.status, 0);
+assert.match(r.stdout, /personalar tamam/);
 r = spawnSync(process.execPath, [KOMUT, join(d, 'yok.md')], { encoding: 'utf8' });
 assert.equal(r.status, 1, 'dosya yoksa çıkış 1');
 console.log('persona-denetle ok');
