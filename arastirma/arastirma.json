@@ -1,0 +1,231 @@
+{
+  "tarih": "2026-10-18",
+  "not": "Yıldız, lisans ve son push tarihi gh api ile çekildi (2026-10-18). 'README okundu' yazanların özellik listesi README'den; 'özet' yazanlar yalnız meta + arama özeti, kod incelenmedi. Hiçbiri kuruluma alınmadı.",
+  "adaylar": [
+    {
+      "repo": "splunk/token-meter", "kategori": "opencode-kullanim", "yildiz": 126, "lisans": "MIT", "son": "2026-10-16", "dil": "Python",
+      "ne": "Claude, Codex, Cursor, OpenCode, Kiro, Pi için yerel kullanım/maliyet panosu: token, tahmini maliyet, bağlam baskısı, araç etkinliği. Yalnız Python stdlib, anahtar yok, telemetri yok. Eksik veriyi 0 değil 'yok' gösterir.",
+      "rol": "ornek", "alinacak": "'Dürüst sayı' ilkesi (eksik kanıt = yok, 0 değil), hiç çağrılmayan araç tanımı tokenı, cache yazma/okuma maliyet farkı içgörüleri. OpenCode okuyucusu şema örneği.",
+      "risk": "Çok ajanlı ve büyük (21 MB repo); altlık olarak fazla. Fikirleri al, kodu alma.", "kanit": "README okundu"
+    },
+    {
+      "repo": "touchkale/opencode-dashboard", "kategori": "opencode-kullanim", "yildiz": 4, "lisans": "MIT", "son": "2026-09-09", "dil": "Python",
+      "ne": "Tek dosya, bağımlılıksız OpenCode panosu. Oturum geçmişi, günlük token, modele göre maliyet, araç kullanımı, 52 haftalık token ısı haritası, dosya/alt sistem başına token, git commit başına token. 15 sn'de yenilenir; opencode.db'yi okur.",
+      "rol": "altlik", "alinacak": "SQL sorguları ve ısı haritası mantığı (bizim ciz.mjs'e SVG olarak taşınır). 'Commit başına token' bizim 'adım başına token' metriğine birebir uyar.",
+      "risk": "4 yıldız, tek kişi; Python (bizde Node). Sorgular okunup yeniden yazılır, çalıştırılmaz.", "kanit": "README okundu"
+    },
+    {
+      "repo": "thumb2086/opencode-usage-dashboard", "kategori": "opencode-kullanim", "yildiz": 1, "lisans": "MIT", "son": "2026-10-18", "dil": "JavaScript",
+      "ne": "Sıfır bağımlılıklı Node.js (adı opencode-statboard). Input/output/reasoning/cache okuma/cache yazma token, araç yüzdeleri, modele göre üretim hızı (tok/s), ajan başına hız, duvar/aktif süre, en uzun 20 oturum. Hem V1 (session/message/part) hem V2 (session_v2) şemasını tanır. 'Ücretli katalog fiyatı vs gerçek maliyet' tasarruf tahmini var.",
+      "rol": "altlik", "alinacak": "Bizimle aynı yığın (Node, sıfır bağımlılık). Şema ayrımı ve 'tasarruf' hesabı doğrudan örnek. Yerel opencode.db'de V2 tabloları (session, message, part, event) var, yani uyumlu.",
+      "risk": "1 yıldız, çok yeni; şema OpenCode sürümüyle değişebilir. Şemayı çalışma zamanında yoklayan koruma gerekir.", "kanit": "README okundu"
+    },
+    {
+      "repo": "all-the-rest/opencode-usage", "kategori": "opencode-kullanim", "yildiz": 0, "lisans": "yok", "son": "2026-10-17", "dil": "TypeScript",
+      "ne": "Hono sunucu + React SPA, OpenCode token ve maliyet KPI, trend, model, proje, oturum. README Almanca.",
+      "rol": "izle", "alinacak": "Yalnız panel düzeni fikri (KPI + trend + oturum listesi).",
+      "risk": "Lisans yok: kodu kopyalayamayız. React derleme gerektirir, bizim sıfır bağımlılık kuralına uymaz.", "kanit": "özet"
+    },
+    {
+      "repo": "gdfragoso/opencode-meter", "kategori": "opencode-kullanim", "yildiz": 0, "lisans": "MIT", "son": "2026-09-02", "dil": "TypeScript",
+      "ne": "OpenCode eklentisi: token, maliyet, araç, ajan metriklerini SQLite'a yazar; Hono REST + React panosu OpenCode kapalıyken de açık kalır.",
+      "rol": "izle", "alinacak": "Eklenti olarak OpenCode olaylarına bağlanma deseni (canlı yakalama, sonradan okuma değil).",
+      "risk": "Eklenti ve React; panelimizin hafif yapısını bozar. 0 yıldız.", "kanit": "özet"
+    },
+    {
+      "repo": "webfueler/oc-dash", "kategori": "opencode-kullanim", "yildiz": 0, "lisans": "MIT", "son": "2026-10-02", "dil": "TypeScript",
+      "ne": "OpenCode 2 sunucusunun servis API'si üzerinden oturum oturum harcama, alt ajanlar dahil, zaman aralığı ve süzgeç. Maliyet models.dev liste fiyatı tahmini.",
+      "rol": "ornek", "alinacak": "DB yerine OpenCode'un kendi API'sinden okuma yolu (şema kırılganlığına karşı alternatif). models.dev fiyat kaynağı.",
+      "risk": "OpenCode 2 sunucusu gerekir; bizim akış `opencode run` ile çalışıyor.", "kanit": "özet"
+    },
+    {
+      "repo": "Ainsley0917/opencode-token-monitor", "kategori": "opencode-kullanim", "yildiz": 39, "lisans": "MIT", "son": "2026-02-09", "dil": "TypeScript",
+      "ne": "OpenCode eklentisi: token izleme, maliyet tahmini, günlük/haftalık/aylık bütçe eşiği, terminalde ASCII grafik.",
+      "rol": "ornek", "alinacak": "Bütçe eşiği + uyarı mantığı. Bizde PLAN.md'de 'Bütçe: 600000' var; panelde kalan bütçe çubuğu için fikir.",
+      "risk": "Son güncelleme 8 ay önce, OpenCode sürümleriyle uyumu belirsiz.", "kanit": "özet"
+    },
+    {
+      "repo": "woss/opencode-visualizer", "kategori": "opencode-kullanim", "yildiz": 2, "lisans": "yok", "son": "2026-07-10", "dil": "TypeScript",
+      "ne": "OpenCode veritabanını gezmek için ANSI terminal panosu ve CLI.",
+      "rol": "kullanma", "alinacak": "Yok. Terminal arayüzü, lisans yok.", "risk": "Panelimizle ilgisiz biçim.", "kanit": "özet"
+    },
+    {
+      "repo": "simple10/agents-observe", "kategori": "ajan-izleme", "yildiz": 698, "lisans": "MIT", "son": "2026-09-04", "dil": "TypeScript",
+      "ne": "Claude Code ve Codex için gerçek zamanlı gözlem: çoklu ajan oturumları, süzme, arama, tam tekrar (replay), oturum başına token ve maliyet kırılımı (v0.9.7). Claude Code eklentisi olarak kurulur, MCP sunucusunu otomatik başlatır, SQLite + WebSocket, 4981 portu.",
+      "rol": "yan-yana", "alinacak": "Olduğu gibi çalıştır: açık iş 'Claude'un planlama token'ı ölçülmüyor' sorununu kod yazmadan kapatır. Panelde bağlantı/iframe ile gösterilir.",
+      "risk": "Claude Code oturumuna kanca ekler (kurmadan önce hook'lara bakılmalı). OpenCode'u görmez.", "kanit": "README okundu"
+    },
+    {
+      "repo": "hoangsonww/Claude-Code-Agent-Monitor", "kategori": "ajan-izleme", "yildiz": 1091, "lisans": "MIT", "son": "2026-10-18", "dil": "TypeScript",
+      "ne": "Claude Code ve Codex için canlı pano: oturumlar, etkinlik akışı, araç kullanımı, alt ajan orkestrasyon ağacı, Kanban durum panosu, maliyet takibi. SQLite + Express + React + WebSocket; bulut yok, telemetri yok.",
+      "rol": "ornek", "alinacak": "Alt ajan ağacı ve Kanban durum görünümü fikri. Bizim 'kodcu alt ajanı' ve eskale akışını ağaç olarak göstermek.",
+      "risk": "Büyük (119 MB repo), React + Vite. Altlık olamaz, fikir kaynağı.", "kanit": "özet"
+    },
+    {
+      "repo": "NirDiamant/claude-watch", "kategori": "ajan-izleme", "yildiz": 65, "lisans": "yok", "son": "2026-09-18", "dil": "TypeScript",
+      "ne": "Claude Code araç çağrılarını yakalar, SQLite'a yazar, WebSocket ile panoya yollar; proje mantığının balon grafiği, yapay zekâ araması, anlık görüntüler.",
+      "rol": "izle", "alinacak": "Dosya/modül balon haritası fikri ('hangi adım hangi dosyaya dokundu').",
+      "risk": "Lisans yok, kopyalanamaz.", "kanit": "özet"
+    },
+    {
+      "repo": "illegalstudio/lazyagent", "kategori": "ajan-izleme", "yildiz": 193, "lisans": "MIT", "son": "2026-10-16", "dil": "Go",
+      "ne": "Terminalde tüm kodlama ajanlarını (Claude Code, Cursor, OpenCode, pi) tek ekranda izler.",
+      "rol": "yan-yana", "alinacak": "OpenCode'u doğrudan destekleyen tek terminal izleyici; `izle.mjs`'e alternatif olarak denenebilir.",
+      "risk": "Go ikilisi; terminal. Panelle bütünleşmez.", "kanit": "özet"
+    },
+    {
+      "repo": "FulAppiOS/Agent-Quest", "kategori": "ajan-izleme", "yildiz": 160, "lisans": "MIT", "son": "2026-10-16", "dil": "TypeScript",
+      "ne": "Claude Code ve Codex ajanlarını ortaçağ köyü olarak gösteren oyunlaştırılmış canlı pano.",
+      "rol": "izle", "alinacak": "Yalnız ilham: sunumda 'ajan canlı çalışıyor' etkisi. Ciddi metrik değeri yok.",
+      "risk": "Sunum süsü; işe yarar bilgi katmaz.", "kanit": "özet"
+    },
+    {
+      "repo": "BloopAI/vibe-kanban", "kategori": "kanban", "yildiz": 28385, "lisans": "Apache-2.0", "son": "2026-09-19", "dil": "Rust",
+      "ne": "Kodlama ajanlarını (Claude Code, OpenCode, Codex, Gemini CLI, Cursor CLI, Amp...) paralel yönetmek için Kanban panosu; görev başına git worktree.",
+      "rol": "ornek", "alinacak": "Kanban sütun modeli ve görev başına yalıtılmış worktree. Bizde adımlar zaten tek tek ve temiz ağaçla koşuyor.",
+      "risk": "Ağır (Rust + web), kendi iş akışını dayatır. Bizim PLAN.md/kapı akışının yerine geçer, yanına eklenmez.", "kanit": "özet"
+    },
+    {
+      "repo": "DanWahlin/ai-agent-board", "kategori": "kanban", "yildiz": 65, "lisans": "MIT", "son": "2026-09-19", "dil": "TypeScript",
+      "ne": "Sürükle-bırak Kanban; görevi Copilot, Claude Code, Codex, OpenCode ajanına devreder, canlı akış, görev grupları (paralellik ayarı), git worktree. Sağlayıcı deseni: AgentProvider / AgentSession / AgentManager.",
+      "rol": "ornek", "alinacak": "Farklı ajanların olaylarını ortak biçime çeviren sağlayıcı deseni: bizde `opencode` ve `kodcu` yürütücüleri için aynı olay şeması. Backlog > Çalışıyor > İnceleme > Bitti sütunları.",
+      "risk": "Kendi sunucusu ve React. Sadece desen alınır.", "kanit": "README okundu"
+    },
+    {
+      "repo": "kagan-sh/kagan", "kategori": "kanban", "yildiz": null, "lisans": "?", "son": "?", "dil": "?",
+      "ne": "Arama özetinde 'OpenCode eklentisi, denetimli geliştirme Kanban panosu: görev = izole worktree oturumu, her geçişte kapı' diye geçiyor. `gh api` 404 verdi (taşınmış, silinmiş ya da özel olabilir).",
+      "rol": "izle", "alinacak": "'Her sütun geçişinde kapı' fikri bizim kapı modelimizle aynı. Ama depo doğrulanamadı, dayanma.",
+      "risk": "Doğrulanamadı.", "kanit": "doğrulanamadı"
+    },
+    {
+      "repo": "langfuse/langfuse", "kategori": "gozlemlenebilirlik", "yildiz": 36001, "lisans": "karma (GitHub: NOASSERTION)", "son": "2026-10-18", "dil": "TypeScript",
+      "ne": "LLM izleme, değerlendirme, prompt yönetimi, veri kümeleri. Çekirdek MIT (arama özeti), bazı bölümler ticari.",
+      "rol": "kullanma", "alinacak": "Veri modeli fikri: trace > span > generation. Çalıştırma yok.",
+      "risk": "Docker + veritabanı altyapısı; Node tek dosya panelimize orantısız.", "kanit": "özet"
+    },
+    {
+      "repo": "Arize-ai/phoenix", "kategori": "gozlemlenebilirlik", "yildiz": 11901, "lisans": "karma (GitHub: NOASSERTION; arama özeti: ELv2)", "son": "2026-10-17", "dil": "Python",
+      "ne": "OpenTelemetry tabanlı yerel yapay zekâ gözlem ve değerlendirme aracı.",
+      "rol": "kullanma", "alinacak": "OpenTelemetry GenAI semantik adları (alan adı standardı).",
+      "risk": "Python + ağır; ELv2 lisansı.", "kanit": "özet"
+    },
+    {
+      "repo": "Helicone/helicone", "kategori": "gozlemlenebilirlik", "yildiz": 6226, "lisans": "Apache-2.0", "son": "2026-10-10", "dil": "TypeScript",
+      "ne": "Vekil sunucu (proxy) tabanlı LLM gözlem: bir satırla maliyet izleme.",
+      "rol": "kullanma", "alinacak": "Vekil deseni: OpenCode ile sağlayıcı arasına girerek token sayma. Bizim için gereksiz, çünkü opencode.db zaten kaydediyor.",
+      "risk": "Ağır altyapı; yeni arıza noktası.", "kanit": "özet"
+    },
+    {
+      "repo": "openlit/openlit", "kategori": "gozlemlenebilirlik", "yildiz": 2857, "lisans": "Apache-2.0", "son": "2026-10-15", "dil": "TypeScript",
+      "ne": "OpenTelemetry GenAI kurallarına uyan açık kaynak otomatik enstrümantasyon.",
+      "rol": "kullanma", "alinacak": "Alan adı standardı (gen_ai.*).", "risk": "Panelimiz için fazla.", "kanit": "özet"
+    },
+    {
+      "repo": "promptfoo/promptfoo", "kategori": "degerlendirme", "yildiz": 26112, "lisans": "MIT", "son": "2026-10-18", "dil": "TypeScript",
+      "ne": "Prompt, ajan ve RAG testi. Kesin doğrulamalar (equals, contains, regex, is-json, JS/Python, latency, cost) ve model puanlı doğrulamalar. Modelleri yan yana karşılaştırır, web arayüzü var.",
+      "rol": "ornek", "alinacak": "Model × test matrisi görünümü ve doğrulama türleri sözlüğü. Bizim karsilastir.mjs'in panele taşınmış hâli bu matrise benzer.",
+      "risk": "Büyük bağımlılık ağacı; çalıştırmak yerine matris düzenini örnek al.", "kanit": "özet"
+    },
+    {
+      "repo": "ed-is-ai/featherbench", "kategori": "degerlendirme", "yildiz": 4, "lisans": "MIT", "son": "2026-10-10", "dil": "Python",
+      "ne": "Kendi gerçek görevlerini küçük JSON dosyası olarak yaz, her modeli aynı iskeleden geçir: aynı istem, aynı geçti/kaldı denetçisi, aynı gecikme saati, aynı maliyet hesabı. Çıktı JSONL, Markdown özeti ve HTML inceleme sayfası.",
+      "rol": "ornek", "alinacak": "Tasarım ilkesi ile bizim yöntem aynı: kendi görevin, kapı = denetçi, JSONL = metrikler.jsonl. Doğrulama olarak 'bizim yol doğru' kanıtı.",
+      "risk": "4 yıldız; Python.", "kanit": "özet"
+    },
+    {
+      "repo": "Mattbusel/llm-bench", "kategori": "degerlendirme", "yildiz": 2, "lisans": "MIT", "son": "2026-10-04", "dil": "Rust",
+      "ne": "Aynı istemi birden çok modele eşzamanlı yollar; p50/p99 gecikme, token/sn, maliyet, başarı oranı tablosu.",
+      "rol": "ornek", "alinacak": "Yüzdelik (p50/p99) gecikme göstergesi; bizde yalnız ortalama süre var.",
+      "risk": "Rust, 2 yıldız. Yalnız ölçüt seçimi örnek.", "kanit": "özet"
+    },
+    {
+      "repo": "EleutherAI/lm-evaluation-harness", "kategori": "degerlendirme", "yildiz": 14260, "lisans": "MIT", "son": "2026-09-14", "dil": "Python",
+      "ne": "Dil modelleri için standart az-örnekli değerlendirme çerçevesi, yüzlerce benchmark.",
+      "rol": "kullanma", "alinacak": "Yok. Genel model yetkinliği ölçer, bizim 'bu adımı kim ucuza geçer' sorumuzu ölçmez.",
+      "risk": "Yanlış soruya cevap verir.", "kanit": "özet"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai", "kategori": "degerlendirme", "yildiz": 3038, "lisans": "MIT", "son": "2026-10-17", "dil": "Python",
+      "ne": "Büyük dil modeli değerlendirme çerçevesi (UK AI Security Institute); ajan değerlendirmesi ve günlük görüntüleyici.",
+      "rol": "izle", "alinacak": "Günlük (log) görüntüleyici arayüzü fikri.", "risk": "Python, ağır.", "kanit": "özet"
+    },
+    {
+      "repo": "frappe/charts", "kategori": "cizim", "yildiz": 15088, "lisans": "MIT", "son": "2026-10-15", "dil": "JavaScript",
+      "ne": "Sıfır bağımlılıklı SVG grafik: çizgi, çubuk, yüzde, GitHub tarzı ısı haritası.",
+      "rol": "ornek", "alinacak": "Isı haritasının SVG yapısı. Paneldeki test dış kaynağı yasaklıyor, yani kütüphane eklenmez; ısı haritası ~30 satırla ciz.mjs'e yazılır.",
+      "risk": "Panele kütüphane eklemek 'dış kaynak yok' kapısını bozar.", "kanit": "özet"
+    },
+    {
+      "repo": "leeoniya/uPlot", "kategori": "cizim", "yildiz": 10568, "lisans": "MIT", "son": "2026-10-17", "dil": "JavaScript",
+      "ne": "Küçük, hızlı canvas zaman serisi grafiği.",
+      "rol": "kullanma", "alinacak": "Yok. Çok veri noktası olursa düşünülür; bizde adım sayısı onlar mertebesinde.", "risk": "Gereksiz.", "kanit": "özet"
+    },
+    {
+      "repo": "fnando/sparkline", "kategori": "cizim", "yildiz": 547, "lisans": "MIT", "son": "2023-10-17", "dil": "JavaScript",
+      "ne": "Bağımlılıksız SVG sparkline.",
+      "rol": "ornek", "alinacak": "Sparkline mantığı ~20 satır: polyline noktalarını ölçekle. ciz.mjs'e satır içi yazılır.", "risk": "3 yıldır güncellenmedi, ama 570 KB değil birkaç satır; kopyalamaya gerek yok.", "kanit": "özet"
+    },
+    {
+      "repo": "mermaid-js/mermaid", "kategori": "cizim", "yildiz": 90736, "lisans": "MIT", "son": "2026-10-18", "dil": "TypeScript",
+      "ne": "Metinden akış şeması ve sıra diyagramı üretir.",
+      "rol": "kullanma", "alinacak": "Yok. Büyük kütüphane; adım akışı için düz HTML/SVG yeter.", "risk": "Panele eklenemez (dış kaynak yasağı).", "kanit": "özet"
+    },
+    {
+      "repo": "awesome-opencode/awesome-opencode", "kategori": "kaynak-liste", "yildiz": 10643, "lisans": "CC0-1.0", "son": "2026-07-03", "dil": "JavaScript",
+      "ne": "OpenCode eklentileri, ajanlar, temalar ve projelerin derlemesi. Aşağıdaki Ensemble ve Mission Control gibi paralel ajan araçlarının listesi burada.",
+      "rol": "izle", "alinacak": "Yeni araç çıkınca ilk bakılacak yer. Bu araştırmada listelenen 'OpenCode Ensemble' ve 'OpenCode Mission Control' yalnız arama özetinden biliniyor, depoları ayrıca doğrulanmadı.",
+      "risk": "Son güncelleme temmuz; liste ve gerçek durum ayrışmış olabilir.", "kanit": "özet"
+    }
+  ],
+  "birlesimler": [
+    {
+      "ad": "Gerçek oturum telemetrisi",
+      "parcalar": ["touchkale/opencode-dashboard", "thumb2086/opencode-usage-dashboard"],
+      "ne": "Panelin Node sunucusu `opencode.db`'yi salt-okunur okur (node:sqlite, Node 24'te yerleşik, yeni bağımlılık yok). Model tablosuna gerçek token (giriş, çıkış, reasoning, cache), üretim hızı (tok/sn) ve araç dağılımı eklenir. Şema V1/V2 ayrımı statboard'dan alınır.",
+      "neden": "Bugün model tablosu `metrikler.jsonl`'daki çalıştırıcı ölçümlerine bağlı. `opencode run` küçük görevde bile ~55-110k token yiyor ve bunun nereye gittiği görünmüyor. Bu bileşim 'ücretsiz modelle kaliteyi kaybetmeden' hipotezinin maliyet tarafını gerçek veriyle besler.",
+      "panelde": "Modeller bölümüne token kırılımı ve tok/sn sütunları; adım detayında o adımın oturumuna bağlantı.",
+      "efor": "M", "deger": 5, "risk": "Şema OpenCode sürümüne göre değişir: tablo/sütun yoklaması ve 'veri yok' durumu şart. Veritabanı yalnız okunur açılmalı."
+    },
+    {
+      "ad": "Tasarruf kartı",
+      "parcalar": ["thumb2086/opencode-usage-dashboard", "splunk/token-meter"],
+      "ne": "Her model için 'ücretli katalog fiyatıyla ne tutardı' ile gerçek maliyet farkı. token-meter ilkesi: fiyatı bilinmeyen model 0 değil 'yok' gösterilir.",
+      "neden": "Ücretsiz model kullanmanın iş değerini tek sayıyla anlatır (sunum ve mentör için güçlü). Bilinmeyen fiyatı 0 saymamak, panelin şu anki 'yanit_yok başarısızlık görünüyor' hatasıyla aynı türden yanlış okumayı önler.",
+      "panelde": "Modeller bölümünün üstünde tek kart: 'bu güne kadar X token, liste fiyatıyla ~$Y, ödenen $0'.",
+      "efor": "S", "deger": 5, "risk": "Fiyatlar tahmindir (liste fiyatı), kartta 'tahmin' etiketi olmalı. Fiyat tablosu elle bakım ister."
+    },
+    {
+      "ad": "Model × adım matrisi",
+      "parcalar": ["promptfoo/promptfoo", "ed-is-ai/featherbench", "Mattbusel/llm-bench"],
+      "ne": "Satır = model, sütun = adım; hücre = geçti/kaldı + deneme sayısı + süre. Altına p50/p95 süre. Veri zaten `metrikler.jsonl`'da.",
+      "neden": "Kota açıldı, 'Modeller:' satırındaki dört modeli gerçek adımlarla karşılaştırmak bekliyor. Bugün bu `karsilastir.mjs` çıktısı terminalde; panelde matris olursa 'hangi model hangi adımda zorlandı' bir bakışta çıkar.",
+      "panelde": "Modeller bölümünün altına ısı matrisi (yeşil geçti, sarı çok deneme, kırmızı eskale).",
+      "efor": "S", "deger": 4, "risk": "Az veri (şimdilik 1-7. adımlar tek model). Veri yoksa boş durum metni gerekir."
+    },
+    {
+      "ad": "Adım panosu (salt-okunur Kanban)",
+      "parcalar": ["DanWahlin/ai-agent-board", "BloopAI/vibe-kanban", "hoangsonww/Claude-Code-Agent-Monitor"],
+      "ne": "Adımlar bölümüne ikinci görünüm: Bekliyor > Çalışıyor > Kapıda > Bitti / Eskale sütunları. Sürükle-bırak yok (planı PLAN.md yönetir). Kartta yürütücü ve gerçek işi yapan (opencode mı kodcu mu) görünür.",
+      "neden": "Listede aranan adım çok; sütun görünümü 'şu an akış nerede' sorusunu cevaplar. Gerçek işi yapanı göstermek CLAUDE.md'deki açık eksiği (adım satırı planın yürütücüsünü yazıyor) kapatır.",
+      "panelde": "Adımlar başlığında Liste / Pano anahtarı.",
+      "efor": "M", "deger": 3, "risk": "İkinci görünüm bakım yükü getirir. Liste zaten sorunlu adımı otomatik açıyor; pano değeri sunumda daha yüksek, günlük işte daha düşük."
+    },
+    {
+      "ad": "Isı haritası ve sparkline (elle SVG)",
+      "parcalar": ["frappe/charts", "fnando/sparkline", "touchkale/opencode-dashboard"],
+      "ne": "ciz.mjs'e iki saf fonksiyon: `isiHaritasi(gunler)` ve `sparkline(sayilar)`. Kütüphane eklenmez, yalnız SVG yapısı örnek alınır.",
+      "neden": "Panelin kapı testi dış kaynağı yasaklıyor ve sıfır bağımlılık kuralı var. İki fonksiyon ~50 satır; günlük token ısı haritası ve model başına süre eğilimi sunumda görsel kanıt olur.",
+      "panelde": "Modeller bölümünde küçük eğilim çizgileri, Etki bölümünde günlük ısı haritası.",
+      "efor": "S", "deger": 3, "risk": "Veri günde birkaç satırsa harita boş kalır. Telemetri bileşimi (1) gelmeden değeri düşük."
+    },
+    {
+      "ad": "Claude tarafını yan yana izle",
+      "parcalar": ["simple10/agents-observe", "illegalstudio/lazyagent"],
+      "ne": "Kod yazmadan: agents-observe'u Claude Code eklentisi olarak çalıştır (4981), panelde bağlantı olarak göster. OpenCode oturumlarını da tek terminalde görmek için lazyagent denenir.",
+      "neden": "Açık iş: 'Claude'un planlama token'ı ölçülmüyor'. agents-observe oturum başına token ve maliyet kırılımı veriyor (v0.9.7). Böylece planlama (Claude) ile kodlama (OpenCode) maliyeti iki ayrı panelde ama yan yana görünür.",
+      "panelde": "Üst kısımda 'Claude planlama oturumu' bağlantı kartı.",
+      "efor": "S", "deger": 3, "risk": "Claude Code'a kanca (hook) ekler: kurmadan önce kancaları okuyup onay vermek gerekir. Kullanıcı kendi makinesinde kurar, biz kurmayız."
+    }
+  ],
+  "oneri": "Sıra: (2) Tasarruf kartı ve (1) Telemetri aynı veri kaynağını kullanır, birlikte yapılabilir; en yüksek değer. Ardından (3) Matris, çünkü veri zaten elde. (5) Isı haritası telemetri gelince anlam kazanır. (4) Pano ve (6) Claude yan yana en sona: değer var ama günlük işi hızlandırmıyor. Langfuse, Phoenix, Helicone ve OpenLIT önerilmez: Docker ve veritabanı gerektirir, panelimizin sıfır bağımlılık kuralına ters."
+}

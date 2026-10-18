@@ -286,6 +286,15 @@ Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa
   - Kapı: `grep -q 'persona-denetle' ~/.claude/skills/ba-pm-bakis/SKILL.md`
   - Kapı: `bash test/hepsi.sh`
 
+### Faz 3: panel araştırma sekmesi (2026-10-18)
+GitHub'da panel için altlık/örnek olacak projeler araştırıldı; sonuç `arastirma/arastirma.json` (kapı dosyası gibi davran, DEĞİŞTİRME). Hipotez: kullanıcı adayları, rolleri (altlık/örnek/yan yana/izle/kullanma) ve önerilen birleşimleri panelden okuyup hangisini yapacağına karar verebilir. Birleşimlerin kendisi (telemetri, tasarruf kartı, matris...) bu adımın kapsamı DEĞİL.
+
+- [ ] 40. Araştırma sekmesi
+  - Ne: (1) `panel/sunucu.mjs`: `GET /api/arastirma` → `<dir>/arastirma/arastirma.json` içeriğini JSON verir; dosya yoksa ya da JSON bozuksa `{"adaylar":[],"birlesimler":[]}` (200). (2) `panel/ciz.mjs`: `export function arastirmaHtml(veri, suz = {})` saf fonksiyon; `veri` null/boş ise "Araştırma verisi yok" metni. Üstte `not` ve `oneri` metni; "Birleşim önerileri" kartları (ad, parçalar, ne, neden, panelde, efor S/M/L, değer 1-5, risk); "Adaylar" tablosu/kartları: repo (`https://github.com/<repo>` bağlantısı, `target="_blank" rel="noopener noreferrer"`), kategori, yıldız (`null` ise "—", "null" yazma), lisans, son push, dil, rol rozeti, ne, alınacak, risk, kanıt (`doğrulanamadı` belirgin). `suz.kategori` verilirse yalnız o kategorideki adaylar listelenir, birleşimler her zaman görünür. Tüm metin `esc` ile kaçışlanır. (3) `panel/index.html`: `<h2>Araştırma</h2><section id="arastirma">`, sayfa açılışında bir kez `fetch('/api/arastirma')`, kategori süzgeci düğmeleri (Tümü + veri içindeki kategoriler), `arastirmaHtml`'i `/ciz.mjs` içinden içe aktar. Dış kaynak (CDN) yok, mevcut CSS değişkenleri ve açık/koyu tema korunur, telefon genişliğinde taşma olmaz.
+  - Kapı: `node panel/arastirma.test.mjs`
+  - Kapı: `node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.
