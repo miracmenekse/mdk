@@ -304,6 +304,16 @@ GitHub'da panel için altlık/örnek olacak projeler araştırıldı; sonuç `ar
   - Kapı: `node panel/durum.test.mjs && node panel/modeller-ui.test.mjs && node panel/arayuz.test.mjs etki`
   - Kapı: `bash test/hepsi.sh`
 
+## Karar notu: Persona denemesi 1 (adım 36, 1. tur; yarım, kullanıcı kararı bekliyor)
+Karar: adım satırı planlanan yürütücüyü yazıyor, gerçekte işi yapanı değil (adım 9: opencode 6 kez kaldı, kodcu geçti; 22: 3 başarısız sonra kodcu; 40: 1 başarısız sonra kodcu). `yanit_yok` sorunu adım 41'de zaten planlı olduğu için bu eksik seçildi. Kartlar: Dikkati dağınık kullanıcı, Bakımı yapacak geliştirici, Denetçi / güvenlik (karşı çıkan). Sonnet, araçsız.
+Ayrışma eksenleri (seçim kuralı 3. madde, seçenek turundan önce):
+- Dikkati dağınık kullanıcı: satır tek hüküm mü söylesin (gerçekte kim bitirdi), her denemenin dökümü mü; ayrıntı isteyene saklı.
+- Bakımı yapacak geliştirici: tek `metrikler.jsonl` okumasıyla ucuza türetilen "son geçen yürütücü" mü, her satırda ayrı hesaplanıp test edilecek "deneme geçmişi" mi.
+- Denetçi / güvenlik: planlanan yürütücüyü tek başına göstermek mi (gerçeği yansıtmaz, geri izlenemez), fiilî yürütücü ve deneme geçmişini satırda kayıtlı tutmak mı (izlenebilir, kalabalık).
+Gözlem: üç eksen biçimsel olarak ayrı (yoğunluk, türetme maliyeti, izlenebilirlik) ama üçü de aynı yöne bakıyor: planlanan yerine fiilî yürütücü, ayrıntı açılır bölümde. Bu "güvenli taban"; gerçek karar noktası ayrıntının (başarısız deneme sayısı ve modeller) satırda rozetle mi, yalnızca açılır bölümde mi görüneceği.
+Harcanan token: 107k (3 alt ajan x ~35,8k; ajan başına sabit yük, görev metni birkaç yüz token). Onaylı sınır tur başına 60k idi; yalnızca bu tur sınırı aştı. Seçenek turu (2. tur) başlatılmadı.
+Karar bekliyor: bu sabit yük yüzünden `general-purpose` alt ajan başına 60k sınırına yalnızca 1 ajan sığar; 3 kartlı bağımsız tur yaklaşık 107k tutar.
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.
