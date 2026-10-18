@@ -13,6 +13,7 @@ Adım 1-29 bitti. Panel: ayrıştırıcı, durum, canlı sunucu, çizim modülü
 Gerçek OpenCode işi yalnızca adım 1-7'de oldu (glm-5.3-flash-free, ilk denemede %75). Sonra ücretsiz kota doldu ("Rate limit exceeded", 3 modelde de sessizlik); adım 9-29'u `kodcu` yaptı. Kota açılınca `ONCE=<model> ./op-adim.sh <no>` ile model karşılaştırması yapılmalı.
 
 ## Açık işler
+- 2026-10-18: ücretsiz kota AÇILDI (10 modelden 9'u basit isteğe 8-13 sn'de yanıt verdi; `nemotron-3.5-lightning-free` 45 sn'de yanıt vermedi). Planlardaki `Modeller:` satırı yalnız 3 modeli kullanıyor; geri kalanları da dene. Basit "tamam" yoklaması kaliteyi göstermez, gerçek adımla karşılaştır.
 - Ücretsiz kota açılınca: gerçek OpenCode ile küçük adımlar, 2. ve 3. model karşılaştırması (şu an 0 veri).
 - Kapıları daha kapsayıcı yap; kapı denetleyici yalnız "test dosyası çalıştırıyor mu"ya bakıyor.
 - "Sadece sorunlu" süzgeci henüz çalışmamış adımları da gizliyor (karar gerekebilir).
