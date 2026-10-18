@@ -210,6 +210,82 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
   - Ne: Tüm kapılar yeşil, panel yeniden başlatılmış ve gerçek veriyle ekran görüntüsünde kontrol edilmiş, kullanıcı için uygulama turu hazır.
   - Kapı: `bash test/hepsi.sh && node kapi-denetle.mjs`
 
+## Personalar v2: iş alanına göre kart paketleri
+Problem ve hipotez: Geçmiş görünümü kararında 4 persona 8 seçenek verdi ama hepsi tek eksende toplandı; seçilen yön minimalist ve geliştirici kartlarından geldi, "saha kullanıcısı" ve "ilk kez kullanan" hiç çağrılmadı (bu ürünün kullanıcısı port yönlendirmeli panele bakan tek bir BA/PM). `personalar.md` kendi kuralıyla da çelişiyor: kullanıcının bakışı alt ajana verilmez diyor, ama "BA/PM A/B" alt ajan olarak çağrıldı. Hiçbir kartın değer katıp katmadığı ölçülmüyor. Hipotez: iş alanına (proje geliştirme, sunum, araştırma) göre paketlenmiş, az sayıda kart ve ölçülen bir karar günlüğü, genel kart setinden daha ayrışık seçenek verir; çürürse "az kart" yoluna (benchmark + kapıyı kandıran mercek) düşülür.
+Başarı ölçütü (taban: 8 seçenek, 1 gerçek eksen, 6 kartın 2'si kullanılmamış): her denemede ≥2 ayrışma ekseni; denendi işaretli alanda kullanılmayan kart ya kullanılır ya silinir; deneme başına ≤60k token.
+Akış: iş türü → alan seç → o alandan 3 kart → "hangi eksende ayrışırsınız?" turu → seçenek tablosu. Alan yoksa aynı kart biçiminde yeni alan taslağı yazılır, `Durum: denenmemiş` olur.
+Riskler: LLM çıktısı her seferinde değişir, 2 deneme kanıt değil gözlemdir; sunum ve araştırma alanları ilk gerçek kullanıma kadar denenmemiş kalır (sahte görevle token yakılmaz); denetçi yapıyı doğrular, içeriğin kalitesini denemeler gösterir.
+Aşamalar: Faz 1 (adım 31-36) kartlara karar verir. Faz 2 (adım 37-38) aynı bakışları kapı yazmaya ve plan bölmeye bağlar. Adım 39 belgeleri kapatır.
+Not: bu adımlar UI'a dokunmaz, `Etki:`/`Onay:` yok. Adım 31 dışındakiler Claude'undur.
+
+### Faz 1: kartlar
+- [ ] 31. Persona denetçisi
+  - Ne: Proje köküne `persona-denetle.mjs` yaz; `kapi-denetle.mjs` ile aynı kalıp. `export function denetle(metin)` bulgu dizisi döner (`{ ad, seviye, mesaj }`, seviye `'HATA'|'UYARI'`); `export function sayim(metin)` `{ 'alan/kart': { kullanim, kazanma } }` döner. Biçim: `## Alan: <ad>` bir alan başlatır (başka her `## ` başlığı alanı bitirir); alan içinde `Durum: <değer>` satırı ve `### <kart adı>` kartları; kart satırları `- **<alan adı>:** <değer>`. Zorunlu kart alanları: `Optimize eder`, `Sorusu`, `Körlüğü`, `Ne zaman`, `Ayrışma ekseni`. `## Karar günlüğü` altındaki tablo satırları (başlık ve `---` ayırıcı satırı atlanır; sütunlar `Tarih | Alan | Karar | Kartlar | Eksen | Kazanan`; `Kartlar` ve `Kazanan` virgülle ayrılır). Kurallar (ad: HATA, aksi belirtilmedikçe): alanda <3 kart (ad = alan adı); `Durum` `denendi` ya da `denenmemiş` değil (ad = alan); `Durum: denendi` ama alan için günlük satırı yok (ad = alan); karttaki zorunlu alan yok ya da boş (ad = kart; eksik alan başına bir bulgu); yinelenen kart adı, ikinci ve sonraki geçiş (ad = kart); günlük satırı: alan yok, kart o alanda yok, `Eksen` boş, `Kazanan` kartlarda yok ve `benchmark`/`sentez` değil (ad = `günlük N`, N tablodaki 1 tabanlı sıra, sorun başına bir bulgu); alanda >5 kart UYARI (ad = alan); `Durum: denendi` alanında hiç kullanılmayan kart UYARI (ad = kart). Hiç `## Alan:` yoksa (boş dosya dahil) tek bulgu `{ ad: 'dosya', seviye: 'HATA' }`. `sayim`: `kullanim` = kartın `Kartlar` sütununda geçtiği günlük satırı sayısı; `kazanma` = `Kazanan` sütununda (ve o satırın `Kartlar`ında) geçtiği satır sayısı. Komut satırı: `node persona-denetle.mjs [dosya] [--sayim]` (varsayılan dosya `personalar.md`); her bulguyu `<ad>: <SEVİYE>: <mesaj>` satırı yazar, hiç bulgu yoksa `personalar tamam`; `--sayim` ile ek olarak her kart için `<alan>/<kart>: kullanım N, kazanma M` satırı yazar; HATA varsa ya da dosya okunamıyorsa çıkış 1, aksi halde 0.
+  - Kapı: `node test/persona-denetle.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 32. Kart biçimi ve proje-gelistirme paketi
+  - Yürütücü: claude
+  - Ne: `personalar.md`'yi v2 biçimine çevir. `## Ortak`: çıktı biçimi, benchmark yöntemi, ayırt edicilik şartı, sentez kuralı ("Senin bakışın" kartı kalkar; Claude'un sentez merceği olur, alt ajana verilmez, kullanıcı önerisi alt ajana gitmez). `## Alan: proje-gelistirme` (`Durum: denenmemiş`), 5 kart: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik (eski kartlardan rafine), Kapıyı kandıran yürütücü (yeni: "ücretsiz model bu kapıyı işi yapmadan nasıl geçer?"), Dikkati dağınık kullanıcı (saha kullanıcısı ve ilk kez kullananın birleşimi: "10 saniyede ne olduğunu anlıyor mu?"). Her kartta 5 alan dolu; `Ne zaman` hangi karar türünde çağrıldığını, `Ayrışma ekseni` hangi eksende ayrıştığını yazar.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `test "$(node persona-denetle.mjs --sayim | grep -c '^proje-gelistirme/')" -ge 4`
+  - Kapı: `node persona-denetle.mjs --sayim | grep -q 'proje-gelistirme/Kapıyı kandıran yürütücü'`
+  - Kapı: `! grep -q 'Acelesi olan saha' personalar.md`
+
+- [ ] 33. Sunum paketi
+  - Yürütücü: claude
+  - Ne: `## Alan: sunum` (`Durum: denenmemiş`), 3-4 kart; sunum hazırlama (NexusOS / Ar-Ge mentör sunumu: `nexusos-sunum` becerisiyle uyumlu) için: ilk kez dinleyen, şüpheci jüri/mentör ("kanıt nerede?"), sunumu yapan anlatıcı ("süreye sığar mı, akıcı mı?"), gerekirse sadeleştirici. Kart adları dosyada tekil, 5 alan dolu.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `test "$(node persona-denetle.mjs --sayim | grep -c '^sunum/')" -ge 3`
+
+- [ ] 34. Araştırma paketi
+  - Yürütücü: claude
+  - Ne: `## Alan: arastirma` (`Durum: denenmemiş`), 3-4 kart; bir konuyu derinlemesine araştırmak için: şüpheci hakem ("kaynak ne, çelişen kanıt var mı?"), karşıt görüş avukatı, uygulayıcı ("bu bilgiyle ne yaparım?"), kapsam bekçisi ("soru yanlış çerçevelenmiş olabilir; aranmayan ne?"). `Ortak` bölümündeki "doğrulanamadı yaz, uydurma" kuralı bu alanda da geçerlidir.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `test "$(node persona-denetle.mjs --sayim | grep -c '^arastirma/')" -ge 3`
+
+- [ ] 35. Karar günlüğü ve seçim kuralı
+  - Yürütücü: claude
+  - Ne: `## Karar günlüğü` tablosu; Geçmiş görünümü kararı geriye dönük girilir (alan `proje-gelistirme`, kartlar: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik; eksen "ayrı bölüm mü / satıra gömülü mü"; kazanan: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici; BA/PM A/B ve benchmark kart dışı not olarak eksen sütununa değil karar sütununa yazılır). `Ortak`'a "Seçim kuralı" ekle: iş türüne göre alan seç, alandan 3 kart seç ve en az biri karşı çıkan olsun, alt ajanlardan önce "hangi eksende ayrışırsınız?" turu, her kararda günlüğe satır, alan yoksa yeni alan taslağı (`denenmemiş`). Bu adım sonunda `proje-gelistirme` hâlâ `denenmemiş`tir (Geçmiş kararı eski kartlarla alındı).
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `node persona-denetle.mjs --sayim | grep -q 'proje-gelistirme/Minimalist ürün tasarımcısı: kullanım 1, kazanma 1'`
+  - Kapı: `node persona-denetle.mjs --sayim | grep -q 'proje-gelistirme/Denetçi / güvenlik: kullanım 1, kazanma 0'`
+  - Kapı: `grep -q 'Seçim kuralı' personalar.md`
+
+- [ ] 36. Canlı deneme 1: UI ve akış kararı
+  - Yürütücü: claude
+  - Ne: Proje `CLAUDE.md`'deki iki panel eksiğinden biri (model tablosu `yanit_yok`'u model hatası sayıyor; adım satırı planın yürütücüsünü yazıyor, gerçekte işi yapanı değil) için `proje-gelistirme` paketiyle karar al: önce ekseni sor, 3 kart, tek tablo, öneri. Önce eşiği kontrol et: karar `ba-pm-bakis`in "küçük kararda alt ajan kullanma" kuralına göre alt ajanı hak etmiyorsa diğer eksiği seç. Alt ajanlar `sonnet` ile, toplam ≤60k token. PLAN.md'ye `## Karar notu: Persona denemesi 1` yaz (eksenler `;` ile, seçenek tablosu, `Harcanan token: Nk`, `Sonuç: doğrulandı|çürüdü` satırı; ölçüt: ≥2 eksen), günlüğe satır ekle, `proje-gelistirme` `Durum: denendi` yap. Sonuç `çürüdü` çıkarsa dur ve kullanıcıya "az kart" yolunu sor.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `grep -q 'Durum: denendi' personalar.md`
+  - Kapı: `test "$(grep -c '^| 2026-' personalar.md)" -ge 2`
+  - Kapı: `grep -Eq '^Sonuç: (doğrulandı|çürüdü)' PLAN.md`
+  - Kapı: `grep -Eq 'Harcanan token: [0-9]+k' PLAN.md`
+
+### Faz 2: kapı ve plan bölme
+Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa 37-38 yeniden planlanır.
+
+- [ ] 37. Kapı yazımı: geçmişe karşı deneme
+  - Yürütücü: claude
+  - Ne: "Kapıyı kandıran yürütücü" kartını üç geçmiş kapıya uygula: adım 8 (`test -f ... && test -f ...`), adım 25 (`grep -q ... && grep -q ...`), adım 23 (kapı testindeki hatalı beklenti). Her kapı için kart, "boş ya da taslak dosyayla bu kapı geçer mi?" sorusunu yanıtlar ve bir güçlendirme önerir; Claude gerçek boşluk olup olmadığını kendi okumasıyla doğrular. `## Karar notu: Persona denemesi 2` altında kapı başına satır tablosu; `Boşluk bulunan kapı: N/3`; `Sonuç: doğrulandı` ölçütü ≥2/3. Günlüğe satır ekle. ≤60k token. Çıkan kural `ba-pm-bakis`in "Kapılar" bölümüne eklenecek biçimde bir cümleye indirilir (kodda değişiklik bu adımda yok).
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `grep -Eq 'Boşluk bulunan kapı: [0-3]/3' PLAN.md`
+  - Kapı: `test "$(grep -c '^Sonuç: ' PLAN.md)" -ge 2`
+
+- [ ] 38. Plan bölme: geçmişe karşı deneme
+  - Yürütücü: claude
+  - Ne: Metriklerde sorunlu üç adımı karşılaştır: adım 9 (6 deneme), adım 7 (~730k token), adım 22 (3 deneme). "Bakımı yapacak geliştirici" kartının sorusuyla ("bu en ucuz hangi yolla doğru çalışır, tek başına yenebilir mi?") bu adımların bölünüp bölünmeyeceğine ve bir bölme ölçütüne (örn. adım başına dosya sayısı, kapı sayısı, bütçe) karar ver; ölçütü `metrikler.jsonl`'daki diğer adımlara uygulayıp yanlış alarm sayısını yaz. `## Karar notu: Persona denemesi 3`; `Sonuç: doğrulandı|çürüdü`. Ölçüt `kapi-denetle.mjs`e UYARI kuralı olacaksa bunun için ayrı, kapılı bir adım açılır (bu adımda kod yok).
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `test "$(grep -c '^Sonuç: ' PLAN.md)" -ge 3`
+  - Kapı: `grep -q '## Karar notu: Persona denemesi 3' PLAN.md`
+
+- [ ] 39. Belgeler ve bellek
+  - Yürütücü: claude
+  - Ne: `~/.claude/skills/ba-pm-bakis/SKILL.md`: iş türüne göre alan seçimi, seçim kuralı, `persona-denetle.mjs` çağrısı, Faz 2 sonuçlarından kapı ve plan bölme kuralı. Proje `CLAUDE.md`: "9'dan devam eden numarayla" notunu "son adım numarasından devam" yap, durum bölümüne personalar v2'yi ekle. PLAN.md "Sonraki iyileştirmeler" altındaki persona maddesini güncelle. Bellek: `opencode-akis-kapi-iyilestirme` ve `opencode-akis-durum` notlarını güncelle; sunum ve araştırma alanları ilk gerçek kullanımda `denendi` olacak diye not düş.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `! grep -q "9'dan devam" CLAUDE.md`
+  - Kapı: `grep -q 'persona-denetle' ~/.claude/skills/ba-pm-bakis/SKILL.md`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.
