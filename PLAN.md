@@ -4,9 +4,9 @@ Amaç: Claude planlar, OpenCode (ücretsiz modellerle) geliştirir; kalite kapı
 Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
 
 Yürütücü: opencode
-Modeller: opencode/glm-5.3-flash-free, opencode/deepseek-v4.1-flash-free, opencode/space-bunny-free, opencode/beam-free
+Modeller: opencode/deepseek-v4.1-flash-free, opencode/beam-free, opencode/space-bunny-free, opencode/glm-5.3-flash-free, opencode/nemotron-3-ultra-free, opencode/longcat-2.5-preview-free
 
-Bütçe: 600000
+Bütçe: 1000000
 
 Kurallar (tüm adımlar için):
 - Kapı dosyalarına (`test/`, `*.test.*`) ve `PLAN.md`'ye dokunma; çalıştırıcı bunu tespit eder ve denemeyi geçersiz sayar.

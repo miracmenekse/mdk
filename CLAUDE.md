@@ -35,7 +35,11 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 - Düzeltilmiş çalıştırıcıyla tam geçen tek koşu: **beam-free**, 275 sn, 587k token; diff'i plana karşı gözden geçirildi, uyumlu. Commit `bench/adim31-beam` dalında (068beaa), ana dala alınmadı. Diğer üç model o koşuda `yanit_yok` verdi.
 - Token farkı büyük: aynı model aynı adımda 192k ile 796k arasında harcadı; `Bütçe: 600000` sınırda, adım başına bütçe gevşetilebilir ya da adım bölünmeli.
 - **Kota gözlemi:** art arda ~20 koşudan sonra 10 modelden 6'sı 60 sn'de sessizdi (glm, deepseek, space-bunny, mimo, super-vl, big-pickle); yanıt verenler beam, longcat, nemotron-ultra, lightning (49 sn). Kullanım miktarı sessizliği açıklamıyor (mimo/big-pickle az kullanıldı, beam çok kullanıldı): model başına kısa süreli hız sınırı ya da sağlayıcı kapasitesi olabilir. Paralel koşu yüklemeyi hızlandırıyor ama kotayı da çabuk bitiriyor; modelleri art arda, aralıklı koş.
-- Henüz denenmedi: longcat, nemotron-ultra (kolay görevlerde 505k token), lightning (yavaş) zor adımda.
+- **Geniş sınırla (1M bütçe, 900 sn; a8e65af'ten, ayrı worktree) iki kapıdan da geçenler:** nemotron-3-ultra 239 sn / 971k token; longcat-2.5-preview 628 sn / 578k token. 600k/600 sn'de ikisi de kapıya ulaşmadan elendi (bütçe / süre): dar sınır modelleri haksız eliyordu.
+- **Zor adımda ölçülemeyenler:** nemotron-3.5-super-vl ve big-pickle `yanit_yok` verdi (kota sessizliği, kalite sonucu değil); lightning denenmedi (kolay görevde 300 sn'de bitmedi, yoklamada 49 sn'de yanıt).
+- **Özet (adım 31, n=1-2):** hız: nemotron-ultra 239 sn ≈ deepseek 236 sn < beam 275 sn < space-bunny 293-345 sn < glm 360-600 sn < longcat 628 sn. Token: longcat/beam/glm 270-590k, deepseek 192-644k, space-bunny 608-796k, nemotron-ultra 602-971k. Kapı 2'yi (düzeltilmiş çalıştırıcıyla) geçmiş doğrulananlar: beam, nemotron-ultra, longcat; deepseek ve space-bunny yalnız kapı 1'i 2/2 geçti, düzeltme sonrası kota sessizliğine takıldı.
+- **Seçim (2026-10-18):** `Modeller:` = deepseek, beam, space-bunny, glm, nemotron-ultra, longcat (hız ve ilk kapı doğruluğuna göre; token yiyen ve yavaş olanlar sonda); `Bütçe` 1000000. Süre varsayılanı hâlâ 600 sn: longcat için `SURE=900` ver. Sıra veriyle değişir; en az 3 koşuluk ölçüm yok.
+- Doğrulanacak: deepseek ve space-bunny'nin kapı 2 geçişi, super-vl, big-pickle ve lightning'in zor adımdaki sonucu (kota açılınca, art arda).
 
 ## Tuzaklar
 - `opencode run` stdin kapalı (`</dev/null`) çalışmalı; yoksa `timeout` altında takılır.
