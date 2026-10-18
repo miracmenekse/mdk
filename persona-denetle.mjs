@@ -165,6 +165,7 @@ export function sayim(metin) {
       let kullanim = 0;
       let kazanma = 0;
       for (const g of gunluk) {
+        if (g.alan !== alan.ad) continue;
         if (g.kartlar.includes(kart.ad)) kullanim++;
         if (g.kazanan.includes(kart.ad) && g.kartlar.includes(kart.ad)) kazanma++;
       }

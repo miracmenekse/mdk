@@ -27,6 +27,16 @@ assert.deepEqual(s['proje-gelistirme/Denetçi'], { kullanim: 1, kazanma: 0 });
 assert.deepEqual(s['sunum/Jüri'], { kullanim: 1, kazanma: 0 });
 assert.deepEqual(s['sunum/Anlatıcı'], { kullanim: 0, kazanma: 0 });
 
+// aynı kart adı iki alanda: sayım günlük satırının alanına göre ayrılır
+const ayniAd = dosya(
+  alan('a1', 'denendi', [kart('Ortak'), kart('X1'), kart('X2')]),
+  alan('a2', 'denenmemiş', [kart('Ortak'), kart('Y1'), kart('Y2')]),
+  `## Karar günlüğü\n${GUNLUK}| 2026-10-18 | a1 | k | Ortak, X1, X2 | e | Ortak |\n`,
+);
+assert.deepEqual(sayim(ayniAd)['a1/Ortak'], { kullanim: 1, kazanma: 1 });
+assert.deepEqual(sayim(ayniAd)['a2/Ortak'], { kullanim: 0, kazanma: 0 });
+assert.deepEqual(denetle(ayniAd), []);
+
 // kötü dosya: her kural kendi bulgusunu verir
 const kotu = dosya(
   alan('proje-gelistirme', 'denendi', [kart('Minimalist'), kart('Geliştirici', true), kart('Denetçi'), kart('Denetçi')]),
