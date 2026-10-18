@@ -31,9 +31,9 @@ s = snapshot(d);
 assert.equal(s.simdi.durum, 'calisiyor');
 // yürütücü sonra model sırasıyla; inceleme satırları deneme sayılmaz
 assert.deepEqual(s.modeller, [
-  { yurutucu: 'kodcu', model: 'sonnet', deneme: 1, gecen: 1, ilkDenemeOrani: 1, token: 0, maliyet: 0, ortSure: 50, uyum: 1 },
-  { yurutucu: 'opencode', model: 'a/x', deneme: 3, gecen: 2, ilkDenemeOrani: 0.5, token: 600, maliyet: 0, ortSure: 20, uyum: 0.5 },
-  { yurutucu: 'opencode', model: 'b/y', deneme: 1, gecen: 0, ilkDenemeOrani: 0, token: 100, maliyet: 0, ortSure: 10, uyum: null },
+  { yurutucu: 'kodcu', model: 'sonnet', deneme: 1, gecen: 1, ilkDenemeOrani: 1, token: 0, maliyet: 0, ortSure: 50, uyum: 1, sessiz: 0, etiket: 'olculdu' },
+  { yurutucu: 'opencode', model: 'a/x', deneme: 3, gecen: 2, ilkDenemeOrani: 0.5, token: 600, maliyet: 0, ortSure: 20, uyum: 0.5, sessiz: 0, etiket: 'olculdu' },
+  { yurutucu: 'opencode', model: 'b/y', deneme: 1, gecen: 0, ilkDenemeOrani: 0, token: 100, maliyet: 0, ortSure: 10, uyum: null, sessiz: 0, etiket: 'olculdu' },
 ]);
 assert.equal(s.incelemeler[1].inceleme, 'kismen'); // son inceleme geçerli
 assert.equal(s.incelemeler[1].not, 'son söz');

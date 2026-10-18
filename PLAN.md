@@ -295,6 +295,15 @@ GitHub'da panel için altlık/örnek olacak projeler araştırıldı; sonuç `ar
   - Kapı: `node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
+- [ ] 41. Güven etiketli sayılar (model tablosu)
+  - Problem ve hipotez: kota sessizliği (`neden: "yanit_yok"`) modele %0 başarı yazıyor, ölçülmemiş süre/token 0 sayılıp ortalamayı bozuyor; okuyan kişi model hakkında yanlış karar verir (örn. "space-bunny hep başarısız"). Hipotez: sayının yanına güven etiketi ve sağlayıcı sessizliğinin ayrı sayımı konursa model karşılaştırması yanlış okunmaz, "kanıt nerede?" sorusuna tabloyla cevap verilir. Başarı ölçütü: gerçek metriklerde hiçbir modelde sessizlik yüzünden 0%/0.0 sn görünmez.
+  - Etki: etki/guven.html
+  - Değer: 4
+  - Ne: (1) `panel/durum.mjs` `modeller` öğelerine iki alan ekle, mevcut alanlar kalır: `sessiz` (o modelin `neden === 'yanit_yok'` satır sayısı) ve `etiket`. `yanit_yok` satırları `deneme`, `gecen`, `ilkDenemeOrani`, `token`, `maliyet`, `ortSure` hesabına HİÇ girmez. `ilkDenemeOrani`: gerçek `deneme === 1` satırı yoksa `null` (0 değil). `ortSure`: yalnızca sayısal `sure_sn` olan gerçek satırların ortalaması, hiç yoksa `null`. `token`: sayısal `token` olan gerçek satırların toplamı, hiç yoksa `null`. `etiket` önceliği: gerçek satırların hepsinde süre ve token yoksa ya da gerçek satır yoksa `'veri-yok'`; yoksa herhangi bir gerçek satırda `tahmini === true` ise `'tahmin'`; yoksa bazı gerçek satırlarda süre ya da token `null` ise `'kismi'`; yoksa `'olculdu'`. (2) `panel/ciz.mjs` `modellerHtml`: deneme hücresinde `sessiz > 0` ise "N sessiz" notu; `null` değerler (`ilkDenemeOrani`, `token`, `ortSure`) `—` yazar; her satırda `<span class="guven <etiket>">` ile etiket metni (`olculdu` → "ölçüldü", `kismi` → "kısmi", `tahmin` → "tahmin", `veri-yok` → "veri yok") ve `title` açıklaması; son sütun başlığı "veri". `etiket`/`sessiz` alanı olmayan eski biçim çökmez. Tüm metin `esc` ile kaçışlanır. (3) `panel/index.html`: `.guven.olculdu`, `.guven.kismi`, `.guven.tahmin`, `.guven.veri-yok` CSS kuralları (mevcut `--rozet-*` değişkenleri, açık/koyu tema; renk tek başına anlam taşımaz, metin de var).
+  - Kapı: `node panel/guven.test.mjs`
+  - Kapı: `node panel/durum.test.mjs && node panel/modeller-ui.test.mjs && node panel/arayuz.test.mjs etki`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.

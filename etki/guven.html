@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: güven etiketli sayılar</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  /* tüm çizim gri tonlu; yalnızca değişen bölgeler renkli */
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — model tablosu: kota sessizliği %0 başarı gibi, eksik süre/token 0 gibi görünür</figcaption>
+  <svg id="once" viewBox="0 0 640 220" role="img" aria-label="Güven etiketi olmadan model tablosu">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <g font-size="12" fill="#ffffff">
+      <text x="24" y="35">model</text><text x="250" y="35">deneme</text><text x="330" y="35">ilk denemede</text>
+      <text x="440" y="35">token</text><text x="530" y="35">ort. süre</text>
+    </g>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="44" width="608" height="34"/><rect x="16" y="78" width="608" height="34"/><rect x="16" y="112" width="608" height="34"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="24" y="66">glm-5.3-flash-free</text><text x="262" y="66">10</text><text x="350" y="66">38%</text><text x="440" y="66">610.000</text><text x="530" y="66">104 sn</text>
+      <text x="24" y="100">space-bunny-free</text><text x="262" y="100">3</text><text x="350" y="100">0%</text><text x="440" y="100">0</text><text x="530" y="100">0.0 sn</text>
+      <text x="24" y="134">kodcu / fable</text><text x="262" y="134">20</text><text x="350" y="134">95%</text><text x="440" y="134">23.000</text><text x="530" y="134">12 sn</text>
+    </g>
+    <text x="24" y="172" font-size="11" fill="#757575">space-bunny: 3 denemenin 3'ü kota sessizliği, ama %0 başarısız görünüyor. kodcu: süre ve token çoğu satırda hiç ölçülmemiş.</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — sağlayıcı sessizliği ayrı sayılır, eksik veri "—" olur, her satırda güven etiketi</figcaption>
+  <svg id="sonra" viewBox="0 0 640 220" role="img" aria-label="Güven etiketli model tablosu">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <g font-size="12" fill="#ffffff">
+      <text x="24" y="35">model</text><text x="230" y="35">deneme</text><text x="320" y="35">ilk denemede</text>
+      <text x="420" y="35">token</text><text x="490" y="35">ort. süre</text><text x="560" y="35">veri</text>
+    </g>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="44" width="608" height="34"/><rect x="16" y="78" width="608" height="34"/><rect x="16" y="112" width="608" height="34"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="24" y="66">glm-5.3-flash-free</text><text x="242" y="66">10</text><text x="330" y="66">38%</text><text x="420" y="66">610.000</text><text x="490" y="66">104 sn</text>
+      <text x="24" y="100">space-bunny-free</text><text x="330" y="100">—</text><text x="420" y="100">—</text><text x="490" y="100">—</text>
+      <text x="24" y="134">kodcu / fable</text><text x="242" y="134">20</text><text x="330" y="134">95%</text><text x="420" y="134">23.000</text><text x="490" y="134">12 sn</text>
+    </g>
+    <!-- değişim 1: sağlayıcı sessizliği ayrı sayılır, başarısızlık sayılmaz -->
+    <rect class="degisen" x="228" y="84" width="84" height="22" stroke-width="1.5"/>
+    <text class="degisen-text" x="234" y="99" font-size="11">3 sessiz</text>
+    <!-- değişim 2: veri etiketi sütunu -->
+    <rect class="degisen" x="556" y="50" width="64" height="22" stroke-width="1.5"/><text class="degisen-text" x="562" y="65" font-size="11">● ölçüldü</text>
+    <rect class="degisen" x="556" y="84" width="64" height="22" stroke-width="1.5"/><text class="degisen-text" x="562" y="99" font-size="11">○ veri yok</text>
+    <rect class="degisen" x="556" y="118" width="64" height="22" stroke-width="1.5"/><text class="degisen-text" x="562" y="133" font-size="11">◐ tahmin</text>
+    <text x="24" y="172" font-size="11" fill="#757575">Etiketler: ölçüldü · kısmi (bazı satırlarda yok) · tahmin · veri yok. Sayı yoksa 0 değil "—" yazılır.</text>
+  </svg>
+</figure>
+
+</body>
+</html>
