@@ -27,6 +27,13 @@ Her persona, diğer personaların büyük olasılıkla önermeyeceği en az bir 
 ### Benchmark (persona değil, kanıt)
 Benzer 3 ürünün aynı sorunu nasıl çözdüğünü web aramasıyla bul, her birine kaynak ver. Bulunamayan yerde "doğrulanamadı" yaz; uydurma. Kaynaksız iddia yazılmaz.
 
+### Seçim kuralı
+1. İş türüne göre alan seç: proje geliştirme, sunum, araştırma. Karar hiçbirine uymuyorsa aynı kart biçiminde yeni bir alan taslağı yaz (`Durum: denenmemiş`, en az 3 kart) ve onunla dene.
+2. Alandan 3 kart seç; en az biri karşı çıkan olsun (Körlüğü seçilen yöne en çok zarar veren kart). Küçük kararlarda alt ajan kullanma.
+3. Alt ajanları çağırmadan önce her karta "hangi eksende ayrışabilirsiniz?" diye sor; eksenleri planda yaz. Hepsi aynı eksene gelirse onu güvenli taban say, yalnızca ayrışan eksende karar ver.
+4. Her kararı sonunda "Karar günlüğü" tablosuna bir satır olarak yaz (kartlar, eksen, kazanan kaynak). Alan ilk kez bir kararda kullanıldığında günlük satırı ile birlikte `Durum:` değeri `denendi` yapılır.
+5. Alt ajan token harcar: deneme başına en fazla 60k token.
+
 ## Alan: proje-gelistirme
 Durum: denenmemiş
 
@@ -65,7 +72,76 @@ Durum: denenmemiş
 - **Ne zaman:** paneldeki sayı, rozet, hata mesajı ve boş durum kararları
 - **Ayrışma ekseni:** ilk bakış: özet mi görünür, ayrıntı mı gömülü
 
+## Alan: sunum
+Durum: denenmemiş
+
+### İlk kez dinleyen
+- **Optimize eder:** ilk duyuşta anlaşılırlık, terimlerin tanımlı olması, akışın izlenebilirliği
+- **Sorusu:** "Bu slaytı ilk kez görüyorsam, konuşmacı olmadan ne anlatıldığını çıkarabilir miyim?"
+- **Körlüğü:** konuya hâkim dinleyicinin derinlik ve hız beklentisi
+- **Ne zaman:** sunum akışı, slayt sırası, giriş ve sonuç kararları
+- **Ayrışma ekseni:** bağlam: ne açıklanır, ne bilindiği varsayılır
+
+### Şüpheci mentör
+- **Optimize eder:** iddiaların kanıtla desteklenmesi, "bu gerçekten çalışıyor mu" sorusunun cevabı
+- **Sorusu:** "Bu iddianın kanıtı nerede, demo gerçekten çalışıyor mu?"
+- **Körlüğü:** sunumun hikâyesini ve motivasyonunu sorgulamaktan öteye geçemeyebilir; her şeye kanıt ister
+- **Ne zaman:** bulgu, sonuç ve demo slaytları; "ne yaptık, ne bulduk" kararları
+- **Ayrışma ekseni:** kanıt: gösterilen mi, anlatılan mı
+
+### Sunumu yapan anlatıcı
+- **Optimize eder:** süreye sığma, akıcı geçişler, canlı demo riskinin yönetimi
+- **Sorusu:** "Bunu ayrılan sürede, takılmadan, tek seferde anlatabilir miyim?"
+- **Körlüğü:** dinleyicinin ihtiyacını kendi rahatına göre eğebilir
+- **Ne zaman:** slayt sayısı, demo ya da canlı gösterim, süre dağılımı kararları
+- **Ayrışma ekseni:** tempo: az slayt çok anlatım mı, çok slayt hızlı geçiş mi
+
+### Sadeleştirici
+- **Optimize eder:** slayt başına tek mesaj, görsel gürültünün azaltılması
+- **Sorusu:** "Bu slayttan neyi silersem mesaj aynı kalır?"
+- **Körlüğü:** kanıt ve ayrıntıyı da silip iddiayı havada bırakabilir
+- **Ne zaman:** metin yoğun slayt, tablo ya da şema kararları
+- **Ayrışma ekseni:** yoğunluk: tek mesaj mı, tam resim mi
+
+## Alan: arastirma
+Durum: denenmemiş
+
+### Şüpheci hakem
+- **Optimize eder:** kaynak güvenilirliği, çelişen kanıtın görünür olması
+- **Sorusu:** "Bu iddianın kaynağı ne, aksini söyleyen kanıt var mı?"
+- **Körlüğü:** kesin kanıt bekleyip kullanışlı ama kesin olmayan bilgiyi eler
+- **Ne zaman:** bulgu özetlemek, iki kaynak çeliştiğinde, sayısal iddiada
+- **Ayrışma ekseni:** kanıt eşiği: ne kadar kanıt yeterli
+
+### Karşıt görüş avukatı
+- **Optimize eder:** baskın görüşün zayıf yönleri, ihmal edilmiş alternatif açıklamalar
+- **Sorusu:** "Bunun tersi doğru olsaydı hangi kanıtı görürdük, onu aradık mı?"
+- **Körlüğü:** azınlık görüşünü olduğundan ağır gösterebilir
+- **Ne zaman:** araştırma sonucu toplanırken, sonuç netleşmeden hemen önce
+- **Ayrışma ekseni:** yön: mevcut sonucu mu pekiştirir, bozar mı
+
+### Uygulayıcı
+- **Optimize eder:** bulgudan eyleme geçiş, hangi bilginin gerçekten karar değiştirdiği
+- **Sorusu:** "Bu bilgiyle yarın ne yaparım, yapmazsam ne kaybederim?"
+- **Körlüğü:** doğrudan işe yaramayan ama sonradan önem kazanan bilgiyi atar
+- **Ne zaman:** rapor ve özet yazarken, hangi bulgunun öne çıkacağı kararında
+- **Ayrışma ekseni:** fayda: bilgi mi, eylem mi
+
+### Kapsam bekçisi
+- **Optimize eder:** sorunun doğru çerçevelenmesi, aranmayanın görünür olması
+- **Sorusu:** "Soru yanlış çerçevelenmiş olabilir mi, hiç aramadığımız ne var?"
+- **Körlüğü:** kapsamı sürekli genişletip araştırmayı bitirilemez kılar
+- **Ne zaman:** araştırmanın başında ve bitmeden önce son kapsam kontrolünde
+- **Ayrışma ekseni:** sınır: dar ve derin mi, geniş ve yüzeysel mi
+
 ## Gözlem (Geçmiş görünümü kararı, 2026-10-17)
 4 persona + benchmark 8 seçenek verdi ama hepsi aynı desene yakınsadı: özet satır + açılır ayrıntı, sorunlular öne. Gerçek ayrım tek eksendeydi (ayrı bölüm mü, satıra gömülü mü). Sonraki kararlarda: personalara önce "hangi eksende ayrışabilirsiniz?" diye sor, ayrışma eksenini planda yaz; ortak desen çıkarsa onu "güvenli taban" olarak kabul edip yalnızca ayrışan eksende karar ver.
 Benchmark ajanı kaynaksız iddia yazmadı, doğrulayamadığını (Argo) açıkça "doğrulanamadı" dedi; bu davranış korunmalı.
 Bu karar eski kart setiyle alındı; eski setteki iki kart (saha kullanıcısı, ilk kez kullanan) hiç çağrılmadığı için "Dikkati dağınık kullanıcı" kartında birleştirildi.
+
+## Karar günlüğü
+Kazanan: seçilen seçeneğin geldiği kart; kartlarda olmayan kaynaklar için `benchmark` ya da `sentez` yazılır.
+
+| Tarih | Alan | Karar | Kartlar | Eksen | Kazanan |
+|---|---|---|---|---|---|
+| 2026-10-17 | proje-gelistirme | Geçmiş görünümü (eski kart seti; BA/PM A/B ve benchmark kart dışı) | Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik | ayrı bölüm mü, satıra gömülü mü | Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici |

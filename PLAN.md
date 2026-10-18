@@ -224,7 +224,7 @@ Not: bu adımlar UI'a dokunmaz, `Etki:`/`Onay:` yok. Adım 31 dışındakiler Cl
   - Kapı: `node test/persona-denetle.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 32. Kart biçimi ve proje-gelistirme paketi
+- [x] 32. Kart biçimi ve proje-gelistirme paketi
   - Yürütücü: claude
   - Ne: `personalar.md`'yi v2 biçimine çevir. `## Ortak`: çıktı biçimi, benchmark yöntemi, ayırt edicilik şartı, sentez kuralı ("Senin bakışın" kartı kalkar; Claude'un sentez merceği olur, alt ajana verilmez, kullanıcı önerisi alt ajana gitmez). `## Alan: proje-gelistirme` (`Durum: denenmemiş`), 5 kart: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik (eski kartlardan rafine), Kapıyı kandıran yürütücü (yeni: "ücretsiz model bu kapıyı işi yapmadan nasıl geçer?"), Dikkati dağınık kullanıcı (saha kullanıcısı ve ilk kez kullananın birleşimi: "10 saniyede ne olduğunu anlıyor mu?"). Her kartta 5 alan dolu; `Ne zaman` hangi karar türünde çağrıldığını, `Ayrışma ekseni` hangi eksende ayrıştığını yazar.
   - Kapı: `node persona-denetle.mjs`
@@ -232,19 +232,19 @@ Not: bu adımlar UI'a dokunmaz, `Etki:`/`Onay:` yok. Adım 31 dışındakiler Cl
   - Kapı: `node persona-denetle.mjs --sayim | grep -q 'proje-gelistirme/Kapıyı kandıran yürütücü'`
   - Kapı: `! grep -q 'Acelesi olan saha' personalar.md`
 
-- [ ] 33. Sunum paketi
+- [x] 33. Sunum paketi
   - Yürütücü: claude
   - Ne: `## Alan: sunum` (`Durum: denenmemiş`), 3-4 kart; sunum hazırlama (NexusOS / Ar-Ge mentör sunumu: `nexusos-sunum` becerisiyle uyumlu) için: ilk kez dinleyen, şüpheci jüri/mentör ("kanıt nerede?"), sunumu yapan anlatıcı ("süreye sığar mı, akıcı mı?"), gerekirse sadeleştirici. Kart adları dosyada tekil, 5 alan dolu.
   - Kapı: `node persona-denetle.mjs`
   - Kapı: `test "$(node persona-denetle.mjs --sayim | grep -c '^sunum/')" -ge 3`
 
-- [ ] 34. Araştırma paketi
+- [x] 34. Araştırma paketi
   - Yürütücü: claude
   - Ne: `## Alan: arastirma` (`Durum: denenmemiş`), 3-4 kart; bir konuyu derinlemesine araştırmak için: şüpheci hakem ("kaynak ne, çelişen kanıt var mı?"), karşıt görüş avukatı, uygulayıcı ("bu bilgiyle ne yaparım?"), kapsam bekçisi ("soru yanlış çerçevelenmiş olabilir; aranmayan ne?"). `Ortak` bölümündeki "doğrulanamadı yaz, uydurma" kuralı bu alanda da geçerlidir.
   - Kapı: `node persona-denetle.mjs`
   - Kapı: `test "$(node persona-denetle.mjs --sayim | grep -c '^arastirma/')" -ge 3`
 
-- [ ] 35. Karar günlüğü ve seçim kuralı
+- [x] 35. Karar günlüğü ve seçim kuralı
   - Yürütücü: claude
   - Ne: `## Karar günlüğü` tablosu; Geçmiş görünümü kararı geriye dönük girilir (alan `proje-gelistirme`, kartlar: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik; eksen "ayrı bölüm mü / satıra gömülü mü"; kazanan: Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici; BA/PM A/B ve benchmark kart dışı not olarak eksen sütununa değil karar sütununa yazılır). `Ortak`'a "Seçim kuralı" ekle: iş türüne göre alan seç, alandan 3 kart seç ve en az biri karşı çıkan olsun, alt ajanlardan önce "hangi eksende ayrışırsınız?" turu, her kararda günlüğe satır, alan yoksa yeni alan taslağı (`denenmemiş`). Bu adım sonunda `proje-gelistirme` hâlâ `denenmemiş`tir (Geçmiş kararı eski kartlarla alındı).
   - Kapı: `node persona-denetle.mjs`
