@@ -225,6 +225,29 @@ function kisa(n) {
 }
 const tam = (n) => Math.round(n).toLocaleString('tr-TR');
 
+// üst şerit: dört sayı; bilinmeyen değer "—", eksik anlık görüntü çökmez
+export function kpiHtml(snap) {
+  const adimlar = (snap?.plan?.kategoriler || []).flatMap((k) => k.adimlar || []);
+  const biten = snap?.plan ? `${adimlar.filter((a) => a.bitti).length} / ${adimlar.length}` : '—';
+  // yalnız gerçek (sessiz olmayan) denemesi olan adımlar sayılır
+  const gercekler = (snap?.gecmis || []).map((g) => (g.denemeler || []).filter((x) => !sessizMi(x))).filter((d) => d.length);
+  const ilk = gercekler.length
+    ? `%${Math.round((gercekler.filter((d) => d.find((x) => x.gecti === true)?.deneme === 1).length / gercekler.length) * 100)}`
+    : '—';
+  const tel = snap?.telemetri?.var ? snap.telemetri : null;
+  const modeller = snap?.modeller || [];
+  const olculen = modeller.filter((m) => typeof m.token === 'number' && Number.isFinite(m.token));
+  const token = tel ? tel.toplam?.toplam : olculen.length ? olculen.reduce((t, m) => t + m.token, 0) : null;
+  const odenen = tel ? tel.toplam?.maliyet : modeller.length ? modeller.reduce((t, m) => t + (Number(m.maliyet) || 0), 0) : null;
+  const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">${esc(etiket)}</span><b id="${id}">${esc(deger)}</b></div>`;
+  return '<div class="kpi">' +
+    kutu('kpi-biten', 'biten adım', biten) +
+    kutu('kpi-ilk', 'ilk denemede geçme', ilk) +
+    kutu('kpi-token', tel ? 'gerçek token' : 'ölçülen token', typeof token === 'number' ? kisa(token) : '—') +
+    kutu('kpi-odenen', 'ödenen', typeof odenen === 'number' ? para(odenen) : '—') +
+    '</div>';
+}
+
 // OpenCode veritabanından gerçek token; tasarruf kartı her zaman "tahmin" etiketli
 export function telemetriHtml(t) {
   if (!t || !t.var) return '<span class="bos">OpenCode veritabanı bulunamadı</span>';

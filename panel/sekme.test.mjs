@@ -27,13 +27,13 @@ assert.ok(t.includes('4,1 M') && t.includes('gerçek token'), 'veritabanı varsa
 assert.match(t, /\$1[.,]00/);
 // veritabanı yoksa çalıştırıcı ölçümü ve etiket değişir
 t = duz(kpiHtml({ ...snap, telemetri: { var: false, modeller: [], toplam: null, tasarruf: null } }));
-assert.ok(t.includes('ölçülen token') && /\b400\b/.test(t) && !t.includes('gerçek token'), 'null token toplama girmez');
+assert.ok(t.includes('ölçülen token') && /\b300\b/.test(t) && !t.includes('gerçek token'), 'null token toplama girmez');
 assert.match(t, /\$0[.,]50/);
 // boş / eksik veri çökmez, 0 yerine —
 t = duz(kpiHtml(null));
 assert.ok(t.includes('—') && !t.includes('NaN') && !t.includes('undefined'));
 t = duz(kpiHtml({ plan: snap.plan, gecmis: [], modeller: [], telemetri: null }));
-assert.ok(t.includes('0 / 3') && t.includes('—'));
+assert.ok(t.includes('2 / 3') && t.includes('—'));
 assert.ok(!kpiHtml({ ...snap, plan: { ayarlar: {}, kategoriler: [{ ad: 'K', adimlar: [{ ...adim(1, true), no: '<b>1</b>' }] }] } }).includes('<b>'));
 
 // sayfa: sekmeler

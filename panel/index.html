@@ -115,6 +115,15 @@ table td { white-space: nowrap; }
 /* başlıklar sarılabilir; model adı harf harf kırılmasın diye en az genişlik */
 table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
+/* KPI şeridi: yan yana dört kutu, dar ekranda 2×2 */
+.kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0 4px; }
+.kpi-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; min-width: 0; }
+.kpi-kutu .etiket { display: block; color: var(--soluk); font-size: 12px; overflow-wrap: anywhere; }
+.kpi-kutu b { font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 520px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sekmeler { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--cizgi); }
+.sekmeler button { font: inherit; font-size: 14px; padding: 6px 12px; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--soluk); cursor: pointer; }
+.sekmeler button[aria-selected="true"] { color: var(--vurgu-metin); border-bottom-color: var(--vurgu); font-weight: 600; }
 #telemetri .bos { color: var(--bos); font-style: italic; }
 .tasarruf { margin-bottom: 8px; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .soluk { color: var(--soluk); font-size: 12px; }
@@ -201,12 +210,24 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
   <h1>opencode-akis</h1>
   <p class="baglanti" id="baglanti">bağlanıyor…</p>
 
+  <section id="kpi"></section>
+
+  <div class="sekmeler" role="tablist">
+    <button type="button" role="tab" data-sekme="akis" aria-selected="true" aria-controls="sekme-akis">Akış</button>
+    <button type="button" role="tab" data-sekme="modeller" aria-selected="false" aria-controls="sekme-modeller">Modeller</button>
+    <button type="button" role="tab" data-sekme="etki" aria-selected="false" aria-controls="sekme-etki">Etki</button>
+    <button type="button" role="tab" data-sekme="arastirma" aria-selected="false" aria-controls="sekme-arastirma">Araştırma</button>
+  </div>
+
+  <div role="tabpanel" id="sekme-akis">
   <h2>Şu an</h2>
   <section id="simdi" class="kart"><span class="bos">boşta</span></section>
 
   <h2>Adımlar</h2>
   <section id="kategoriler"></section>
+  </div>
 
+  <div role="tabpanel" id="sekme-modeller" hidden>
   <h2>Modeller</h2>
   <section id="modeller"></section>
 
@@ -215,17 +236,22 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 
   <h2>Model × adım</h2>
   <section id="matris"></section>
+  </div>
 
+  <div role="tabpanel" id="sekme-etki" hidden>
   <h2>Etki</h2>
   <section id="etki"></section>
+  </div>
 
+  <div role="tabpanel" id="sekme-arastirma" hidden>
   <h2>Araştırma</h2>
   <div class="suzgec" id="ara-suzgec"></div>
   <section id="arastirma"><span class="bos">yükleniyor…</span></section>
+  </div>
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -234,6 +260,22 @@ const modellerEl = document.getElementById('modeller');
 const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
+const kpiEl = document.getElementById('kpi');
+
+// sekmeler: seçili sekme adreste (location.hash) saklanır, geçersizse akis
+const SEKMELER = ['akis', 'modeller', 'etki', 'arastirma'];
+function sekmeSec() {
+  const ad = location.hash.slice(1);
+  const secili = SEKMELER.includes(ad) ? ad : 'akis';
+  document.querySelectorAll('[role="tab"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.sekme === secili)));
+  for (const k of SEKMELER) document.getElementById('sekme-' + k).hidden = k !== secili;
+}
+document.querySelector('[role="tablist"]').addEventListener('click', (e) => {
+  const b = e.target.closest('[role="tab"]');
+  if (b) location.hash = b.dataset.sekme;
+});
+window.addEventListener('hashchange', sekmeSec);
+sekmeSec();
 
 let sonSimdi = null;
 let zamanlayici = null;
@@ -280,6 +322,7 @@ function suAnCiz() {
 }
 
 function ciz(d) {
+  kpiEl.innerHTML = kpiHtml(d);
   sonSimdi = d.simdi || null;
   suAnCiz();
   kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler, acikTercih);
