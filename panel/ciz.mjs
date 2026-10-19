@@ -76,9 +76,22 @@ export function suAnHtml(simdi, simdiMs) {
 export const SORUNLU_INCELEMELER = ['kismen', 'uyumsuz'];
 const INCELEME_ETIKET = { uyumlu: 'uyumlu', kismen: 'kısmen', uyumsuz: 'uyumsuz' };
 
+// kota sessizliği (sağlayıcı yanıt vermedi) gerçek deneme değildir
+const sessizMi = (d) => d.neden === 'yanit_yok';
+
+// işi gerçekte yapan: geçen ilk denemenin yürütücüsü; plandakinden farklıysa açıkça yaz
+function yurutucuEtiket(a, g) {
+  const plan = a.yurutucu || null;
+  const gecen = g && g.denemeler ? g.denemeler.find((x) => x.gecti === true && !sessizMi(x)) : null;
+  const gercek = gecen && gecen.yurutucu ? gecen.yurutucu : null;
+  if (gercek && plan && gercek !== plan) return `${gercek} (plan: ${plan})`;
+  return gercek || plan || null;
+}
+
 // ilk geçen deneme 1 değilse, hiç geçmediyse ya da inceleme sorunluysa true
+// sessiz denemeler yok sayılır (yalnız sessizlik sorun sayılmaz)
 export function sorunluMu(gecmisAdim, inceleme) {
-  const d = gecmisAdim.denemeler || [];
+  const d = (gecmisAdim.denemeler || []).filter((x) => !sessizMi(x));
   const ilk = d.find((x) => x.gecti === true);
   if (d.length > 0 && (!ilk || ilk.deneme > 1)) return true;
   return !!inceleme && SORUNLU_INCELEMELER.includes(inceleme.inceleme);
@@ -89,10 +102,16 @@ function incelemeOf(no, g, incelemeler) {
 }
 
 function ozetHtml(g, inceleme) {
-  const ilk = g.denemeler.find((x) => x.gecti === true);
+  const tum = g.denemeler || [];
+  const gercek = tum.filter((x) => !sessizMi(x));
+  const sessizSayi = tum.length - gercek.length;
+  const ilk = gercek.find((x) => x.gecti === true);
   const parcalar = [];
-  if (g.denemeler.length > 0) {
-    parcalar.push(ilk ? `${ilk.deneme}. denemede geçti` : `geçmedi (${g.denemeler.length} deneme)`);
+  if (gercek.length > 0) {
+    parcalar.push(ilk ? `${ilk.deneme}. denemede geçti` : `geçmedi (${gercek.length} deneme)`);
+    if (sessizSayi > 0) parcalar.push(`${sessizSayi} sessiz`);
+  } else if (sessizSayi > 0) {
+    parcalar.push(`sağlayıcı sessiz (${sessizSayi})`);
   }
   const etiket = inceleme ? INCELEME_ETIKET[inceleme.inceleme] || 'incelenmedi' : 'incelenmedi';
   const sinif = inceleme && INCELEME_ETIKET[inceleme.inceleme] ? inceleme.inceleme : 'incelenmedi';
@@ -108,10 +127,14 @@ function ayrintiHtml(g, inceleme, acikMi, no) {
     icerik += `<div class="commit">commit: ${esc(g.commit.sha)} ${esc(g.commit.mesaj)} · ${g.commit.dosya} dosya</div>`;
   }
   for (const d of g.denemeler) {
-    const sure = d.sure_sn ?? '—';
-    const token = Math.round(d.token || 0).toLocaleString('tr-TR');
-    icerik += `<div class="deneme">${d.deneme}. ${esc(d.model)} ${d.gecti ? '✓' : '✕'}` +
-      `${d.neden ? ' ' + esc(d.neden) : ''} · ${esc(sure)} sn · ${token} token</div>`;
+    if (sessizMi(d)) {
+      icerik += `<div class="deneme sessiz">${esc(d.deneme)}. ${esc(d.model)} ○ sağlayıcı yanıt vermedi</div>`;
+      continue;
+    }
+    const sure = d.sure_sn == null ? '—' : d.sure_sn;
+    const token = d.token == null ? '—' : Math.round(d.token).toLocaleString('tr-TR');
+    icerik += `<div class="deneme">${esc(d.deneme)}. ${esc(d.model)} ${d.gecti ? '✓' : '✕'}` +
+      `${d.neden ? ' ' + esc(d.neden) : ''} · ${esc(sure)} sn · ${esc(token)} token</div>`;
   }
   if (inceleme && inceleme.not) icerik += `<div class="not">Claude notu: ${esc(inceleme.not)}</div>`;
   return `<details class="ayrinti" data-no="${esc(no)}"${acik}><summary>${ozetHtml(g, inceleme)}</summary><div class="ayrinti-icerik">${icerik}</div></details>`;
@@ -142,8 +165,8 @@ export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}) {
     html += `<div><h2>${esc(kat.ad)}</h2><ul class="adimlar">`;
     for (const a of kat.adimlar) {
       const durum = adimDurumu(a, simdi);
-      const bilgi = [a.yurutucu, a.kapi].filter(Boolean).map(esc).join(' · ');
       const g = gecmisMap.get(a.no);
+      const bilgi = [yurutucuEtiket(a, g), a.kapi].filter(Boolean).map(esc).join(' · ');
       const inc = incelemeOf(a.no, g, incelemeler);
       const sorunlu = !!g && sorunluMu(g, inc);
       const acikMi = typeof acik[a.no] === 'boolean' ? acik[a.no] : sorunlu;
