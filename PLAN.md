@@ -331,37 +331,38 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Ne: `panel/ciz.mjs` `planHtml`: her `<li>`'ye `data-sorunsuz` ekle: geçmişi olan (g var) ve `sorunluMu` false ise `"1"`, diğer tüm durumlarda (çalışmamış/geçmişsiz adım dahil) `"0"`; mevcut `data-sorunlu` kalır. `panel/index.html` `filtreUygula`: gizleme koşulu `sadeceSorunlu && li.dataset.sorunsuz === '1'`. Karar: "sadece sorunlu" yalnız sorunsuz tamamlanmış adımları gizler; bekleyen adımlar görünür kalır.
   - Kapı: `node panel/suzgec.test.mjs`
   - Kapı: `node panel/gecmis-ui.test.mjs && node panel/gecmis-guven.test.mjs && node panel/arayuz.test.mjs etki`
-  - Kapı: `bash test/hepsi.sh`
 
 - [ ] 44. Gerçek token ve tasarruf kartı (opencode.db)
   - Problem ve hipotez: panel yalnız çalıştırıcının ölçtüğü sayıları gösteriyor; OpenCode'un gerçek token kırılımı (giriş, çıkış, reasoning, cache), hızı ve "ücretli olsaydı ne tutardı" yok. Hipotez: bu kart "ücretsiz modelle kaliteyi kaybetmeden" iddiasının maliyet tarafını tek sayıyla gösterir.
   - Etki: etki/telemetri.html
+  - Onay: evet
   - Değer: 5
   - Bütçe: 1000000
   - Ne: (1) Yeni `panel/telemetri.mjs`: `export function telemetri(dbYolu, fiyat)` → `{ var, modeller, toplam, tasarruf }`. `node:sqlite` `DatabaseSync(dbYolu, { readOnly: true })` ile `message` tablosunu okur (hiç yazma yok); `data` sütunu JSON, yalnız `role === 'assistant'` ve `tokens` olanlar, bozuk JSON satırı atlanır. Model anahtarı `providerID/modelID`. Modelde: `mesaj`, `giris` (tokens.input), `cikis` (output), `akil` (reasoning), `cacheOkuma` (cache.read), `cacheYazma` (cache.write), `toplam` (bu beşinin toplamı), `toksn` (cikis toplamı / süre toplamı sn, süre = time.completed − time.created ms/1000 yalnız ikisi de olan mesajlar; hiç yoksa `null`, reasoning hariç), `maliyet` (data.cost toplamı). `modeller` toplam token azalan sırada. `toplam`: aynı alanların tüm modellerdeki toplamı (+`mesaj`). `tasarruf`: `fiyat?.referans` içinde `giris`, `cikis`, `cacheOkuma`, `cacheYazma` sayıları hepsi varsa `{ referans: ad, listeFiyati, odenen, tutar }`, değilse `null`; `listeFiyati` = (giris·g + (cikis+akil)·c + cacheOkuma·co + cacheYazma·cy) / 1e6 tüm token toplamları üzerinden, `odenen` = toplam maliyet, `tutar` = listeFiyati − odenen. Veritabanı yoksa/açılmazsa/`message` tablosu yoksa `{ var: false, modeller: [], toplam: null, tasarruf: null }` (asla çökmez). (2) `panel/durum.mjs` `snapshot`: `telemetri` alanı; yol `process.env.OPENCODE_DB` ya da `~/.local/share/opencode/opencode.db`; fiyat `<dir>/fiyat.json` (yoksa/bozuksa `null`). (3) `panel/ciz.mjs`: `export function telemetriHtml(t)`: üstte kart "Tasarruf (tahmin): N token · liste fiyatıyla ~$X · ödenen $Y" (tutar sayıları `para` ile; `tasarruf` null ise "referans fiyat girilmedi"), altında tablo: model, mesaj, giriş, çıkış, cache, tok/sn (`null` → `—`); `t` null/`var` false ise "OpenCode veritabanı bulunamadı". Tüm metin `esc`. (4) `panel/index.html`: Modeller bölümünün altına `<h2>Gerçek token</h2><section id="telemetri">`, `telemetriHtml` ile her anlık görüntüde çizilir, mevcut CSS değişkenleri, açık/koyu tema.
   - Kapı: `node panel/telemetri.test.mjs`
   - Kapı: `node panel/durum.test.mjs && node panel/guven.test.mjs && node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
-  - Kapı: `bash test/hepsi.sh`
 
 - [ ] 45. Model × adım matrisi
   - Problem ve hipotez: "hangi model hangi adımda zorlandı" yalnız terminalde (`karsilastir.mjs`). Hipotez: matris, model sırasını (`Modeller:`) veriyle değiştirme kararını bir bakışta destekler.
   - Etki: etki/matris.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 1000000
   - Ne: (1) `panel/durum.mjs` `snapshot`: `matris: { adimlar, modeller }`. `adimlar`: `tur !== 'inceleme'` ve sayısal `adim`'li metrik satırlarındaki adım numaraları, artan, tekil. `modeller`: `{ yurutucu, model, hucreler }` yürütücü sonra model sırasıyla (`yurutucu` yoksa `opencode`). `hucreler[adım]` yalnız o model o adımı denediyse: `neden === 'yanit_yok'` satırları gerçek deneme sayılmaz; gerçek denemelerden biri geçtiyse `{ durum: 'ilk' (geçen deneme 1) | 'cok' (geçen deneme >1), deneme: geçen denemenin numarası, sure: o satırın sure_sn'i ya da null }`; gerçek deneme var ama geçen yoksa `{ durum: 'kaldi', deneme: gerçek deneme sayısı, sure: null }`; yalnız sessiz satır varsa `{ durum: 'sessiz', deneme: 0, sure: null }`. Veri yoksa `{ adimlar: [], modeller: [] }`. (2) `panel/ciz.mjs`: `export function matrisHtml(m)` tablo: başlıkta adım numaraları (`<th>`), satır başlığı `yurutucu/model`, hücre `<td class="hucre ilk|cok|kaldi|sessiz|bos" title="…">` metni `✓1`, `✓N`, `✕N`, `○`, boş; `title` deneme ve süreyi söyler; altta açıklama satırı ("✓N = N. denemede geçti · ✕ = geçmedi · ○ = yalnız kota sessizliği"); veri yoksa "metrik yok"; `esc`. (3) `panel/index.html`: Modeller bölümünün altına `<h2>Model × adım</h2><section id="matris">`, `matrisHtml` ile çizilir; `.hucre.ilk`, `.hucre.cok`, `.hucre.kaldi`, `.hucre.sessiz` CSS kuralları (mevcut `--rozet-*` değişkenleri; renk tek başına anlam taşımaz, simge de var), tablo geniş olursa yatay kayar.
   - Kapı: `node panel/matris.test.mjs`
   - Kapı: `node panel/durum.test.mjs && node panel/guven.test.mjs && node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
-  - Kapı: `bash test/hepsi.sh`
 
 - [ ] 46. KPI şeridi ve sekmeler
   - Problem ve hipotez: panel tek uzun sayfa (Şu an, Adımlar, Modeller, Gerçek token, Model × adım, Etki, Araştırma); Etki ve Araştırma kaydırmadan bulunmuyor. Hipotez: üstte dört sayılık şerit ve dört sekme, ilk bakışta durumu verir ve bölümleri bulmayı kolaylaştırır.
   - Etki: etki/sekmeler.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 1000000
   - Ne: (1) `panel/ciz.mjs`: `export function kpiHtml(snap)` dört kutu: `id="kpi-biten"` "bitenAdım / toplamAdım" (plan adımlarından; plan yoksa `—`), `id="kpi-ilk"` ilk denemede geçme % = `gecmis` içinde gerçek (yanit_yok olmayan) denemesi olan adımların kaçında geçen ilk deneme `deneme === 1` (hiç adım yoksa `—`; Math.round, "%50" biçimi), `id="kpi-token"`: `snap.telemetri.var` ise `telemetri.toplam.toplam` etiketi "gerçek token", değilse `snap.modeller` token toplamı (yalnız sayısal olanlar) etiketi "ölçülen token"; ≥1e6 → "4,1 M" (tr-TR, en çok 1 ondalık), ≥1e3 → "N k", yoksa tam sayı; `id="kpi-odenen"`: telemetri varsa `toplam.maliyet`, yoksa `modeller` maliyet toplamı, `para` ile. `snap` null/eksik çökmez, bilinmeyen `—`. `esc`. (2) `panel/index.html`: üstte `<section id="kpi">` (kpiHtml, her anlık görüntüde); altında `role="tablist"` içinde dört `role="tab"` düğme `data-sekme="akis|modeller|etki|arastirma"` (etiketler Akış, Modeller, Etki, Araştırma), `aria-selected`; içerik `role="tabpanel"` `id="sekme-<ad>"`: akis = `#simdi` + `#kategoriler` (+ "Şu an"/"Adımlar" başlıkları), modeller = `#modeller`, `#telemetri`, `#matris`, etki = `#etki`, arastirma = `#arastirma`. Seçili sekme `location.hash`'te saklanır (açılışta okunur, değişince yazılır, geçersizse akis), yalnız seçili panel görünür (`hidden`). KPI kutuları yan yana, dar ekranda (`@media (max-width: …)`) 2×2 ızgara, yatay taşma yok. Mevcut `id`'ler ve çizim fonksiyonları değişmez.
   - Kapı: `node panel/sekme.test.mjs`
   - Kapı: `node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs && node panel/arastirma.test.mjs && node panel/telemetri.test.mjs && node panel/matris.test.mjs`
   - Kapı: `bash test/hepsi.sh`
+  - Not: `bash test/hepsi.sh` yalnız bu son adımda kapıdır; 44-46'nın kırmızı kapı testleri aynı depoda durduğu için önceki adımlarda hepsi.sh geçemez.
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
