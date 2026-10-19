@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: gerçek token ve tasarruf kartı</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  /* tüm çizim gri tonlu; yalnızca değişen bölgeler renkli */
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — Modeller bölümü yalnız çalıştırıcının ölçtüğü sayıları gösterir; opencode'un gerçek token kırılımı ve "ücretli olsaydı" yok</figcaption>
+  <svg id="once" viewBox="0 0 640 260" role="img" aria-label="Telemetri öncesi">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <text x="24" y="35" font-size="13" fill="#fff">Modeller</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="44" width="608" height="34"/>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="78" width="608" height="34"/>
+    <text x="24" y="66" font-size="12" fill="#616161">deepseek-v4.1-flash · 9 deneme · 55k token</text>
+    <text x="24" y="100" font-size="12" fill="#616161">beam-free · 2 deneme · 1.282k token</text>
+    <text x="24" y="150" font-size="11" fill="#757575">Gerçek token, hız (tok/sn) ve fiyat karşılaştırması: yok</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — Modeller bölümünün üstünde tasarruf kartı, altında opencode.db'den gerçek token tablosu (etiket: tahmin, ölçüldü)</figcaption>
+  <svg id="sonra" viewBox="0 0 640 260" role="img" aria-label="Telemetri sonrası">
+    <rect class="degisen" stroke-width="1.5" x="16" y="16" width="608" height="64"/>
+    <text class="degisen-text" x="28" y="38" font-size="12" fill="#9a3412">Tasarruf (tahmin)</text>
+    <text class="degisen-text" x="28" y="62" font-size="15" fill="#9a3412">4,1 M token · liste fiyatıyla ~$18,40 · ödenen $0,00</text>
+    <rect x="16" y="92" width="608" height="28" fill="#757575"/>
+    <text x="24" y="111" font-size="13" fill="#fff">Modeller (çalıştırıcı ölçümü)</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="120" width="608" height="34"/>
+    <text x="24" y="142" font-size="12" fill="#616161">deepseek-v4.1-flash · 9 deneme · 55k token · ölçüldü</text>
+    <rect class="degisen" stroke-width="1.5" x="16" y="164" width="608" height="90"/>
+    <text class="degisen-text" x="24" y="182" font-size="11" fill="#9a3412">Gerçek token (opencode.db) · model · mesaj · giriş · çıkış · cache · tok/sn</text>
+    <text class="degisen-text" x="24" y="204" font-size="11" fill="#9a3412">deepseek-v4.1-flash-free · 212 · 610k · 22k · 480k · 41 tok/sn</text>
+    <text class="degisen-text" x="24" y="226" font-size="11" fill="#9a3412">Veritabanı yoksa: "OpenCode veritabanı bulunamadı"; fiyat yoksa "referans fiyat girilmedi"</text>
+  </svg>
+</figure>
+
+</body>
+</html>

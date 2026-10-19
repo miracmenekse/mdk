@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: model × adım matrisi</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  /* tüm çizim gri tonlu; yalnızca değişen bölgeler renkli */
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — hangi model hangi adımda zorlandı yalnız terminalde (karsilastir.mjs), panelde model başına toplam var</figcaption>
+  <svg id="once" viewBox="0 0 640 260" role="img" aria-label="Matris öncesi">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <text x="24" y="35" font-size="12" fill="#fff">model · deneme · ilk denemede geçme · token</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="44" width="608" height="34"/>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="78" width="608" height="34"/>
+    <text x="24" y="66" font-size="12" fill="#616161">glm-5.3-flash-free · 9 · 75%</text>
+    <text x="24" y="100" font-size="12" fill="#616161">deepseek-v4.1-flash-free · 1 · 100%</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — model × adım matrisi: hücre = ilk denemede geçti (✓1), çok denemede geçti (✓3), kaldı (✕), yalnız sessiz (○); renk + simge birlikte</figcaption>
+  <svg id="sonra" viewBox="0 0 640 260" role="img" aria-label="Matris sonrası">
+    <text x="24" y="28" font-size="13" fill="#424242">Model × adım</text>
+    <text x="214" y="48" font-size="11" fill="#757575">21</text>
+    <text x="274" y="48" font-size="11" fill="#757575">22</text>
+    <text x="334" y="48" font-size="11" fill="#757575">23</text>
+    <text x="394" y="48" font-size="11" fill="#757575">41</text>
+    <text x="454" y="48" font-size="11" fill="#757575">42</text>
+    <text x="24" y="78" font-size="12" fill="#616161">glm-5.3-flash</text>
+    <rect x="210" y="58" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="218" y="77" font-size="11" fill="#333">✓1</text>
+    <rect x="270" y="58" width="56" height="30" fill="#fef3c7" stroke="#bdbdbd"/>
+    <text x="278" y="77" font-size="11" fill="#333">✓3</text>
+    <rect x="330" y="58" width="56" height="30" fill="#fecaca" stroke="#bdbdbd"/>
+    <text x="338" y="77" font-size="11" fill="#333">✕</text>
+    <rect x="390" y="58" width="56" height="30" fill="#f0f0f0" stroke="#bdbdbd"/>
+    <text x="398" y="77" font-size="11" fill="#333"></text>
+    <rect x="450" y="58" width="56" height="30" fill="#e5e7eb" stroke="#bdbdbd"/>
+    <text x="458" y="77" font-size="11" fill="#333">○</text>
+    <text x="24" y="118" font-size="12" fill="#616161">deepseek-v4.1</text>
+    <rect x="210" y="98" width="56" height="30" fill="#f0f0f0" stroke="#bdbdbd"/>
+    <text x="218" y="117" font-size="11" fill="#333"></text>
+    <rect x="270" y="98" width="56" height="30" fill="#f0f0f0" stroke="#bdbdbd"/>
+    <text x="278" y="117" font-size="11" fill="#333"></text>
+    <rect x="330" y="98" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="338" y="117" font-size="11" fill="#333">✓1</text>
+    <rect x="390" y="98" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="398" y="117" font-size="11" fill="#333">✓1</text>
+    <rect x="450" y="98" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="458" y="117" font-size="11" fill="#333">✓1</text>
+    <text x="24" y="158" font-size="12" fill="#616161">kodcu</text>
+    <rect x="210" y="138" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="218" y="157" font-size="11" fill="#333">✓1</text>
+    <rect x="270" y="138" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="278" y="157" font-size="11" fill="#333">✓1</text>
+    <rect x="330" y="138" width="56" height="30" fill="#d1fae5" stroke="#bdbdbd"/>
+    <text x="338" y="157" font-size="11" fill="#333">✓1</text>
+    <rect x="390" y="138" width="56" height="30" fill="#f0f0f0" stroke="#bdbdbd"/>
+    <text x="398" y="157" font-size="11" fill="#333"></text>
+    <rect x="450" y="138" width="56" height="30" fill="#f0f0f0" stroke="#bdbdbd"/>
+    <text x="458" y="157" font-size="11" fill="#333"></text>
+    <rect class="degisen" x="204" y="52" width="312" height="124" fill="none" stroke-width="2"/>
+    <text x="24" y="204" font-size="11" fill="#757575">✓N = N. denemede geçti · ✕ = gerçek denemelerde geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</text>
+  </svg>
+</figure>
+
+</body>
+</html>

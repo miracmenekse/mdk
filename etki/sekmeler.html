@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: KPI şeridi ve sekmeler</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  /* tüm çizim gri tonlu; yalnızca değişen bölgeler renkli */
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — tek uzun sayfa: Şu an, Adımlar, Modeller, Etki, Araştırma alt alta; Araştırma ve Etki en altta</figcaption>
+  <svg id="once" viewBox="0 0 640 260" role="img" aria-label="Sekme öncesi">
+    <rect x="16" y="16" width="608" height="24" fill="#9e9e9e"/>
+    <text x="24" y="33" font-size="14" fill="#fff">opencode-akis</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="48" width="608" height="30"/>
+    <text x="24" y="68" font-size="12" fill="#616161">Şu an</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="84" width="608" height="70"/>
+    <text x="24" y="104" font-size="12" fill="#616161">Adımlar (uzun liste ↓ ↓ ↓)</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="160" width="608" height="40"/>
+    <text x="24" y="180" font-size="12" fill="#616161">Modeller</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="206" width="608" height="24"/>
+    <text x="24" y="222" font-size="12" fill="#616161">Etki · Araştırma (en altta, kaydırarak)</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — üstte dört sayılık KPI şeridi, altında sekmeler (Akış · Modeller · Etki · Araştırma); seçili sekme adreste (#modeller) saklanır</figcaption>
+  <svg id="sonra" viewBox="0 0 640 260" role="img" aria-label="Sekme sonrası">
+    <rect x="16" y="16" width="608" height="24" fill="#9e9e9e"/>
+    <text x="24" y="33" font-size="14" fill="#fff">opencode-akis</text>
+    <rect class="degisen" stroke-width="1.5" x="16" y="48" width="146" height="56"/>
+    <rect class="degisen" stroke-width="1.5" x="180" y="48" width="146" height="56"/>
+    <rect class="degisen" stroke-width="1.5" x="344" y="48" width="146" height="56"/>
+    <rect class="degisen" stroke-width="1.5" x="508" y="48" width="116" height="56"/>
+    <text class="degisen-text" x="24" y="66" font-size="10" fill="#9a3412">biten adım</text>
+    <text class="degisen-text" x="24" y="92" font-size="16" fill="#9a3412">38 / 43</text>
+    <text class="degisen-text" x="188" y="66" font-size="10" fill="#9a3412">ilk denemede geçme</text>
+    <text class="degisen-text" x="188" y="92" font-size="16" fill="#9a3412">%62</text>
+    <text class="degisen-text" x="352" y="66" font-size="10" fill="#9a3412">gerçek token</text>
+    <text class="degisen-text" x="352" y="92" font-size="16" fill="#9a3412">4,1 M</text>
+    <text class="degisen-text" x="516" y="66" font-size="10" fill="#9a3412">ödenen</text>
+    <text class="degisen-text" x="516" y="92" font-size="16" fill="#9a3412">$0,00</text>
+    <rect class="degisen" x="16" y="114" width="110" height="26" stroke-width="2"/>
+    <text class="degisen-text" x="30" y="132" font-size="12" fill="#9a3412">Akış</text>
+    <rect x="130" y="114" width="110" height="26" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="144" y="132" font-size="12" fill="#424242">Modeller</text>
+    <rect x="244" y="114" width="90" height="26" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="258" y="132" font-size="12" fill="#424242">Etki</text>
+    <rect x="338" y="114" width="120" height="26" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="352" y="132" font-size="12" fill="#424242">Araştırma</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="148" width="608" height="40"/>
+    <text x="24" y="172" font-size="12" fill="#616161">Şu an</text>
+    <rect fill="#e0e0e0" stroke="#bdbdbd" x="16" y="194" width="608" height="56"/>
+    <text x="24" y="218" font-size="12" fill="#616161">Adımlar (yalnız seçili sekmenin içeriği görünür)</text>
+  </svg>
+</figure>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "referans": {
+    "ad": "claude-sonnet-5-5",
+    "birim": "USD / 1M token",
+    "giris": 2,
+    "cikis": 10,
+    "cacheOkuma": 0.2,
+    "cacheYazma": 2.5,
+    "kaynak": "models.dev (neon sağlayıcısı listesi, 2026-10-19); anthropic'in kendi listesi doğrulanamadı: tahmin"
+  }
+}
