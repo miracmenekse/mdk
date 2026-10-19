@@ -332,7 +332,7 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Kapı: `node panel/suzgec.test.mjs`
   - Kapı: `node panel/gecmis-ui.test.mjs && node panel/gecmis-guven.test.mjs && node panel/arayuz.test.mjs etki`
 
-- [ ] 44. Gerçek token ve tasarruf kartı (opencode.db)
+- [x] 44. Gerçek token ve tasarruf kartı (opencode.db)
   - Problem ve hipotez: panel yalnız çalıştırıcının ölçtüğü sayıları gösteriyor; OpenCode'un gerçek token kırılımı (giriş, çıkış, reasoning, cache), hızı ve "ücretli olsaydı ne tutardı" yok. Hipotez: bu kart "ücretsiz modelle kaliteyi kaybetmeden" iddiasının maliyet tarafını tek sayıyla gösterir.
   - Etki: etki/telemetri.html
   - Onay: evet
@@ -342,7 +342,7 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Kapı: `node panel/telemetri.test.mjs`
   - Kapı: `node panel/durum.test.mjs && node panel/guven.test.mjs && node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
 
-- [ ] 45. Model × adım matrisi
+- [x] 45. Model × adım matrisi
   - Problem ve hipotez: "hangi model hangi adımda zorlandı" yalnız terminalde (`karsilastir.mjs`). Hipotez: matris, model sırasını (`Modeller:`) veriyle değiştirme kararını bir bakışta destekler.
   - Etki: etki/matris.html
   - Onay: evet
@@ -352,7 +352,7 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Kapı: `node panel/matris.test.mjs`
   - Kapı: `node panel/durum.test.mjs && node panel/guven.test.mjs && node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
 
-- [ ] 46. KPI şeridi ve sekmeler
+- [x] 46. KPI şeridi ve sekmeler
   - Problem ve hipotez: panel tek uzun sayfa (Şu an, Adımlar, Modeller, Gerçek token, Model × adım, Etki, Araştırma); Etki ve Araştırma kaydırmadan bulunmuyor. Hipotez: üstte dört sayılık şerit ve dört sekme, ilk bakışta durumu verir ve bölümleri bulmayı kolaylaştırır.
   - Etki: etki/sekmeler.html
   - Onay: evet

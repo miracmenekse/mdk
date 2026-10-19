@@ -265,7 +265,7 @@ export function telemetriHtml(t) {
     `<td class="sayi">${m.toksn == null ? '—' : esc(tam(m.toksn))}</td>` +
     '</tr>').join('');
   return `<div class="kart tasarruf">${kart}</div>` +
-    '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th>tok/sn</th></tr></thead>' +
+    '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th title="mesaj başına çıkış token / mesaj süresi; ön işleme süresi dahil, üretim hızı değildir">tok/sn (mesaj)</th></tr></thead>' +
     `<tbody>${satirlar}</tbody></table>`;
 }
 
@@ -285,7 +285,7 @@ export function matrisHtml(m) {
     return `<td class="hucre ${sinif}" title="adım ${esc(no)}: ${esc(title)}">${esc(metin)}</td>`;
   };
   const satirlar = m.modeller.map((r) => '<tr>' +
-    `<th class="model">${esc(`${r.yurutucu || 'opencode'}/${r.model}`)}</th>` +
+    `<th class="model">${esc(r.model.startsWith(`${r.yurutucu || 'opencode'}/`) ? r.model : `${r.yurutucu || 'opencode'}/${r.model}`)}</th>` +
     m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
     '</tr>').join('');
   return '<table class="matris"><thead><tr><th class="model">model</th>' +
