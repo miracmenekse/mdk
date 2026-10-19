@@ -289,13 +289,13 @@ Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa
 ### Faz 3: panel araştırma sekmesi (2026-10-18)
 GitHub'da panel için altlık/örnek olacak projeler araştırıldı; sonuç `arastirma/arastirma.json` (kapı dosyası gibi davran, DEĞİŞTİRME). Hipotez: kullanıcı adayları, rolleri (altlık/örnek/yan yana/izle/kullanma) ve önerilen birleşimleri panelden okuyup hangisini yapacağına karar verebilir. Birleşimlerin kendisi (telemetri, tasarruf kartı, matris...) bu adımın kapsamı DEĞİL.
 
-- [ ] 40. Araştırma sekmesi
+- [x] 40. Araştırma sekmesi
   - Ne: (1) `panel/sunucu.mjs`: `GET /api/arastirma` → `<dir>/arastirma/arastirma.json` içeriğini JSON verir; dosya yoksa ya da JSON bozuksa `{"adaylar":[],"birlesimler":[]}` (200). (2) `panel/ciz.mjs`: `export function arastirmaHtml(veri, suz = {})` saf fonksiyon; `veri` null/boş ise "Araştırma verisi yok" metni. Üstte `not` ve `oneri` metni; "Birleşim önerileri" kartları (ad, parçalar, ne, neden, panelde, efor S/M/L, değer 1-5, risk); "Adaylar" tablosu/kartları: repo (`https://github.com/<repo>` bağlantısı, `target="_blank" rel="noopener noreferrer"`), kategori, yıldız (`null` ise "—", "null" yazma), lisans, son push, dil, rol rozeti, ne, alınacak, risk, kanıt (`doğrulanamadı` belirgin). `suz.kategori` verilirse yalnız o kategorideki adaylar listelenir, birleşimler her zaman görünür. Tüm metin `esc` ile kaçışlanır. (3) `panel/index.html`: `<h2>Araştırma</h2><section id="arastirma">`, sayfa açılışında bir kez `fetch('/api/arastirma')`, kategori süzgeci düğmeleri (Tümü + veri içindeki kategoriler), `arastirmaHtml`'i `/ciz.mjs` içinden içe aktar. Dış kaynak (CDN) yok, mevcut CSS değişkenleri ve açık/koyu tema korunur, telefon genişliğinde taşma olmaz.
   - Kapı: `node panel/arastirma.test.mjs`
   - Kapı: `node panel/arayuz.test.mjs etki && node panel/sunucu.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 41. Güven etiketli sayılar (model tablosu)
+- [x] 41. Güven etiketli sayılar (model tablosu)
   - Problem ve hipotez: kota sessizliği (`neden: "yanit_yok"`) modele %0 başarı yazıyor, ölçülmemiş süre/token 0 sayılıp ortalamayı bozuyor; okuyan kişi model hakkında yanlış karar verir (örn. "space-bunny hep başarısız"). Hipotez: sayının yanına güven etiketi ve sağlayıcı sessizliğinin ayrı sayımı konursa model karşılaştırması yanlış okunmaz, "kanıt nerede?" sorusuna tabloyla cevap verilir. Başarı ölçütü: gerçek metriklerde hiçbir modelde sessizlik yüzünden 0%/0.0 sn görünmez.
   - Etki: etki/guven.html
   - Onay: evet
@@ -314,6 +314,14 @@ Ayrışma eksenleri (seçim kuralı 3. madde, seçenek turundan önce):
 Gözlem: üç eksen biçimsel olarak ayrı (yoğunluk, türetme maliyeti, izlenebilirlik) ama üçü de aynı yöne bakıyor: planlanan yerine fiilî yürütücü, ayrıntı açılır bölümde. Bu "güvenli taban"; gerçek karar noktası ayrıntının (başarısız deneme sayısı ve modeller) satırda rozetle mi, yalnızca açılır bölümde mi görüneceği.
 Harcanan token (yalnızca 1. tur): 107k (3 alt ajan x ~35,8k; ajan başına sabit yük, görev metni birkaç yüz token). Onaylı sınır tur başına 60k idi; yalnızca bu tur sınırı aştı. Seçenek turu (2. tur) başlatılmadı.
 Karar bekliyor: bu sabit yük yüzünden `general-purpose` alt ajan başına 60k sınırına yalnızca 1 ajan sığar; 3 kartlı bağımsız tur yaklaşık 107k tutar.
+
+- [ ] 42. Adım geçmişinde güven: sessizlik ayrı, gerçek yürütücü
+  - Problem ve hipotez: adım geçmişi (Adımlar bölümü) Modeller tablosunda düzelttiğimiz hatayı hâlâ taşıyor: kota sessizliği "✕ yanit_yok · 62 sn · 0 token" yazıyor, eksik süre/token 0 görünüyor, adım satırı işi kodcu yapmış olsa da planın `Yürütücü`'sünü (opencode) yazıyor. Hipotez: bunlar düzelirse "bu adımı kim yaptı, model gerçekten başarısız mı?" sorusu panelden doğru okunur. Başarı ölçütü: devralınan adımda "kodcu (plan: opencode)", sessiz denemeler başarısızlık gibi görünmez. UI'a dokunur ama yeni ekran yok: adım 41'in onaylı davranışının geçmiş görünümüne uzantısıdır (taslak yok).
+  - Bütçe: 1000000
+  - Ne: `panel/ciz.mjs` içinde (`panel/gecmis.mjs` ve `panel/durum.mjs` değişmez): (1) Adım satırındaki yürütücü: o adımın geçmişinde `gecti === true` olan ilk denemenin `yurutucu`'su işi yapandır; plandakinden farklıysa `<gerçek> (plan: <plandaki>)` yaz, aynıysa ya da geçmiş/geçen deneme yoksa plandakini yaz. (2) `ozetHtml`: `neden === 'yanit_yok'` denemeler "gerçek deneme" sayılmaz; gerçek deneme varsa mevcut özet ("N. denemede geçti" / "geçmedi (K deneme)", K yalnız gerçek denemeler) ve sessiz varsa " · N sessiz"; yalnız sessiz deneme varsa özet "sağlayıcı sessiz (N)". (3) `ayrintiHtml`: sessiz deneme satırı `<div class="deneme sessiz">` ve "<deneme>. <model> ○ sağlayıcı yanıt vermedi" (✕, süre ve token yok); diğer satırlarda `sure_sn`/`token` `null` ise "—" (0 değil): "— sn · — token". (4) `sorunluMu`: sessiz denemeler yok sayılır (yalnız sessiz deneme = sorunlu değil; gerçek deneme kuralları aynı). Tüm metin `esc` ile kaçışlanır; mevcut `gecmis-ui.test.mjs` geçmeye devam eder.
+  - Kapı: `node panel/gecmis-guven.test.mjs`
+  - Kapı: `node panel/gecmis-ui.test.mjs && node panel/guven.test.mjs && node panel/modeller-ui.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
