@@ -216,6 +216,36 @@ export function modellerHtml(modeller) {
     `<th>ort. süre</th><th>veri</th></tr></thead><tbody>${satirlar}</tbody></table>`;
 }
 
+// büyük sayılar kısaltılır: 4,1 M · 55 k · 999 (tr-TR)
+function kisa(n) {
+  const f = (x) => x.toLocaleString('tr-TR', { maximumFractionDigits: 1 });
+  if (n >= 1e6) return f(n / 1e6) + ' M';
+  if (n >= 1e3) return f(Math.round(n / 1e3)) + ' k';
+  return String(Math.round(n));
+}
+const tam = (n) => Math.round(n).toLocaleString('tr-TR');
+
+// OpenCode veritabanından gerçek token; tasarruf kartı her zaman "tahmin" etiketli
+export function telemetriHtml(t) {
+  if (!t || !t.var) return '<span class="bos">OpenCode veritabanı bulunamadı</span>';
+  const ts = t.tasarruf;
+  const kart = ts
+    ? `<b>Tasarruf (tahmin):</b> ${esc(kisa(t.toplam.toplam))} token · liste fiyatıyla ~${esc(para(ts.listeFiyati))} · ödenen ${esc(para(ts.odenen))}` +
+      (ts.referans ? ` <span class="soluk">(referans: ${esc(ts.referans)})</span>` : '')
+    : `<b>Tasarruf (tahmin):</b> referans fiyat girilmedi · ${esc(kisa(t.toplam.toplam))} token`;
+  const satirlar = t.modeller.map((m) => '<tr>' +
+    `<td class="model">${esc(m.model)}</td>` +
+    `<td class="sayi">${esc(tam(m.mesaj))}</td>` +
+    `<td class="sayi">${esc(tam(m.giris))}</td>` +
+    `<td class="sayi" title="reasoning: ${esc(tam(m.akil))}">${esc(tam(m.cikis))}</td>` +
+    `<td class="sayi" title="okuma ${esc(tam(m.cacheOkuma))} · yazma ${esc(tam(m.cacheYazma))}">${esc(tam(m.cacheOkuma + m.cacheYazma))}</td>` +
+    `<td class="sayi">${m.toksn == null ? '—' : esc(tam(m.toksn))}</td>` +
+    '</tr>').join('');
+  return `<div class="kart tasarruf">${kart}</div>` +
+    '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th>tok/sn</th></tr></thead>' +
+    `<tbody>${satirlar}</tbody></table>`;
+}
+
 export function etkiHtml(etki) {
   if (!etki || etki.length === 0) return '<span class="bos">etki adımı yok</span>';
   const maxToken = Math.max(0, ...etki.map((e) => e.tahmin?.token || 0));

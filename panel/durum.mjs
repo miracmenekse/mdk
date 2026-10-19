@@ -2,9 +2,11 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 import { parse } from './plan.mjs';
 import { tahmin } from './tahmin.mjs';
 import { gecmis } from './gecmis.mjs';
+import { telemetri } from './telemetri.mjs';
 
 export function snapshot(dir) {
   const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [] };
@@ -112,6 +114,16 @@ export function snapshot(dir) {
     });
 
   sonuc.gecmis = gecmis(dir, satirlar);
+
+  // gerçek token: OpenCode veritabanı (salt-okunur); referans fiyat proje kökünde
+  let fiyat = null;
+  try {
+    fiyat = JSON.parse(readFileSync(join(dir, 'fiyat.json'), 'utf8'));
+  } catch {
+    fiyat = null;
+  }
+  // ponytail: her anlık görüntüde veritabanı yeniden okunur; yavaşlarsa mtime+size önbelleği
+  sonuc.telemetri = telemetri(process.env.OPENCODE_DB || join(homedir(), '.local/share/opencode/opencode.db'), fiyat);
 
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {

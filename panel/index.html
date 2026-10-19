@@ -115,6 +115,9 @@ table td { white-space: nowrap; }
 /* başlıklar sarılabilir; model adı harf harf kırılmasın diye en az genişlik */
 table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
+#telemetri .bos { color: var(--bos); font-style: italic; }
+.tasarruf { margin-bottom: 8px; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.soluk { color: var(--soluk); font-size: 12px; }
 #etki .bos { color: var(--bos); font-style: italic; }
 .etki-kart {
   background: var(--kart);
@@ -198,6 +201,9 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
   <h2>Modeller</h2>
   <section id="modeller"></section>
 
+  <h2>Gerçek token</h2>
+  <section id="telemetri"></section>
+
   <h2>Etki</h2>
   <section id="etki"></section>
 
@@ -207,13 +213,14 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
 const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
 const etkiEl = document.getElementById('etki');
+const telemetriEl = document.getElementById('telemetri');
 
 let sonSimdi = null;
 let zamanlayici = null;
@@ -265,6 +272,7 @@ function ciz(d) {
   kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler, acikTercih);
   filtreUygula();
   modellerEl.innerHTML = modellerHtml(d.modeller);
+  telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   etkiEl.innerHTML = etkiHtml(d.etki);
 }
 
