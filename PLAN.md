@@ -326,7 +326,7 @@ Karar bekliyor: bu sabit yük yüzünden `general-purpose` alt ajan başına 60k
 ### Faz 4: panelin tamamlanması (2026-10-19)
 Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zorlandı" sorularına tek yerden, güven etiketiyle cevap verirse model seçimi ve sunum kararları panelden alınır. Başarı ölçütü: gerçek token ve tasarruf görünür, model × adım matrisi okunur, bölümler sekmelerde bulunur. Kapsam dışı (bilinçli): ısı haritası, Kanban, Claude oturumu yan yana (kullanıcı makinesinde kurulum), 7g/30g aralık düğmeleri (veri günde birkaç satır).
 
-- [ ] 43. "Sadece sorunlu" süzgeci çalışmamış adımları gizlemesin
+- [x] 43. "Sadece sorunlu" süzgeci çalışmamış adımları gizlemesin
   - Bütçe: 1000000
   - Ne: `panel/ciz.mjs` `planHtml`: her `<li>`'ye `data-sorunsuz` ekle: geçmişi olan (g var) ve `sorunluMu` false ise `"1"`, diğer tüm durumlarda (çalışmamış/geçmişsiz adım dahil) `"0"`; mevcut `data-sorunlu` kalır. `panel/index.html` `filtreUygula`: gizleme koşulu `sadeceSorunlu && li.dataset.sorunsuz === '1'`. Karar: "sadece sorunlu" yalnız sorunsuz tamamlanmış adımları gizler; bekleyen adımlar görünür kalır.
   - Kapı: `node panel/suzgec.test.mjs`

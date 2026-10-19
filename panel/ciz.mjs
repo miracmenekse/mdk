@@ -169,9 +169,11 @@ export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}) {
       const bilgi = [yurutucuEtiket(a, g), a.kapi].filter(Boolean).map(esc).join(' · ');
       const inc = incelemeOf(a.no, g, incelemeler);
       const sorunlu = !!g && sorunluMu(g, inc);
+      // süzgeç yalnız geçmişi olan ve sorunsuz tamamlanmış adımları gizler; çalışmamış adım görünür kalır
+      const sorunsuz = !!g && !sorunlu;
       const acikMi = typeof acik[a.no] === 'boolean' ? acik[a.no] : sorunlu;
       const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, acikMi, a.no) : '';
-      html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}">` +
+      html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}" data-sorunsuz="${sorunsuz ? 1 : 0}">` +
         '<div class="adim-ust">' +
         `<span class="no">${esc(a.no)}</span>` +
         `<span class="baslik">${esc(a.baslik)}</span>` +

@@ -226,7 +226,7 @@ function filtreUygula() {
   const kutu = kategorilerEl.querySelector('#sadece-sorunlu');
   if (kutu) kutu.checked = sadeceSorunlu;
   kategorilerEl.querySelectorAll('li').forEach((li) => {
-    li.hidden = sadeceSorunlu && li.dataset.sorunlu !== '1';
+    li.hidden = sadeceSorunlu && li.dataset.sorunsuz === '1';
   });
 }
 
