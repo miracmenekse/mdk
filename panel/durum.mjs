@@ -9,7 +9,7 @@ import { gecmis } from './gecmis.mjs';
 import { telemetri } from './telemetri.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [] };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] } };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -114,6 +114,7 @@ export function snapshot(dir) {
     });
 
   sonuc.gecmis = gecmis(dir, satirlar);
+  sonuc.matris = matris(satirlar);
 
   // gerçek token: OpenCode veritabanı (salt-okunur); referans fiyat proje kökünde
   let fiyat = null;
@@ -141,4 +142,37 @@ export function snapshot(dir) {
   }
 
   return sonuc;
+}
+
+// model × adım: hücre = o modelin o adımdaki sonucu; sessiz (yanit_yok) satırlar gerçek deneme değildir
+function matris(satirlar) {
+  const metrik = satirlar.filter((s) => s.tur !== 'inceleme' && typeof s.adim === 'number' && Number.isFinite(s.adim));
+  const adimlar = [...new Set(metrik.map((s) => s.adim))].sort((a, b) => a - b);
+  const harita = new Map();
+  for (const s of metrik) {
+    if (typeof s.model !== 'string' || !s.model) continue;
+    const yurutucu = s.yurutucu ?? 'opencode';
+    const anahtar = `${yurutucu}\u0000${s.model}`;
+    const m = harita.get(anahtar) ?? { yurutucu, model: s.model, satir: {} };
+    harita.set(anahtar, m);
+    (m.satir[s.adim] ??= []).push(s);
+  }
+  const modeller = [...harita.values()]
+    .sort((a, b) => a.yurutucu.localeCompare(b.yurutucu) || a.model.localeCompare(b.model))
+    .map(({ yurutucu, model, satir }) => {
+      const hucreler = {};
+      for (const [adim, liste] of Object.entries(satir)) {
+        const gercek = liste.filter((s) => s.neden !== 'yanit_yok');
+        const gecen = gercek.find((s) => s.gecti === true);
+        if (gecen) {
+          hucreler[adim] = { durum: gecen.deneme === 1 ? 'ilk' : 'cok', deneme: gecen.deneme, sure: typeof gecen.sure_sn === 'number' ? gecen.sure_sn : null };
+        } else if (gercek.length) {
+          hucreler[adim] = { durum: 'kaldi', deneme: gercek.length, sure: null };
+        } else {
+          hucreler[adim] = { durum: 'sessiz', deneme: 0, sure: null };
+        }
+      }
+      return { yurutucu, model, hucreler };
+    });
+  return { adimlar, modeller };
 }

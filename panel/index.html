@@ -118,6 +118,15 @@ td.sayi { font-variant-numeric: tabular-nums; }
 #telemetri .bos { color: var(--bos); font-style: italic; }
 .tasarruf { margin-bottom: 8px; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .soluk { color: var(--soluk); font-size: 12px; }
+#matris .bos { color: var(--bos); font-style: italic; }
+table.matris th, table.matris td { padding: 4px 6px; text-align: center; }
+table.matris th.model { text-align: left; font-weight: 400; color: var(--metin); }
+.hucre { font-size: 12px; font-weight: 600; min-width: 3ch; cursor: help; }
+.hucre.ilk { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.hucre.cok { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
+.hucre.kaldi { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+.hucre.sessiz { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
+.lejant { font-size: 12px; color: var(--soluk); margin: 6px 0 0; }
 #etki .bos { color: var(--bos); font-style: italic; }
 .etki-kart {
   background: var(--kart);
@@ -204,6 +213,9 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
   <h2>Gerçek token</h2>
   <section id="telemetri"></section>
 
+  <h2>Model × adım</h2>
+  <section id="matris"></section>
+
   <h2>Etki</h2>
   <section id="etki"></section>
 
@@ -213,7 +225,7 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -221,6 +233,7 @@ const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
 const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
+const matrisEl = document.getElementById('matris');
 
 let sonSimdi = null;
 let zamanlayici = null;
@@ -273,6 +286,7 @@ function ciz(d) {
   filtreUygula();
   modellerEl.innerHTML = modellerHtml(d.modeller);
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
+  matrisEl.innerHTML = matrisHtml(d.matris);
   etkiEl.innerHTML = etkiHtml(d.etki);
 }
 

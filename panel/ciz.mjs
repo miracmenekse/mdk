@@ -246,6 +246,31 @@ export function telemetriHtml(t) {
     `<tbody>${satirlar}</tbody></table>`;
 }
 
+// model × adım matrisi; renk tek başına anlam taşımaz, hücrede simge + sayı var
+export function matrisHtml(m) {
+  if (!m || !m.adimlar?.length || !m.modeller?.length) return '<span class="bos">metrik yok</span>';
+  const hucre = (h, no) => {
+    if (!h) return `<td class="hucre bos" title="adım ${esc(no)}: denenmedi"></td>`;
+    const sure = h.sure == null ? '' : ` · ${h.sure} sn`;
+    const [metin, title] = {
+      ilk: ['✓1', `ilk denemede geçti${sure}`],
+      cok: [`✓${h.deneme}`, `${h.deneme}. denemede geçti${sure}`],
+      kaldi: [`✕${h.deneme}`, `geçmedi (${h.deneme} gerçek deneme)`],
+      sessiz: ['○', 'yalnız kota sessizliği (sağlayıcı yanıt vermedi)'],
+    }[h.durum] || ['', 'bilinmiyor'];
+    const sinif = ['ilk', 'cok', 'kaldi', 'sessiz'].includes(h.durum) ? h.durum : 'bos';
+    return `<td class="hucre ${sinif}" title="adım ${esc(no)}: ${esc(title)}">${esc(metin)}</td>`;
+  };
+  const satirlar = m.modeller.map((r) => '<tr>' +
+    `<th class="model">${esc(`${r.yurutucu || 'opencode'}/${r.model}`)}</th>` +
+    m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
+    '</tr>').join('');
+  return '<table class="matris"><thead><tr><th class="model">model</th>' +
+    m.adimlar.map((no) => `<th>${esc(no)}</th>`).join('') +
+    `</tr></thead><tbody>${satirlar}</tbody></table>` +
+    '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</p>';
+}
+
 export function etkiHtml(etki) {
   if (!etki || etki.length === 0) return '<span class="bos">etki adımı yok</span>';
   const maxToken = Math.max(0, ...etki.map((e) => e.tahmin?.token || 0));
