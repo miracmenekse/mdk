@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Claude harcaması</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+<figure>
+  <figcaption>Önce — KPI şeridinde "ödenen $0" yalnız OpenCode; Claude harcaması görünmez</figcaption>
+  <svg id="once" viewBox="0 0 640 250" role="img" aria-label="Önce">
+    <rect x="16" y="16" width="146" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="24" y="36" font-size="10" fill="#616161">biten adım</text>
+    <text x="24" y="60" font-size="16" fill="#616161">39 / 46</text>
+    <rect x="180" y="16" width="146" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="188" y="36" font-size="10" fill="#616161">ilk denemede</text>
+    <text x="188" y="60" font-size="16" fill="#616161">%96</text>
+    <rect x="344" y="16" width="146" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="352" y="36" font-size="10" fill="#616161">gerçek token</text>
+    <text x="352" y="60" font-size="16" fill="#616161">14,4 M</text>
+    <rect x="508" y="16" width="116" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="516" y="36" font-size="10" fill="#616161">ödenen</text>
+    <text x="516" y="60" font-size="16" fill="#616161">$0</text>
+    <text x="24" y="110" font-size="12" fill="#757575">Claude (planlama + kodcu) harcaması hiçbir yerde yok: "ödenen $0" yalnız OpenCode.</text>
+  </svg>
+</figure>
+<figure>
+  <figcaption>Sonra (sayılar örnektir, gerçek değil) — beşinci kutu "Claude (tahmin)" ve Modeller sekmesinde Claude harcaması bölümü</figcaption>
+  <svg id="sonra" viewBox="0 0 640 250" role="img" aria-label="Sonra">
+    <rect x="16" y="16" width="112" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="22" y="36" font-size="10" fill="#616161">biten</text>
+    <text x="22" y="60" font-size="15" fill="#616161">39/46</text>
+    <rect x="134" y="16" width="112" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="140" y="36" font-size="10" fill="#616161">ilk denemede</text>
+    <text x="140" y="60" font-size="15" fill="#616161">%96</text>
+    <rect x="252" y="16" width="112" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="258" y="36" font-size="10" fill="#616161">gerçek token</text>
+    <text x="258" y="60" font-size="15" fill="#616161">14,4 M</text>
+    <rect x="370" y="16" width="112" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="376" y="36" font-size="10" fill="#616161">OpenCode öd.</text>
+    <text x="376" y="60" font-size="15" fill="#616161">$0</text>
+    <rect x="488" y="16" width="136" height="56" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text class=" degisen-text" x="494" y="36" font-size="10" fill="#9a3412">Claude (tahmin)</text>
+    <text class=" degisen-text" x="494" y="60" font-size="15" fill="#9a3412">~$85 en az</text>
+    <rect x="16" y="92" width="608" height="138" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text class=" degisen-text" x="24" y="112" font-size="11" fill="#9a3412">Claude harcaması (tahmin, API karşılığı) · 2026-10-18 – 2026-10-20 · abonelikteyseniz gerçek fatura farklıdır</text>
+    <text class=" degisen-text" x="24" y="134" font-size="11" fill="#9a3412">model · mesaj · giriş · çıkış · cache · maliyet</text>
+    <text class=" degisen-text" x="24" y="156" font-size="11" fill="#9a3412">claude-sonnet-5-5 (ana) · 87 · 190k · 41k · 14,1 M · ~$85</text>
+    <text class=" degisen-text" x="24" y="178" font-size="11" fill="#9a3412">claude-opus-5-5 (alt ajan: kodcu) · 63 · … · fiyat yok</text>
+    <text class=" degisen-text" x="24" y="204" font-size="11" fill="#9a3412">Toplam en az ~$85: fiyatı bilinmeyen modeller dahil değil; fiyat için fiyat.json'a ekleyin</text>
+    <text class=" degisen-text" x="24" y="222" font-size="11" fill="#9a3412">Alt ajan payı: %38 · Claude Code oturumları ~30 gün saklanır</text>
+  </svg>
+</figure>
+</body>
+</html>
