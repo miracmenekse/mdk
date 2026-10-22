@@ -378,7 +378,7 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
 Hipotez: kullanıcı dbeaver-mm'in durumunu ("son kullanıcılar hangi sürümde, yayımlanmamış ne var, Windows derlemesi geçti mi, VM kopyasında yarım iş var mı") bugün terminal ve GitHub arasında topluyor; tek panelde ilk bakışta görürse kontrol tek adıma iner ve yarım iş/kırık derleme unutulmaz. Başarı ölçütü: `op-panel.sh start ~/projects/dbeaver-mm 4748` açılınca bu dört soru kaydırmadan cevaplanır; ağ yoksa panel düşmez, "son bilinen veri" der. Kapsam dışı: GitHub'a yazma (etiket, release, push), ana makinedeki kurulu sürümü okumak (VM'den erişim yok).
 Seçenekler: (A) yalnız yeni "Depo" sekmesi; (B, seçildi 2026-10-22) A + üstte depo şeridi ve git deposu olan projede açılış sekmesi Depo — bir adım uzun ama "genel durum" sorusunu ilk bakışta cevaplar; (C) panel yerine `durum.sh` terminal özeti — en ucuz ama iki yere bakılır.
 
-- [ ] 48. Depo durumu (sürüm, yayımlanmamış K'ler, CI, yerel) ve projeye süzülmüş token
+- [x] 48. Depo durumu (sürüm, yayımlanmamış K'ler, CI, yerel) ve projeye süzülmüş token
   - Problem ve hipotez: yukarıda (Faz 5). Ayrıca Gerçek token kartı tüm OpenCode oturumlarını sayıyor; dbeaver-mm panelinde opencode-akis'in token'ı görünüyor.
   - Etki: etki/depo.html
   - Onay: evet
