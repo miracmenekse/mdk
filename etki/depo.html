@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: depo durumu</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: dbeaver-mm paneli yalnız plan ve model verisini gösterir; sürüm, CI ve yerel değişiklik yok</figcaption>
+  <svg id="once" viewBox="0 0 640 400" role="img" aria-label="Depo durumu eklenmeden önce panel">
+    <text x="16" y="34" font-size="18" fill="#424242">dbeaver-mm paneli</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="50" width="146" height="56"/><rect x="170" y="50" width="146" height="56"/>
+      <rect x="324" y="50" width="146" height="56"/><rect x="478" y="50" width="146" height="56"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="26" y="72">biten adım</text><text x="26" y="94" font-size="16">0 / 0</text>
+      <text x="180" y="72">ilk denemede</text><text x="180" y="94" font-size="16">—</text>
+      <text x="334" y="72">gerçek token</text><text x="334" y="94" font-size="16">4,1 M*</text>
+      <text x="488" y="72">ödenen</text><text x="488" y="94" font-size="16">$0</text>
+    </g>
+    <text x="334" y="122" font-size="11" fill="#9e9e9e">* tüm projelerin token'ı karışık</text>
+    <line x1="16" y1="140" x2="624" y2="140" stroke="#bdbdbd"/>
+    <g font-size="14" fill="#616161">
+      <text x="24" y="134">Akış</text><text x="80" y="134">Modeller</text><text x="160" y="134">Etki</text><text x="210" y="134">Araştırma</text>
+    </g>
+    <rect x="16" y="156" width="608" height="40" fill="#eeeeee"/>
+    <text x="28" y="181" font-size="13" fill="#757575">Şu an: boşta</text>
+    <rect x="16" y="206" width="608" height="150" fill="#eeeeee"/>
+    <text x="28" y="230" font-size="13" fill="#757575">Adımlar (plan)</text>
+    <text x="28" y="378" font-size="12" fill="#9e9e9e">"Kullanıcılar hangi sürümde? Yayımlanmamış ne var? Windows derlemesi geçti mi?" → terminal / GitHub</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: üstte depo şeridi (ilk bakış), yeni "Depo" sekmesi açılışta seçili; token yalnız bu projenin</figcaption>
+  <svg id="sonra" viewBox="0 0 640 520" role="img" aria-label="Depo durumu eklendikten sonra panel">
+    <text x="16" y="34" font-size="18" fill="#424242">dbeaver-mm paneli</text>
+    <!-- değişim 1: depo şeridi -->
+    <g class="degisen" stroke-width="2">
+      <rect x="16" y="50" width="146" height="56"/><rect x="170" y="50" width="146" height="56"/>
+      <rect x="324" y="50" width="146" height="56"/><rect x="478" y="50" width="146" height="56"/>
+    </g>
+    <g font-size="12" class="degisen-text">
+      <text x="26" y="72">son sürüm</text><text x="26" y="94" font-size="16">v0.3.6</text>
+      <text x="180" y="72">yayımlanmamış</text><text x="180" y="94" font-size="16">2 K</text>
+      <text x="334" y="72">Windows derlemesi</text><text x="334" y="94" font-size="16">✓ geçti</text>
+      <text x="488" y="72">yerel</text><text x="488" y="94" font-size="16">2 dosya · ↑0 ↓0</text>
+    </g>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="114" width="146" height="40"/><rect x="170" y="114" width="146" height="40"/>
+      <rect x="324" y="114" width="146" height="40"/><rect x="478" y="114" width="146" height="40"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="26" y="139">adım 0 / 0</text><text x="180" y="139">ilk deneme —</text>
+      <text x="334" y="139">token 0 (bu proje)</text><text x="488" y="139">ödenen $0</text>
+    </g>
+    <line x1="16" y1="180" x2="624" y2="180" stroke="#bdbdbd"/>
+    <g font-size="14" fill="#616161">
+      <text x="96" y="174">Akış</text><text x="146" y="174">Modeller</text><text x="226" y="174">Etki</text><text x="276" y="174">Araştırma</text>
+    </g>
+    <!-- değişim 2: Depo sekmesi (ilk sekme) -->
+    <text class="degisen-text" x="24" y="174" font-size="14" font-weight="bold">Depo</text>
+    <rect class="degisen" x="16" y="190" width="608" height="300" stroke-width="2"/>
+    <g font-size="13" class="degisen-text">
+      <text x="28" y="214" font-weight="bold">Yayımlanmamış (v0.3.6 → origin/main)</text>
+      <text x="40" y="236">2b6b6f0  K66: value picker queries are independent…   3 gün önce</text>
+      <text x="40" y="256">7332f64  K65: value picker lists distinct values…   3 gün önce</text>
+      <text x="28" y="290" font-weight="bold">GitHub Actions (son 5)</text>
+      <text x="40" y="312">✓ windows-release  v0.3.6   ·  ✓ CodeQL main  ·  ✕ …  (bağlantı)</text>
+      <text x="28" y="346" font-weight="bold">Yerel (VM kopyası)</text>
+      <text x="40" y="368">main · origin/main ile ↑0 ↓0 · değişik: ConfPackages.java, ConfPackagesView.java</text>
+      <text x="28" y="402" font-weight="bold">Son K commit'leri (10)</text>
+      <text x="40" y="424">K66 … K57 (tarih, ilk satır)</text>
+      <text x="28" y="470" font-size="11">son yoklama 1 dk önce · fetch/gh hatası olursa: "GitHub'a ulaşılamadı, son bilinen veri (X dk önce)"</text>
+    </g>
+  </svg>
+</figure>
+
+</body>
+</html>
