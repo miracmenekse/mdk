@@ -3,19 +3,31 @@
 
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync } from 'node:fs';
+import { sep } from 'node:path';
 
 const YOK = () => ({ var: false, modeller: [], toplam: null, tasarruf: null });
 const ALANLAR = ['giris', 'cikis', 'akil', 'cacheOkuma', 'cacheYazma'];
 const sayi = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
 
-export function telemetri(dbYolu, fiyat) {
+// dizin verilirse yalnız o dizindeki (ya da altındaki) oturumlar; session tablosu yoksa tümü
+export function telemetri(dbYolu, fiyat, dizin) {
   // var olmayan yol readOnly açılışta da hata verir; yine de boş dosya yaratılmasın diye önce bakılır
   if (!dbYolu || !existsSync(dbYolu)) return YOK();
   let satirlar;
+  let kapsam = 'tum';
   try {
     const db = new DatabaseSync(dbYolu, { readOnly: true });
     try {
-      satirlar = db.prepare('select data from message').all();
+      const oturumVar = !!db.prepare("select 1 from sqlite_master where type = 'table' and name = 'session'").get();
+      if (dizin && oturumVar) {
+        kapsam = 'proje';
+        // düz önek değil: /a/proje-duman, /a/proje'ye sayılmaz
+        const dizinler = new Map(db.prepare('select id, directory from session').all().map((r) => [r.id, r.directory]));
+        const icinde = (d) => typeof d === 'string' && (d === dizin || d.startsWith(dizin + sep));
+        satirlar = db.prepare('select session_id, data from message').all().filter((r) => icinde(dizinler.get(r.session_id)));
+      } else {
+        satirlar = db.prepare('select data from message').all();
+      }
     } finally {
       db.close();
     }
@@ -72,5 +84,5 @@ export function telemetri(dbYolu, fiyat) {
     tasarruf = { referans: r.ad ?? null, listeFiyati, odenen: toplam.maliyet, tutar: listeFiyati - toplam.maliyet };
   }
 
-  return { var: true, modeller, toplam, tasarruf };
+  return { var: true, modeller, toplam, tasarruf, kapsam };
 }

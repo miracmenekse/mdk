@@ -1,7 +1,7 @@
 // Durum birleştirici: PLAN.md + durum.json + metrikler.jsonl → anlık görüntü.
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { parse } from './plan.mjs';
 import { tahmin } from './tahmin.mjs';
@@ -124,7 +124,8 @@ export function snapshot(dir) {
     fiyat = null;
   }
   // ponytail: her anlık görüntüde veritabanı yeniden okunur; yavaşlarsa mtime+size önbelleği
-  sonuc.telemetri = telemetri(process.env.OPENCODE_DB || join(homedir(), '.local/share/opencode/opencode.db'), fiyat);
+  // yalnız bu projenin (ve alt dizinlerinin) oturumları sayılır
+  sonuc.telemetri = telemetri(process.env.OPENCODE_DB || join(homedir(), '.local/share/opencode/opencode.db'), fiyat, resolve(dir));
 
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {

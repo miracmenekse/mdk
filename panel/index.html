@@ -195,6 +195,15 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 .ayrinti-icerik div { margin-bottom: 3px; overflow-wrap: anywhere; }
 #arastirma .bos { color: var(--bos); font-style: italic; }
 #arastirma h3 { font-size: 14px; margin: 14px 0 6px; }
+#depo h3 { font-size: 14px; margin: 14px 0 6px; }
+#depo p { font-size: 13px; margin: 4px 0; overflow-wrap: anywhere; }
+#depo a { color: var(--vurgu-metin); }
+#depo .bos { color: var(--bos); font-style: italic; font-size: 13px; }
+.depo-liste { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.depo-liste li { padding: 3px 0; border-bottom: 1px solid var(--cizgi); overflow-wrap: anywhere; }
+.depo-liste .model { font-family: ui-monospace, SFMono-Regular, monospace; }
+.depo-hata { color: var(--rozet-eskale-m); }
+#depo-serit .kpi-kutu { border-color: var(--vurgu); }
 #arastirma a { color: var(--vurgu-metin); overflow-wrap: anywhere; }
 .ara-not, .ara-oneri { font-size: 13px; margin: 4px 0 8px; overflow-wrap: anywhere; }
 .ara-not { color: var(--soluk); }
@@ -210,13 +219,19 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
   <h1>opencode-akis</h1>
   <p class="baglanti" id="baglanti">bağlanıyor…</p>
 
+  <section id="depo-serit"></section>
   <section id="kpi"></section>
 
   <div class="sekmeler" role="tablist">
+    <button type="button" role="tab" data-sekme="depo" aria-selected="false" aria-controls="sekme-depo" hidden>Depo</button>
     <button type="button" role="tab" data-sekme="akis" aria-selected="true" aria-controls="sekme-akis">Akış</button>
     <button type="button" role="tab" data-sekme="modeller" aria-selected="false" aria-controls="sekme-modeller">Modeller</button>
     <button type="button" role="tab" data-sekme="etki" aria-selected="false" aria-controls="sekme-etki">Etki</button>
     <button type="button" role="tab" data-sekme="arastirma" aria-selected="false" aria-controls="sekme-arastirma">Araştırma</button>
+  </div>
+
+  <div role="tabpanel" id="sekme-depo" hidden>
+  <section id="depo"></section>
   </div>
 
   <div role="tabpanel" id="sekme-akis">
@@ -251,7 +266,7 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, depoSeritHtml, depoHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -261,12 +276,17 @@ const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
 const kpiEl = document.getElementById('kpi');
+const depoSeritEl = document.getElementById('depo-serit');
+const depoEl = document.getElementById('depo');
+const depoDugme = document.querySelector('[data-sekme="depo"]');
 
-// sekmeler: seçili sekme adreste (location.hash) saklanır, geçersizse akis
-const SEKMELER = ['akis', 'modeller', 'etki', 'arastirma'];
+// sekmeler: seçili sekme adreste (location.hash) saklanır; geçersizse açılış sekmesi
+// açılış sekmesi ilk veri gelince bir kez seçilir: git deposu varsa Depo, yoksa Akış
+const SEKMELER = ['depo', 'akis', 'modeller', 'etki', 'arastirma'];
+let acilisSekmesi = null;
 function sekmeSec() {
   const ad = location.hash.slice(1);
-  const secili = SEKMELER.includes(ad) ? ad : 'akis';
+  const secili = SEKMELER.includes(ad) ? ad : acilisSekmesi || 'akis';
   document.querySelectorAll('[role="tab"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.sekme === secili)));
   for (const k of SEKMELER) document.getElementById('sekme-' + k).hidden = k !== secili;
 }
@@ -322,6 +342,13 @@ function suAnCiz() {
 }
 
 function ciz(d) {
+  depoSeritEl.innerHTML = depoSeritHtml(d.depo);
+  depoEl.innerHTML = depoHtml(d.depo);
+  depoDugme.hidden = !d.depo?.var;
+  if (acilisSekmesi === null) {
+    acilisSekmesi = d.depo?.var ? 'depo' : 'akis';
+    sekmeSec();
+  }
   kpiEl.innerHTML = kpiHtml(d);
   sonSimdi = d.simdi || null;
   suAnCiz();

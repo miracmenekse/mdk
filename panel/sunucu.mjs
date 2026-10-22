@@ -5,18 +5,24 @@ import { watch, existsSync, readFileSync, realpathSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
+import { depo, varsayilanCalistir } from './depo.mjs';
 
 const IP = '127.0.0.1';
 
-export async function baslat(dir, port) {
+export async function baslat(dir, port, { calistir } = {}) {
   const kok = resolve(dir);
   const izlenecekler = ['PLAN.md', 'durum.json', 'metrikler.jsonl'].map((f) => join(kok, f));
 
   const clientler = new Set();
   let zamanlayici = null;
 
+  // depo durumu git/gh çağırır (yavaş, ağlı): snapshot() senkron kalır, depo ayrı tazelenir
+  const cal = calistir ?? varsayilanCalistir(kok);
+  let sonDepo = await depo(kok, { calistir: cal }); // ilk /api/durum dolu gelsin
+  const durum = () => ({ ...snapshot(kok), depo: sonDepo });
+
   const gonder = (res) => {
-    res.write(`data: ${JSON.stringify(snapshot(kok))}\n\n`);
+    res.write(`data: ${JSON.stringify(durum())}\n\n`);
   };
 
   const tumuneGonder = () => {
@@ -33,6 +39,27 @@ export async function baslat(dir, port) {
   const planla = () => {
     if (!zamanlayici) zamanlayici = setTimeout(tumuneGonder, 150);
   };
+
+  let kapandi = false;
+  const depoTazele = async () => {
+    const d = await depo(kok, { calistir: cal });
+    if (kapandi) return;
+    sonDepo = d;
+    planla();
+  };
+  // fetch yalnız git deposunda: açılışta beklemeden, sonra 5 dk'da bir; yerel durum dakikada bir
+  const fetchVeTazele = async () => {
+    await cal('git', ['fetch', '-q', 'origin']);
+    await depoTazele();
+  };
+  const depoSaati = setInterval(depoTazele, 60000);
+  depoSaati.unref();
+  let fetchSaati = null;
+  if (sonDepo.var) {
+    fetchVeTazele();
+    fetchSaati = setInterval(fetchVeTazele, 5 * 60000);
+    fetchSaati.unref();
+  }
 
   let izleyici = null;
   try {
@@ -53,7 +80,7 @@ export async function baslat(dir, port) {
 
     if (pathname === '/api/durum') {
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      yanit.end(JSON.stringify(snapshot(kok)));
+      yanit.end(JSON.stringify(durum()));
       return;
     }
 
@@ -160,7 +187,10 @@ export async function baslat(dir, port) {
   return {
     port: sunucu.address().port,
     kapat() {
+      kapandi = true;
       clearTimeout(zamanlayici);
+      clearInterval(depoSaati);
+      clearInterval(fetchSaati);
       izleyici?.close();
       for (const res of clientler) res.end();
       clientler.clear();

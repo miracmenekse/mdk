@@ -225,6 +225,8 @@ function kisa(n) {
 }
 const tam = (n) => Math.round(n).toLocaleString('tr-TR');
 
+const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">${esc(etiket)}</span><b id="${id}">${esc(deger)}</b></div>`;
+
 // üst şerit: dört sayı; bilinmeyen değer "—", eksik anlık görüntü çökmez
 export function kpiHtml(snap) {
   const adimlar = (snap?.plan?.kategoriler || []).flatMap((k) => k.adimlar || []);
@@ -239,7 +241,6 @@ export function kpiHtml(snap) {
   const olculen = modeller.filter((m) => typeof m.token === 'number' && Number.isFinite(m.token));
   const token = tel ? tel.toplam?.toplam : olculen.length ? olculen.reduce((t, m) => t + m.token, 0) : null;
   const odenen = tel ? tel.toplam?.maliyet : modeller.length ? modeller.reduce((t, m) => t + (Number(m.maliyet) || 0), 0) : null;
-  const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">${esc(etiket)}</span><b id="${id}">${esc(deger)}</b></div>`;
   return '<div class="kpi">' +
     kutu('kpi-biten', 'biten adım', biten) +
     kutu('kpi-ilk', 'ilk denemede geçme', ilk) +
@@ -264,7 +265,8 @@ export function telemetriHtml(t) {
     `<td class="sayi" title="okuma ${esc(tam(m.cacheOkuma))} · yazma ${esc(tam(m.cacheYazma))}">${esc(tam(m.cacheOkuma + m.cacheYazma))}</td>` +
     `<td class="sayi">${m.toksn == null ? '—' : esc(tam(m.toksn))}</td>` +
     '</tr>').join('');
-  return `<div class="kart tasarruf">${kart}</div>` +
+  const kapsam = t.kapsam === 'proje' ? '(bu proje)' : '(tüm projeler)';
+  return `<p class="soluk kapsam">${kapsam}</p><div class="kart tasarruf">${kart}</div>` +
     '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th title="mesaj başına çıkış token / mesaj süresi; ön işleme süresi dahil, üretim hızı değildir">tok/sn (mesaj)</th></tr></thead>' +
     `<tbody>${satirlar}</tbody></table>`;
 }
@@ -364,5 +366,79 @@ export function arastirmaHtml(veri, suz = {}) {
       `<div class="ara-alan"><span>kanıt</span> ${kanit}</div>` +
       '</div>';
   }).join('') || '<span class="bos">bu kategoride aday yok</span>';
+  return html;
+}
+
+// göreli tarih: "5 dk önce", "3 sa önce", "3 gün önce"; geçersiz tarih "—"
+function goreli(tarih, simdiMs = Date.now()) {
+  const t = typeof tarih === 'number' ? tarih : Date.parse(tarih);
+  if (!Number.isFinite(t)) return '—';
+  const dk = Math.max(0, Math.floor((simdiMs - t) / 60000));
+  if (dk < 1) return 'az önce';
+  if (dk < 60) return `${dk} dk önce`;
+  if (dk < 1440) return `${Math.floor(dk / 60)} sa önce`;
+  return `${Math.floor(dk / 1440)} gün önce`;
+}
+
+// koşu sonucu: [simge, metin]
+function kosuDurumu(k) {
+  if (k.status !== 'completed') return ['…', 'sürüyor'];
+  if (k.conclusion === 'success') return ['✓', 'geçti'];
+  return ['✕', k.conclusion || 'başarısız'];
+}
+
+const sayiYaz = (n) => (typeof n === 'number' && Number.isFinite(n) ? String(n) : '—');
+
+// depo şeridi: sürüm, yayımlanmamış K, Windows derlemesi, yerel; depo yoksa boş
+export function depoSeritHtml(d) {
+  if (!d || !d.var) return '';
+  // iş akışı adı "Windows Release" (name:) ya da "windows-release" (dosya adı) olabilir
+  const ad = (x) => String(x ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+  const win = Array.isArray(d.ci) ? d.ci.find((k) => ad(k.workflowName) === 'windows-release') : null;
+  const ci = win ? (([s, m]) => `${s} ${m}`)(kosuDurumu(win)) : '—';
+  const y = d.yerel || {};
+  const yerel = `${(y.degisik || []).length} dosya · ↑${sayiYaz(y.ileri)} ↓${sayiYaz(y.geri)}`;
+  return '<div class="kpi">' +
+    kutu('kpi-surum', 'son sürüm', d.surum || '—') +
+    kutu('kpi-yayimlanmamis', 'yayımlanmamış', Array.isArray(d.yayimlanmamis) ? `${d.yayimlanmamis.length} K` : '—') +
+    kutu('kpi-ci', 'Windows derlemesi', ci) +
+    kutu('kpi-yerel', 'yerel', yerel) +
+    '</div>';
+}
+
+function commitListesi(liste) {
+  if (!liste || liste.length === 0) return '<span class="bos">yok</span>';
+  return '<ul class="depo-liste">' + liste.map((c) =>
+    `<li><span class="model">${esc(c.kisa ?? '—')}</span> ${esc(c.mesaj ?? '')} <span class="soluk">${esc(goreli(c.tarih))}</span></li>`).join('') + '</ul>';
+}
+
+// Depo sekmesi içeriği
+export function depoHtml(d) {
+  if (!d || !d.var) return '';
+  let html = `<h3>Yayımlanmamış (${esc(d.surum || '—')} → origin/main)</h3>`;
+  html += d.surum ? commitListesi(d.yayimlanmamis) : '<span class="bos">sürüm etiketi yok</span>';
+
+  html += '<h3>GitHub Actions</h3>';
+  if (d.hata) html += `<p class="depo-hata">GitHub'a ulaşılamadı: ${esc(d.hata)}</p>`;
+  if (Array.isArray(d.ci) && d.ci.length) {
+    html += '<ul class="depo-liste">' + d.ci.map((k) => {
+      const [simge, metin] = kosuDurumu(k);
+      return `<li><span title="${esc(metin)}">${esc(simge)}</span> <b>${esc(k.workflowName ?? '—')}</b> ${esc(k.displayTitle ?? '')} ` +
+        `<span class="soluk">${esc(k.headBranch ?? '')} · ${esc(goreli(k.createdAt))}</span> ` +
+        (k.url ? `<a href="${esc(k.url)}" rel="noopener" target="_blank">koşu</a>` : '') + '</li>';
+    }).join('') + '</ul>';
+  } else if (!d.hata) {
+    html += `<span class="bos">${Array.isArray(d.ci) ? 'koşu yok' : 'GitHub deposu değil'}</span>`;
+  }
+
+  const y = d.yerel || {};
+  html += '<h3>Yerel</h3>' +
+    `<p>${esc(y.dal || '—')} · origin/main ile ↑${sayiYaz(y.ileri)} ↓${sayiYaz(y.geri)}</p>` +
+    ((y.degisik || []).length
+      ? '<ul class="depo-liste">' + y.degisik.map((f) => `<li class="model">${esc(f)}</li>`).join('') + '</ul>'
+      : '<span class="bos">değişik dosya yok</span>');
+
+  html += "<h3>Son K commit'leri</h3>" + commitListesi(d.sonK);
+  if (typeof d.ts === 'number') html += `<p class="soluk">son yoklama ${esc(goreli(d.ts))}</p>`;
   return html;
 }
