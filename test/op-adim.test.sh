@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/op-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok butce butce_ok sorun once"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok butce butce_model butce_ok sorun once"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -126,6 +126,20 @@ c_butce() {
   kontrol '[ "$SN" -lt 25 ]'
   kontrol '[ "$(neden_listesi)" = butce ]'
   kontrol '! yetim 31337'
+}
+c_butce_model() {
+  # bütçe model başınadır: m/a aşınca m/b kendi bütçesiyle denenir ve geçebilir
+  setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`
+  - Bütçe: 1000')" 'davran(){ if [ "$1" = m/a ]; then echo "{\"type\":\"step_finish\",\"part\":{\"tokens\":{\"total\":1200},\"cost\":0}}"; sleep 60;
+    else echo "{\"type\":\"step_finish\",\"part\":{\"tokens\":{\"total\":900},\"cost\":0}}"; echo x > cikti.txt; fi; }'; commit0
+  kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(neden_listesi)" = butce,- ]'   # aşan model ikinci kez denenmez
+  setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`
+  - Bütçe: 1000')" 'davran(){ echo "{\"type\":\"step_finish\",\"part\":{\"tokens\":{\"total\":1200},\"cost\":0}}"; sleep 60; }'; commit0
+  kos
+  kontrol '[ "$KOD" = 2 ]'
+  kontrol '[ "$(neden_listesi)" = butce,butce ]'
 }
 c_butce_ok() {
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`

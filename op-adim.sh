@@ -33,7 +33,7 @@ IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' '
 if [ -n "${ONCE:-}" ] && [[ " ${MODELLER[*]} " == *" $ONCE "* ]]; then
   SIRA=("$ONCE"); for x in "${MODELLER[@]}"; do [ "$x" = "$ONCE" ] || SIRA+=("$x"); done; MODELLER=("${SIRA[@]}")
 fi
-# token bütçesi: adım satırı önceliklidir, yoksa dosya başındaki Bütçe; ikisi de yoksa denetim yok
+# token bütçesi (model başına): adım satırı önceliklidir, yoksa dosya başındaki Bütçe; ikisi de yoksa denetim yok
 butce=$(grep -m1 -oP '^\s*- Bütçe: \K[0-9]+' <<<"$blok" || grep -m1 -oP '^Bütçe: \K[0-9]+' "$PLAN" || true)
 
 # geri alma güvenliği: temiz git ağacı şart (kontrol noktası = HEAD)
@@ -61,6 +61,7 @@ export OPENCODE_CONFIG_CONTENT='{"permission":{"edit":"allow","bash":{"*":"allow
 
 ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0; sorun_icerik=""
 for m in "${MODELLER[@]}"; do
+  harcanan=0   # bütçe model başına: aşan model bırakılır, sıradaki kendi bütçesiyle başlar
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
@@ -119,12 +120,12 @@ $sorun_icerik" ;;
     git reset -q --hard "$CP"; git clean -fdq    # temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
     echo "adım $N: $m deneme $d başarısız ($neden)"
     [ "$neden" = yanit_yok ] || SAGLAYICI=0
-    [ "$neden" = butce ] && { durdu=butce; break 2; }   # bütçe bitti: daha fazla deneme yok
+    [ "$neden" = butce ] && { durdu=butce; break; }   # bu modelin bütçesi bitti: sıradaki modele geç
     [ "$neden" = yanit_yok ] && break   # sessiz modeli yeniden denemek boşuna: sıradaki modele geç
   done
 done
 if [ "$durdu" = butce ]; then
-  yaz_durum "" 0 eskale; echo "adım $N eskale: token bütçesi ($butce) aşıldı (harcanan $harcanan)"; exit 2
+  yaz_durum "" 0 eskale; echo "adım $N eskale: modeller tükendi, en az biri token bütçesini ($butce/model) aştı"; exit 2
 fi
 if [ $SAGLAYICI = 1 ]; then
   yaz_durum "" 0 saglayici; echo "adım $N: sağlayıcı yanıt vermiyor (tüm modeller $ILK sn içinde olay üretmedi)"; exit 6

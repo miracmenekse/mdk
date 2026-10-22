@@ -49,3 +49,7 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 - Ücretsiz kota dolunca OpenCode çıkmadan sessizce bekler: `yanit_yok` (ILK sn) tespiti çıkış 6 verir. Kodcu alt ajanının commit trailer'ı "Haiku 5.5" yazabiliyor; yerel geçmiş, yeniden yazılmadı.
 - UI işinde yalnızca kapılara güvenme: gerçek Firefox ekran görüntüsü al (geciktirici sarmalayıcı sayfa gerekir, yoksa canlı veri gelmeden çeker). Canlı paneli yeni kodla yeniden başlat (`bash op-panel.sh stop . 4747 && bash op-panel.sh start . 4747`), testler kendi sunucusunu kullanır.
 - Panel yalnızca `127.0.0.1`'e bağlanır; VM'den dışarı port açma.
+
+## 2026-10-23: bütçe model başına, liste güncellendi
+- `op-adim.sh`: `Bütçe` artık model başına (önce adım toplamıydı ve ilk model aşınca diğer modeller hiç denenmeden eskale oluyordu: adım 48, dbeaver-mm K70/K71). Aşan model bırakılır, sıradaki kendi bütçesiyle başlar; `kodcu`ya yalnız tüm modeller tükenince gidilir. Test: `c_butce_model`.
+- `space-bunny` ve `longcat` artık ücretsiz listede yok, çıkarıldı; yeni `flint-40b-free` eklendi (henüz ölçülmedi).
