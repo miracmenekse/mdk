@@ -2,7 +2,7 @@
 
 import { createServer } from 'node:http';
 import { watch, existsSync, readFileSync, realpathSync } from 'node:fs';
-import { join, resolve, isAbsolute, sep } from 'node:path';
+import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
@@ -19,7 +19,7 @@ export async function baslat(dir, port, { calistir } = {}) {
   // depo durumu git/gh çağırır (yavaş, ağlı): snapshot() senkron kalır, depo ayrı tazelenir
   const cal = calistir ?? varsayilanCalistir(kok);
   let sonDepo = await depo(kok, { calistir: cal }); // ilk /api/durum dolu gelsin
-  const durum = () => ({ ...snapshot(kok), depo: sonDepo });
+  const durum = () => ({ ...snapshot(kok), depo: sonDepo, ad: basename(kok) }); // ad: başlıkta proje adı
 
   const gonder = (res) => {
     res.write(`data: ${JSON.stringify(durum())}\n\n`);
