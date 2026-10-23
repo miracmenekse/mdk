@@ -51,13 +51,23 @@ yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM
   const e=process.env; require("fs").writeFileSync("durum.json", JSON.stringify({adim:+e.D_ADIM,baslik:e.D_BASLIK,
   model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,ts:Date.now()}))'; }
 yaz_metrik() { M_JSON="$1" node -e 'require("fs").appendFileSync("metrikler.jsonl", process.env.M_JSON+"\n")'; }
-topla() { node -e '                       // step_finish olaylarından token+maliyet
-  let t=0,c=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const e=JSON.parse(l); if (e.type==="step_finish") { t+=e.part.tokens.total; c+=e.part.cost||0 } } catch {} }
-  console.log(t, c)' "$1"; }
+topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç)
+  let t=0,c=0,e=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
+    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens; t+=k.total; c+=x.part.cost||0; e+=k.total-(k.cache?.read||0) } } catch {} }
+  console.log(t, c, e)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
-export OPENCODE_CONFIG_CONTENT='{"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}}'
+IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}'
+# OP_SADE=1 (deneysel, varsayılan kapalı): bağlamı küçük tutmayı dener; K73 ölçümünde (n=1) token azaltmadı, glm adım sayısını 22→37 artırdı.
+# Ölçüm (dbeaver-mm K74): token'ın ~%90'ı her adımda yeniden gönderilen bağlam
+# (cache read); bağlamı büyüten tam dosya okumaları ve uzun komut çıktıları. prune eski araç çıktılarını budar,
+# tool_output uzun çıktıyı keser, batch_tool birden çok aracı tek adımda çağırır (daha az adım = daha az tekrar).
+if [ "${OP_SADE:-0}" = 1 ]; then
+  export OPENCODE_CONFIG_CONTENT="{$IZIN,\"compaction\":{\"auto\":true,\"prune\":true},\"tool_output\":{\"max_lines\":300,\"max_bytes\":20000},\"experimental\":{\"batch_tool\":true}}"
+  SADE_IPUCU="Verimlilik: adım metni yukarıda, PLAN.md'yi ve kapı betiklerini okuma. Dosyaları baştan sona okuma: önce grep -n ile yeri bul, sonra yalnız gereken satır aralığını oku. Birbirinden bağımsız okumaları tek adımda birlikte yap. Uzun çıktıları (derleme, test) tail ile kısalt."
+else
+  export OPENCODE_CONFIG_CONTENT="{$IZIN}"; SADE_IPUCU=""
+fi
 
 ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0; sorun_icerik=""
 for m in "${MODELLER[@]}"; do
@@ -69,6 +79,7 @@ for m in "${MODELLER[@]}"; do
     setsid opencode run -m "$m" --format json \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
+$SADE_IPUCU
 $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tty okuması takılıyordu
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
@@ -77,7 +88,7 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       if [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli
-        read -r tok _ < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce
+        read -r _ _ tok < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce   # bütçe etkin token: önbellekten yeniden okunan bağlam sayılmaz
       fi
       [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
     done
@@ -102,9 +113,9 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       fi
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
-    read -r tok mal < <(topla "$log"); harcanan=$((harcanan + tok))
+    read -r tok mal etkin < <(topla "$log"); harcanan=$((harcanan + etkin))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"sade\":${OP_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti

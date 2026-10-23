@@ -53,3 +53,9 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 ## 2026-10-23: bütçe model başına, liste güncellendi
 - `op-adim.sh`: `Bütçe` artık model başına (önce adım toplamıydı ve ilk model aşınca diğer modeller hiç denenmeden eskale oluyordu: adım 48, dbeaver-mm K70/K71). Aşan model bırakılır, sıradaki kendi bütçesiyle başlar; `kodcu`ya yalnız tüm modeller tükenince gidilir. Test: `c_butce_model`.
 - `space-bunny` ve `longcat` artık ücretsiz listede yok, çıkarıldı; yeni `flint-40b-free` eklendi (henüz ölçülmedi).
+
+## 2026-10-23: token verimliliği araştırması (deepseek ve glm ilk iki model)
+- Ölçüm (dbeaver-mm K74, deepseek): ~1M token'ın ~965k'sı önbellekten yeniden okunan bağlam (cache read), üretilen ~13k. Token ≈ adım sayısı × bağlam boyu (~65-80k). Bütçe toplamı saydığı için modeller iş bitmeden kesiliyordu.
+- Karar: bütçe artık **etkin token** (toplam − cache read) ile ölçülür; `Bütçe: 300000` (K73 geçen koşularda etkin 96-133k). Her metrik satırında `etkin` alanı var.
+- `OP_SADE=1` (deneysel, varsayılan kapalı): `compaction.auto/prune`, `tool_output` 300 satır/20 KB, `experimental.batch_tool`, "PLAN.md'yi okuma, grep -n ile bul, aralık oku" ipucu. K73 ölçümü (n=1, c372e2b6a'dan worktree): deepseek sade 1,09M toplam/103k etkin/285 sn (önceki sade-dışı koşu 891k/225 sn); glm sade 1,90M/133k/500 sn, 37 adım; glm sade-dışı 1,22M/96k/444 sn, 22 adım. Prune hiç tetiklenmedi (bağlam ~70k, pencere dolmuyor), batch_tool kullanılmadı, ipucu glm'yi çok sayıda küçük edit'e itti. Sonuç: bu ayarlar token azaltmadı.
+- Sıradaki aday (ölçülmedi): adım sayısını azaltmak — adım metnine ilgili dosyaların satır aralıklarını (Claude'un zaten okuduğu) koymak; büyük adımları tek dosyalık adımlara bölmek.
