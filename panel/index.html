@@ -115,15 +115,22 @@ table td { white-space: nowrap; }
 /* başlıklar sarılabilir; model adı harf harf kırılmasın diye en az genişlik */
 table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
-/* KPI şeridi: geniş ekranda beş kutu, dar ekranda 2 sütun */
+/* KPI şeridi: geniş ekranda beş kutu, dar ekranda üç sıkı sütun */
 .kpi { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 10px 0 4px; }
 .kpi-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; min-width: 0; }
 .kpi-kutu .etiket { display: block; color: var(--soluk); font-size: 12px; overflow-wrap: anywhere; }
 .kpi-kutu b { font-size: 20px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-@media (max-width: 520px) { .kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sekmeler { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--cizgi); }
 .sekmeler button { font: inherit; font-size: 14px; padding: 6px 12px; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--soluk); cursor: pointer; }
 .sekmeler button[aria-selected="true"] { color: var(--vurgu-metin); border-bottom-color: var(--vurgu); font-weight: 600; }
+@media (max-width: 520px) {
+  .kpi { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .kpi-kutu { padding: 6px 8px; }
+  .kpi-kutu b { font-size: 15px; }
+  .kpi-kutu .etiket { font-size: 11px; }
+  .sekmeler { flex-wrap: nowrap; overflow-x: auto; }
+  .sekmeler button { white-space: nowrap; flex: none; }
+}
 #telemetri .bos { color: var(--bos); font-style: italic; }
 .tasarruf { margin-bottom: 8px; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .soluk { color: var(--soluk); font-size: 12px; }

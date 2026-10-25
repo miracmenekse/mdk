@@ -422,7 +422,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/ciz.mjs` `depoSeritHtml`: `kpi-surum` ve `kpi-yayimlanmamis` yalnız `d.surum` varsa; `kpi-ci` yalnız `windows-release` koşusu bulunursa; `kpi-yerel` her zaman. Hiç kutu kalmazsa (olmaz, yerel hep var) yine `<div class="kpi">`. (2) `panel/depo.mjs`: `sonK` komutu `git log -10 <surum ya da origin/main> --format=%h%x09%cI%x09%s` (sürüm varsa yayımlanmış son 10 commit). (3) `depoHtml`: son bölüm başlığı sürüm varsa "<surum> ile yayımlananlar", yoksa "Son commit'ler". dbeaver-mm biçimi (sürüm + windows-release koşusu) dört kutu göstermeye devam eder.
   - Kapı: `node panel/depo-sade.test.mjs && node panel/depo.test.mjs`
 
-- [ ] 52. Dar ekran: sıkı KPI ve tek satır sekme
+- [x] 52. Dar ekran: sıkı KPI ve tek satır sekme
   - Problem ve hipotez: 400 px genişlikte KPI kutuları bir ekranı dolduruyor, sekmeler iki satıra kırılıyor.
   - Etki: etki/dar-ekran.html
   - Onay: evet
