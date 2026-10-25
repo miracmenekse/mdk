@@ -467,7 +467,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `arastirma/arastirma.json`: yapılan birleşimlere `adim` (sayı) alanı kapı commit'inde Claude tarafından eklenir (telemetri 44, tasarruf 44, matris 45, Claude yan yana 47, görsel dil 46, güven etiketi 41). (2) `panel/ciz.mjs` `arastirmaHtml`: birleşimde `adim` sayıysa efor rozeti yerine `<span class="rozet bitti">yapıldı · adım N</span>`; yapılmamışlar önce, yapılanlar sonra (her grup kendi sırasında); başlık "Birleşim önerileri (A açık, Y yapıldı)".
   - Kapı: `node panel/arastirma-yapildi.test.mjs && node panel/arastirma.test.mjs`
 
-- [ ] 57. Etki krokisi tıklanınca büyür
+- [x] 57. Etki krokisi tıklanınca büyür
   - Problem ve hipotez: önce/sonra krokileri kart içinde küçük; ayrıntı okunmuyor (kullanıcı isteği, 2026-10-26).
   - Etki: etki/kroki-buyut.html
   - Onay: evet

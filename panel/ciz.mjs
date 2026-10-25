@@ -414,6 +414,8 @@ function etkiKart(e, maxToken) {
   const tokenW = maxToken > 0 ? ((t.token || 0) / maxToken) * 100 : 0;
   const maliyetYaz = (t.maliyet || 0) > 0 ? ` · ${para(t.maliyet)}` : '';
   const src = '/dosya?yol=' + encodeURIComponent(e.dosya || '');
+  const once = `${esc(src)}&goster=once`;
+  const sonra = `${esc(src)}&goster=sonra`;
   return '<div class="etki-kart">' +
     '<div class="etki-ust">' +
     `<span class="no">${esc(e.no)}</span>` +
@@ -427,8 +429,12 @@ function etkiKart(e, maxToken) {
     `<div class="dm-satir"><span>token</span><div class="dm-takip"><i class="token" style="width:${tokenW.toFixed(1)}%"></i></div></div>` +
     '</div>' +
     '<div class="kroki">' +
-    `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}&goster=once"></iframe></div>` +
-    `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}&goster=sonra"></iframe></div>` +
+    '<div><div class="etiket">önce</div>' +
+    `<button type="button" class="buyut" data-src="${once}" aria-label="önce taslağını büyüt"></button>` +
+    `<iframe loading="lazy" src="${once}"></iframe></div>` +
+    '<div><div class="etiket">sonra</div>' +
+    `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
+    `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
     '</div>' +
     '</div>';
 }
