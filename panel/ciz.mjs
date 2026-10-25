@@ -462,10 +462,15 @@ export function arastirmaHtml(veri, suz = {}) {
   let html = '';
   if (veri.not) html += `<p class="ara-not">${esc(veri.not)}</p>`;
   if (veri.oneri) html += `<p class="ara-oneri"><b>Öneri:</b> ${esc(veri.oneri)}</p>`;
-  html += '<h3>Birleşim önerileri</h3>';
-  html += birlesimler.map((b) =>
+  const yapildiMi = (b) => typeof b.adim === 'number';
+  const aciklar = birlesimler.filter((b) => !yapildiMi(b));
+  const yapilanlar = birlesimler.filter(yapildiMi);
+  html += `<h3>Birleşim önerileri (${aciklar.length} açık, ${yapilanlar.length} yapıldı)</h3>`;
+  html += [...aciklar, ...yapilanlar].map((b) =>
     '<div class="etki-kart">' +
-    `<div class="etki-ust"><span class="baslik">${yaz(b.ad)}</span>${yildizlar(b.deger)}<span class="rozet bekliyor">efor ${yaz(b.efor)}</span></div>` +
+    `<div class="etki-ust"><span class="baslik">${yaz(b.ad)}</span>${yildizlar(b.deger)}` +
+    (yapildiMi(b) ? `<span class="rozet bitti">yapıldı · adım ${yaz(b.adim)}</span>` : `<span class="rozet bekliyor">efor ${yaz(b.efor)}</span>`) +
+    '</div>' +
     `<div class="adim-alt">${(b.parcalar || []).map(esc).join(' + ')}</div>` +
     `<div class="ara-alan"><span>ne</span> ${yaz(b.ne)}</div>` +
     `<div class="ara-alan"><span>neden</span> ${yaz(b.neden)}</div>` +

@@ -458,7 +458,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/ciz.mjs` `export function dengeHtml(tel, cl)`: iki sütunlu kart `<div class="kart denge">`: "OpenCode (ücretsiz)" ve "Claude". Her sütunda önce token (`kisa`), sonra para: OpenCode için `tel.tasarruf.listeFiyati` varsa "liste fiyatıyla ~$X (kaçınılan, tahmin)", Claude için `cl.toplam.maliyet` sayıysa "~$Y" ve `fiyatsiz` doluysa " en az (fiyatsız: <adlar>)", yoksa "fiyat yok". Altında ölçülen tek oran: "token'ların %Z'si ücretsiz modelde" (Z = OpenCode / (OpenCode + Claude) token, ikisi de varsa; Math.round). Para farkı ya da kat oranı YAZILMAZ (Claude tutarı alt sınır). Bir taraf yoksa o sütun "veri yok", oran satırı yok; ikisi de yoksa `''`. Tüm metin `esc`. (2) `panel/index.html`: Modeller sekmesinin en üstünde `<h2>Maliyet dengesi</h2><section id="denge">`, her çizimde `dengeHtml(d.telemetri, d.claude)`; iki sütun dar ekranda alt alta.
   - Kapı: `node panel/denge.test.mjs`
 
-- [ ] 56. Araştırma: yapılan önerilere rozet
+- [x] 56. Araştırma: yapılan önerilere rozet
   - Problem ve hipotez: sekiz birleşim önerisinin altısı yapıldı ama hâlâ yapılacak gibi görünüyor.
   - Etki: etki/arastirma-yapildi.html
   - Onay: evet
