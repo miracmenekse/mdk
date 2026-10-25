@@ -398,6 +398,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 49. Matris yatay kaydırma
   - Problem ve hipotez: Model × adım matrisinde 31 ve 40-48 sütunları kart dışına taşıyor, kaydırılamıyor; son adımlar ve kodcu/fable satırı boş görünüyor.
   - Etki: etki/matris-kaydir.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `matrisHtml`: tablo `<div class="kaydir">` içine alınır (lejant dışarıda kalır); boş durum metni değişmez. (2) `panel/index.html`: `.kaydir { overflow-x: auto; }`; `table.matris th.model { position: sticky; left: 0; background: var(--kart); z-index: 1; }` (satır etiketi kaydırırken görünür kalır).
@@ -406,6 +407,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 50. Sayı biçimi ve hüküm etiketi
   - Problem ve hipotez: para "$21.76" (İngilizce ondalık), token "9,7 M" (Türkçe); Adımlar başlığı "29 adım" derken KPI "44 / 48" diyor, 29'un ne olduğu yazmıyor.
   - Etki: etki/sayi-bicimi.html
+  - Onay: evet
   - Değer: 2
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `para(n)`: tr-TR ondalık virgül, binlik nokta: n ≥ 1 → `$` + 2 ondalık ("$21,76", "$1.234,50"); 0 < n < 1 → 4 ondalık ("$0,2500"); diğer → "$0". `toLocaleString('tr-TR', { minimumFractionDigits, maximumFractionDigits })`. (2) `hukumHtml`: "N adım:" yerine "N ölçülen adım:" (gerisi aynı).
@@ -414,6 +416,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 51. Depo: yalnız anlamlı kutular, tekrarsız commit listesi
   - Problem ve hipotez: sürüm etiketi ve CI olmayan projede (opencode-akis) dört kutudan üçü "—"; "Windows derlemesi" dbeaver-mm'e özgü. "Son K commit'leri" yayımlanmamış listesini tekrar ediyor.
   - Etki: etki/depo-sade.html
+  - Onay: evet
   - Değer: 3
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `depoSeritHtml`: `kpi-surum` ve `kpi-yayimlanmamis` yalnız `d.surum` varsa; `kpi-ci` yalnız `windows-release` koşusu bulunursa; `kpi-yerel` her zaman. Hiç kutu kalmazsa (olmaz, yerel hep var) yine `<div class="kpi">`. (2) `panel/depo.mjs`: `sonK` komutu `git log -10 <surum ya da origin/main> --format=%h%x09%cI%x09%s` (sürüm varsa yayımlanmış son 10 commit). (3) `depoHtml`: son bölüm başlığı sürüm varsa "<surum> ile yayımlananlar", yoksa "Son commit'ler". dbeaver-mm biçimi (sürüm + windows-release koşusu) dört kutu göstermeye devam eder.
@@ -422,6 +425,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 52. Dar ekran: sıkı KPI ve tek satır sekme
   - Problem ve hipotez: 400 px genişlikte KPI kutuları bir ekranı dolduruyor, sekmeler iki satıra kırılıyor.
   - Etki: etki/dar-ekran.html
+  - Onay: evet
   - Değer: 3
   - Bütçe: 300000
   - Ne: `panel/index.html` yalnız CSS: `@media (max-width: 520px)` içinde `.kpi` 3 sütun, `gap: 6px`; `.kpi-kutu` `padding: 6px 8px`; `.kpi-kutu b` `font-size: 15px`; `.kpi-kutu .etiket` `font-size: 11px`; `.sekmeler` `flex-wrap: nowrap; overflow-x: auto;` ve düğmeler `white-space: nowrap; flex: none`. Geniş ekran kuralları değişmez.
@@ -430,6 +434,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 53. Etki sekmesi: biten adımların taslakları
   - Problem ve hipotez: biten adımların taslakları hiç görünmüyor; onay bekleyen yokken sekme "etki adımı yok" diyor ve kullanıcı taslak yok sanıyor.
   - Etki: etki/etki-gecmis.html
+  - Onay: evet
   - Değer: 3
   - Bütçe: 300000
   - Ne: (1) `panel/durum.mjs`: `etki` listesine biten ve `etki` alanı olan adımlar da girer, `bitti: true` alanıyla (açıklar `bitti: false`); mevcut alanlar ve tahmin aynı. (2) `panel/ciz.mjs` `etkiHtml(etki, { gecmisAcik = false } = {})`: önce açık adımların kartları (mevcut biçim); açık yoksa `<span class="bos">onay bekleyen taslak yok</span>`; biten varsa ardından `<details class="etki-gecmis"` (gecmisAcik ise ` open`) `><summary>Biten adımların taslakları (N)</summary>` içinde aynı kartlar, adım no azalan. `etki` boş ya da null → yalnız "onay bekleyen taslak yok". (3) `panel/index.html`: `details.etki-gecmis` toggle'ı bir değişkende tutulur, her çizimde `etkiHtml(d.etki, { gecmisAcik })`.
@@ -438,6 +443,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 54. Akış: açık adımlar üstte, biten bölümler katlı
   - Problem ve hipotez: 48 adımın 44'ü bitti; açık adımlar (36-39, yeni adımlar) uzun listenin altında kalıyor. Hipotez: tamamı biten bölümler katlanınca açık iş ilk ekranda görünür.
   - Etki: etki/akis-katli.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {})`: en az bir bitmemiş adımı olan bölümler önce (kendi sıralarında), tüm adımları bitmiş bölümler sonra. Tamamı bitmiş bölüm `<details class="kat" data-kat="<ad>">` içinde, `<summary>` bölüm adı + "N/N bitti" + içinde sorunlu adım varsa " · K sorunlu"; içerik bugünkü `ul.adimlar`. Açık mı: `acik['kat:' + ad]` boolean ise o; değilse `secenek.sadeceSorunlu` ve bölümde sorunlu adım varsa açık; aksi kapalı. Bitmemiş adımı olan bölüm bugünkü gibi düz `<h2>`. Adım `<details data-no>` davranışı değişmez. (2) `panel/index.html`: `details[data-kat]` toggle'ı `acikTercih['kat:' + ad]`'a yazılır (adım tercihiyle aynı nesne); "sadece sorunlu" değişince plan yeniden çizilir ve `planHtml`'e `{ sadeceSorunlu }` verilir.
@@ -446,6 +452,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 55. Maliyet dengesi kartı
   - Problem ve hipotez: OpenCode tasarrufu (Gerçek token kartı) ile Claude harcaması (47) ayrı kartlarda; "ücretsiz modelle kaliteyi kaybetmeden" iddiası tek bakışta okunmuyor. Hipotez: ikisi yan yana, önce ölçülen token sonra tahmini para, okununca süreç maliyeti dürüstçe görülür.
   - Etki: etki/denge.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `export function dengeHtml(tel, cl)`: iki sütunlu kart `<div class="kart denge">`: "OpenCode (ücretsiz)" ve "Claude". Her sütunda önce token (`kisa`), sonra para: OpenCode için `tel.tasarruf.listeFiyati` varsa "liste fiyatıyla ~$X (kaçınılan, tahmin)", Claude için `cl.toplam.maliyet` sayıysa "~$Y" ve `fiyatsiz` doluysa " en az (fiyatsız: <adlar>)", yoksa "fiyat yok". Altında ölçülen tek oran: "token'ların %Z'si ücretsiz modelde" (Z = OpenCode / (OpenCode + Claude) token, ikisi de varsa; Math.round). Para farkı ya da kat oranı YAZILMAZ (Claude tutarı alt sınır). Bir taraf yoksa o sütun "veri yok", oran satırı yok; ikisi de yoksa `''`. Tüm metin `esc`. (2) `panel/index.html`: Modeller sekmesinin en üstünde `<h2>Maliyet dengesi</h2><section id="denge">`, her çizimde `dengeHtml(d.telemetri, d.claude)`; iki sütun dar ekranda alt alta.
@@ -454,6 +461,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 56. Araştırma: yapılan önerilere rozet
   - Problem ve hipotez: sekiz birleşim önerisinin altısı yapıldı ama hâlâ yapılacak gibi görünüyor.
   - Etki: etki/arastirma-yapildi.html
+  - Onay: evet
   - Değer: 2
   - Bütçe: 300000
   - Ne: (1) `arastirma/arastirma.json`: yapılan birleşimlere `adim` (sayı) alanı kapı commit'inde Claude tarafından eklenir (telemetri 44, tasarruf 44, matris 45, Claude yan yana 47, görsel dil 46, güven etiketi 41). (2) `panel/ciz.mjs` `arastirmaHtml`: birleşimde `adim` sayıysa efor rozeti yerine `<span class="rozet bitti">yapıldı · adım N</span>`; yapılmamışlar önce, yapılanlar sonra (her grup kendi sırasında); başlık "Birleşim önerileri (A açık, Y yapıldı)".
@@ -462,6 +470,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
 - [ ] 57. Etki krokisi tıklanınca büyür
   - Problem ve hipotez: önce/sonra krokileri kart içinde küçük; ayrıntı okunmuyor (kullanıcı isteği, 2026-10-26).
   - Etki: etki/kroki-buyut.html
+  - Onay: evet
   - Değer: 4
   - Bütçe: 300000
   - Ne: (1) `panel/ciz.mjs` `etkiHtml`: her kroki kutusunda iframe'in üstünde saydam `<button type="button" class="buyut" data-src="<iframe src'si>" aria-label="önce taslağını büyüt">` (sonra için "sonra taslağını büyüt"); `data-src` `esc`. (2) `panel/index.html`: tek `<dialog id="buyuk">` içinde kapat düğmesi ve `<iframe>` (92vw × 88vh); `.buyut` tıklanınca iframe `src` = `data-src`, `showModal()`; Esc (yerleşik), kapat düğmesi ve arka plana tıklama kapatır, kapanınca iframe `src` boşaltılır. CSS: kroki kutusu `position: relative`, `.buyut { position: absolute; inset: 0; background: transparent; border: 0; cursor: zoom-in; }`, odakta görünür çerçeve.
