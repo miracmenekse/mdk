@@ -58,7 +58,7 @@ assert.ok(duz(satir(p, 'İkinci')).includes('çalışıyor'));
 // boş / eksik veri
 assert.match(duz(planHtml(null, null)), /PLAN\.md bulunamadı/);
 assert.match(duz(modellerHtml([])), /metrik yok/);
-assert.match(duz(etkiHtml([])), /etki adımı yok/);
+assert.match(duz(etkiHtml([])), /onay bekleyen taslak yok/);
 
 // model tablosu ve etki listesi çizilir
 const mh = modellerHtml([{ yurutucu: 'opencode', model: 'a/x', deneme: 3, gecen: 2, ilkDenemeOrani: 0.5, token: 600, maliyet: 0, ortSure: 20, uyum: 0.5 }]);
