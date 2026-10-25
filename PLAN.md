@@ -473,7 +473,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Onay: evet
   - Değer: 4
   - Bütçe: 300000
-  - Ne: (1) `panel/ciz.mjs` `etkiHtml`: her kroki kutusunda iframe'in üstünde saydam `<button type="button" class="buyut" data-src="<iframe src'si>" aria-label="önce taslağını büyüt">` (sonra için "sonra taslağını büyüt"); `data-src` `esc`. (2) `panel/index.html`: tek `<dialog id="buyuk">` içinde kapat düğmesi ve `<iframe>` (92vw × 88vh); `.buyut` tıklanınca iframe `src` = `data-src`, `showModal()`; Esc (yerleşik), kapat düğmesi ve arka plana tıklama kapatır, kapanınca iframe `src` boşaltılır. CSS: kroki kutusu `position: relative`, `.buyut { position: absolute; inset: 0; background: transparent; border: 0; cursor: zoom-in; }`, odakta görünür çerçeve.
+  - Ne: (1) `panel/ciz.mjs` `etkiHtml`: her kroki kutusunda iframe'in üstünde saydam `<button type="button" class="buyut" data-src="<iframe src'si>" aria-label="önce taslağını büyüt">` (sonra için "sonra taslağını büyüt"); `data-src` `esc`. (2) `panel/index.html`: tek `<dialog id="buyuk">` içinde kapat düğmesi ve `<iframe>` (92vw × 88vh); `.buyut` tıklanınca iframe `src` = `data-src`, `showModal()`; Esc (yerleşik), kapat düğmesi ve arka plana tıklama kapatır, kapanınca iframe `src` boşaltılır. CSS: kroki kutusu `position: relative`, `.buyut { position: absolute; inset: 0; background: transparent; border: 0; cursor: zoom-in; }`, `.buyut:focus-visible { outline: 2px solid var(--vurgu); }`; `#buyuk iframe { width: 92vw; height: 88vh; }`.
   - Kapı: `node panel/kroki-buyut.test.mjs && node panel/etki-gecmis.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
