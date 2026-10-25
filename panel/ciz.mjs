@@ -433,15 +433,17 @@ export function depoSeritHtml(d) {
   // iş akışı adı "Windows Release" (name:) ya da "windows-release" (dosya adı) olabilir
   const ad = (x) => String(x ?? '').trim().toLowerCase().replace(/\s+/g, '-');
   const win = Array.isArray(d.ci) ? d.ci.find((k) => ad(k.workflowName) === 'windows-release') : null;
-  const ci = win ? (([s, m]) => `${s} ${m}`)(kosuDurumu(win)) : '—';
   const y = d.yerel || {};
   const yerel = `${(y.degisik || []).length} dosya · ↑${sayiYaz(y.ileri)} ↓${sayiYaz(y.geri)}`;
-  return '<div class="kpi">' +
-    kutu('kpi-surum', 'son sürüm', d.surum || '—') +
-    kutu('kpi-yayimlanmamis', 'yayımlanmamış', Array.isArray(d.yayimlanmamis) ? `${d.yayimlanmamis.length} K` : '—') +
-    kutu('kpi-ci', 'Windows derlemesi', ci) +
-    kutu('kpi-yerel', 'yerel', yerel) +
-    '</div>';
+  // yalnız anlamlı kutular: sürüm yoksa sürüm/yayımlanmamış, windows-release yoksa CI kutusu çizilmez
+  let html = '';
+  if (d.surum) {
+    html += kutu('kpi-surum', 'son sürüm', d.surum);
+    html += kutu('kpi-yayimlanmamis', 'yayımlanmamış', Array.isArray(d.yayimlanmamis) ? `${d.yayimlanmamis.length} K` : '—');
+  }
+  if (win) html += kutu('kpi-ci', 'Windows derlemesi', `${kosuDurumu(win)[0]} ${kosuDurumu(win)[1]}`);
+  html += kutu('kpi-yerel', 'yerel', yerel);
+  return '<div class="kpi">' + html + '</div>';
 }
 
 function commitListesi(liste) {
@@ -476,7 +478,7 @@ export function depoHtml(d) {
       ? '<ul class="depo-liste">' + y.degisik.map((f) => `<li class="model">${esc(f)}</li>`).join('') + '</ul>'
       : '<span class="bos">değişik dosya yok</span>');
 
-  html += "<h3>Son K commit'leri</h3>" + commitListesi(d.sonK);
+  html += `<h3>${d.surum ? `${esc(d.surum)} ile yayımlananlar` : "Son commit'ler"}</h3>` + commitListesi(d.sonK);
   if (typeof d.ts === 'number') html += `<p class="soluk">son yoklama ${esc(goreli(d.ts))}</p>`;
   return html;
 }

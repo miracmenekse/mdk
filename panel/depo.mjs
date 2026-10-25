@@ -50,7 +50,8 @@ export async function depo(dir, { calistir } = {}) {
       if (r.kod === 0) yayimlanmamis = commitler(r.cikti);
     }
 
-    const son = await git('log', '-10', 'origin/main', '--format=%h%x09%cI%x09%s');
+    // sürüm varsa yayımlanmış son 10 commit; yoksa origin/main'in son 10'u
+    const son = await git('log', '-10', surum || 'origin/main', '--format=%h%x09%cI%x09%s');
     const sonK = son.kod === 0 ? commitler(son.cikti) : [];
 
     const dal = await git('rev-parse', '--abbrev-ref', 'HEAD');

@@ -413,7 +413,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/ciz.mjs` `para(n)`: tr-TR ondalık virgül, binlik nokta: n ≥ 1 → `$` + 2 ondalık ("$21,76", "$1.234,50"); 0 < n < 1 → 4 ondalık ("$0,2500"); diğer → "$0". `toLocaleString('tr-TR', { minimumFractionDigits, maximumFractionDigits })`. (2) `hukumHtml`: "N adım:" yerine "N ölçülen adım:" (gerisi aynı).
   - Kapı: `node panel/sayi-bicimi.test.mjs && node panel/modeller-ui.test.mjs && node panel/gecmis-ui.test.mjs`
 
-- [ ] 51. Depo: yalnız anlamlı kutular, tekrarsız commit listesi
+- [x] 51. Depo: yalnız anlamlı kutular, tekrarsız commit listesi
   - Problem ve hipotez: sürüm etiketi ve CI olmayan projede (opencode-akis) dört kutudan üçü "—"; "Windows derlemesi" dbeaver-mm'e özgü. "Son K commit'leri" yayımlanmamış listesini tekrar ediyor.
   - Etki: etki/depo-sade.html
   - Onay: evet
