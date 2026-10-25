@@ -46,8 +46,8 @@ function adimDurumu(a, simdi) {
 }
 
 function para(n) {
-  if (n >= 1) return '$' + n.toFixed(2);
-  if (n > 0) return '$' + n.toFixed(4);
+  if (n >= 1) return '$' + n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n > 0) return '$' + n.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
   return '$0';
 }
 
@@ -151,7 +151,7 @@ function hukumHtml(gecmis, incelemeler) {
     if (g.denemeler.find((x) => x.gecti === true)?.deneme === 1) ilk++;
   }
   return '<div class="hukum-kutu">' +
-    `<p id="hukum">${metrikli.length} adım: ${sayac.uyumlu} uyumlu, ${sayac.kismen} kısmen, ${sayac.uyumsuz} uyumsuz, ${sayac.incelenmedi} incelenmedi · ${ilk} ilk denemede geçti</p>` +
+    `<p id="hukum">${metrikli.length} ölçülen adım: ${sayac.uyumlu} uyumlu, ${sayac.kismen} kısmen, ${sayac.uyumsuz} uyumsuz, ${sayac.incelenmedi} incelenmedi · ${ilk} ilk denemede geçti</p>` +
     '<label class="sadece"><input type="checkbox" id="sadece-sorunlu"> sadece sorunlu</label>' +
     '</div>';
 }

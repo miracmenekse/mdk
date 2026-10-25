@@ -404,7 +404,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/ciz.mjs` `matrisHtml`: tablo `<div class="kaydir">` içine alınır (lejant dışarıda kalır); boş durum metni değişmez. (2) `panel/index.html`: `.kaydir { overflow-x: auto; }`; `table.matris th.model { position: sticky; left: 0; background: var(--kart); z-index: 1; }` (satır etiketi kaydırırken görünür kalır).
   - Kapı: `node panel/matris-kaydir.test.mjs && node panel/matris.test.mjs`
 
-- [ ] 50. Sayı biçimi ve hüküm etiketi
+- [x] 50. Sayı biçimi ve hüküm etiketi
   - Problem ve hipotez: para "$21.76" (İngilizce ondalık), token "9,7 M" (Türkçe); Adımlar başlığı "29 adım" derken KPI "44 / 48" diyor, 29'un ne olduğu yazmıyor.
   - Etki: etki/sayi-bicimi.html
   - Onay: evet
