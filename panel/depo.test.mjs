@@ -26,7 +26,7 @@ function sahte(ust = {}) {
     if (a.includes('remote get-url origin')) return y(0, 'https://github.com/o/r.git\n');
     if (a.includes('describe --tags')) return ust.describe ?? y(0, 'v0.3.6\n');
     if (a.includes('v0.3.6..origin/main')) return y(0, '2b6b6f0\t2026-10-19T15:21:53+03:00\tK66: value picker <b>x</b>\n7332f64\t2026-10-19T10:00:00+03:00\tK65: plain column\n');
-    if (a.includes('-10') && a.includes('origin/main')) return y(0, '2b6b6f0\t2026-10-19T15:21:53+03:00\tK66: value picker <b>x</b>\n');
+    if (a.includes('-10') && !a.includes('..')) return y(0, '2b6b6f0\t2026-10-19T15:21:53+03:00\tK66: value picker <b>x</b>\n');
     if (a.includes('abbrev-ref HEAD')) return y(0, 'main\n');
     if (a.includes('rev-list --left-right --count')) return y(0, '1\t0\n');
     if (a.includes('status --porcelain')) return y(0, ' M plugins/a/A.java\n?? yeni.txt\n');
@@ -89,14 +89,14 @@ assert.ok(/2 dosya/.test(t) && t.includes('↑1') && t.includes('↓0'));
 assert.ok(duz(depoSeritHtml({ ...d, ci: [{ ...RUNS[0], conclusion: 'failure' }] })).includes('✕'));
 assert.ok(duz(depoSeritHtml({ ...d, ci: [{ ...RUNS[0], status: 'in_progress', conclusion: '' }] })).includes('…'));
 t = duz(depoSeritHtml(d3));
-assert.ok(t.includes('—') && !t.includes('null') && !t.includes('undefined'), 'etiket yoksa —');
+assert.ok(!t.includes('null') && !t.includes('undefined') && !depoSeritHtml(d3).includes('kpi-surum'), 'etiket yoksa sürüm kutusu yok');
 assert.equal(depoSeritHtml(null), '');
 assert.equal(depoSeritHtml({ var: false }), '');
 
 // çizim: sekme içeriği
 h = depoHtml(d);
 t = duz(h);
-for (const b of ['Yayımlanmamış', 'GitHub Actions', 'Yerel', 'Son K']) assert.ok(t.includes(b), `${b} bölümü yok`);
+for (const b of ['Yayımlanmamış', 'GitHub Actions', 'Yerel', 'v0.3.6 ile yayımlananlar']) assert.ok(t.includes(b), `${b} bölümü yok`);
 assert.ok(t.includes('2b6b6f0') && t.includes('önce'), 'kısa hash ve göreli tarih');
 assert.ok(t.includes('plugins/a/A.java'));
 assert.ok(h.includes('href="https://github.com/o/r/actions/runs/1"') && h.includes('rel="noopener"'));
