@@ -14,7 +14,7 @@ assert.ok(h.includes('—'), 'uyum null ise —');
 
 // maliyet varsa sütun görünür
 h = duz(modellerHtml([m({ maliyet: 1.5 })]));
-assert.ok(h.includes('maliyet') && h.includes('$1.50'));
+assert.ok(h.includes('maliyet') && h.includes('$1,50'));
 
 // etki çubuğu token bazlı: iki ayrı etiketli çubuk
 const e = (no, baslik, deger, token, maliyet = 0) => ({ no, baslik, dosya: `etki/${no}.html`, deger, tahmin: { token, maliyet, guven: 'orta' } });
@@ -25,6 +25,6 @@ assert.match(t, /~1[.\s ]?000 token/);
 assert.match(t, /~4[.\s ]?000 token/);
 assert.ok(!eh.includes('$'), 'maliyet 0 iken para yazılmamalı');
 for (const w of ['width:100', 'width:25', 'width:40']) assert.ok(eh.includes(w), `${w} çubuk genişliği yok (değer/5 ve token/en büyük)`);
-assert.ok(duz(etkiHtml([e(3, 'Ücretli', 3, 2000, 0.25)])).includes('$0.2500'));
+assert.ok(duz(etkiHtml([e(3, 'Ücretli', 3, 2000, 0.25)])).includes('$0,2500'));
 assert.ok(t.includes('orta'), 'güven rozeti kalmalı');
 console.log('modeller-ui.test ok');

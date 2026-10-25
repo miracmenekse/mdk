@@ -20,7 +20,7 @@ const html = planHtml(plan, null, gecmis, incelemeler);
 
 // hüküm cümlesi ve süzgeç
 assert.ok(html.includes('id="hukum"'));
-assert.ok(duz(html).includes('4 adım: 1 uyumlu, 1 kısmen, 0 uyumsuz, 2 incelenmedi · 2 ilk denemede geçti'), duz(html).slice(0, 300));
+assert.ok(duz(html).includes('4 ölçülen adım: 1 uyumlu, 1 kısmen, 0 uyumsuz, 2 incelenmedi · 2 ilk denemede geçti'), duz(html).slice(0, 300));
 assert.ok(html.includes('id="sadece-sorunlu"') && /type="checkbox"/.test(html));
 
 // sorunsuz adım: özet var, ayrıntı kapalı
