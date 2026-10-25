@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Maliyet dengesi</title>
+<style>
+body{font-family:system-ui,sans-serif;color:#333;margin:1rem}figure{margin:0 0 1.25rem}
+figcaption{font-size:.85rem;color:#666;margin-bottom:.35rem}
+svg{display:block;width:100%;max-width:640px;height:auto;background:#f7f7f7;border:1px solid #ccc}
+.degisen{stroke:#c2410c;fill:#ffedd5}.degisen-text{fill:#9a3412}
+</style></head><body>
+<figure><figcaption>Önce: tasarruf ve Claude ayrı kartlarda, arada matris</figcaption>
+<svg id="once" viewBox="0 0 640 150" role="img" aria-label="Önce: tasarruf ve Claude ayrı kartlarda, arada matris">
+<rect x="16" y="16" width="608" height="30" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="36" font-size="13" fill="#616161">Tasarruf (tahmin): 9,7 M token · ~$5,02 · ödenen $0</text><rect x="16" y="56" width="608" height="40" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="80" font-size="13" fill="#616161">(model × adım matrisi)</text><rect x="16" y="106" width="608" height="30" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="126" font-size="13" fill="#616161">Claude harcaması: 78,1 M token · ~$21,76 en az</text>
+</svg></figure>
+<figure><figcaption>Sonra: Modeller sekmesinin başında yan yana; önce token sonra para</figcaption>
+<svg id="sonra" viewBox="0 0 640 150" role="img" aria-label="Sonra: Modeller sekmesinin başında yan yana; önce token sonra para">
+<rect class="degisen" x="16" y="16" width="300" height="90"/><text x="24" y="38" font-size="13" class="degisen-text">OpenCode (ücretsiz)</text><text x="24" y="62" font-size="13" fill="#616161">9,7 M token</text><text x="24" y="86" font-size="13" fill="#616161">~$5,02 kaçınılan (tahmin)</text><rect class="degisen" x="324" y="16" width="300" height="90"/><text x="332" y="38" font-size="13" class="degisen-text">Claude</text><text x="332" y="62" font-size="13" fill="#616161">78,1 M token</text><text x="332" y="86" font-size="13" fill="#616161">~$21,76 en az (fiyatsız: opus, haiku)</text><text x="16" y="130" font-size="13" class="degisen-text">token'ların %11'i ücretsiz modelde</text>
+</svg></figure>
+</body></html>

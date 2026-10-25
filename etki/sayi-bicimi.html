@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Sayı biçimi</title>
+<style>
+body{font-family:system-ui,sans-serif;color:#333;margin:1rem}figure{margin:0 0 1.25rem}
+figcaption{font-size:.85rem;color:#666;margin-bottom:.35rem}
+svg{display:block;width:100%;max-width:640px;height:auto;background:#f7f7f7;border:1px solid #ccc}
+.degisen{stroke:#c2410c;fill:#ffedd5}.degisen-text{fill:#9a3412}
+</style></head><body>
+<figure><figcaption>Önce: karışık ondalık, belirsiz adım sayısı</figcaption>
+<svg id="once" viewBox="0 0 640 110" role="img" aria-label="Önce: karışık ondalık, belirsiz adım sayısı">
+<rect x="16" y="16" width="180" height="50" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="46" font-size="13" fill="#616161">ödenen $21.76</text><rect x="210" y="16" width="180" height="50" fill="#e0e0e0" stroke="#bdbdbd"/><text x="218" y="46" font-size="13" fill="#616161">token 9,7 M</text><text x="16" y="95" font-size="13" fill="#616161">29 adım: 17 uyumlu, 4 kısmen …</text>
+</svg></figure>
+<figure><figcaption>Sonra: hepsi Türkçe ondalık; sayının ne olduğu yazılı</figcaption>
+<svg id="sonra" viewBox="0 0 640 110" role="img" aria-label="Sonra: hepsi Türkçe ondalık; sayının ne olduğu yazılı">
+<rect class="degisen" x="16" y="16" width="180" height="50"/><text x="24" y="46" font-size="13" class="degisen-text">ödenen $21,76</text><rect x="210" y="16" width="180" height="50" fill="#e0e0e0" stroke="#bdbdbd"/><text x="218" y="46" font-size="13" fill="#616161">token 9,7 M</text><rect class="degisen" x="16" y="80" width="300" height="22"/><text x="20" y="95" font-size="13" class="degisen-text">29 ölçülen adım: 17 uyumlu …</text>
+</svg></figure>
+</body></html>

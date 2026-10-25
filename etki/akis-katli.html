@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Akış katlama</title>
+<style>
+body{font-family:system-ui,sans-serif;color:#333;margin:1rem}figure{margin:0 0 1.25rem}
+figcaption{font-size:.85rem;color:#666;margin-bottom:.35rem}
+svg{display:block;width:100%;max-width:640px;height:auto;background:#f7f7f7;border:1px solid #ccc}
+.degisen{stroke:#c2410c;fill:#ffedd5}.degisen-text{fill:#9a3412}
+</style></head><body>
+<figure><figcaption>Önce: 44 biten adım uzun liste, açıklar en altta</figcaption>
+<svg id="once" viewBox="0 0 640 220" role="img" aria-label="Önce: 44 biten adım uzun liste, açıklar en altta">
+<rect x="16" y="16" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="33" font-size="13" fill="#616161">PANEL 1 2 3 4 …</text><rect x="16" y="44" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="61" font-size="13" fill="#616161">ETKİ GÖRÜNÜMÜ 5 6 7</text><rect x="16" y="72" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="89" font-size="13" fill="#616161">SÜREÇ 8</text><rect x="16" y="100" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="117" font-size="13" fill="#616161">… (kaydır)</text><rect x="16" y="128" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="145" font-size="13" fill="#616161">… 40-48</text><rect x="16" y="156" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="173" font-size="13" fill="#616161">Faz 6: 49 50 … (açık)</text>
+</svg></figure>
+<figure><figcaption>Sonra: açık bölümler üstte, bitenler katlı satır</figcaption>
+<svg id="sonra" viewBox="0 0 640 220" role="img" aria-label="Sonra: açık bölümler üstte, bitenler katlı satır">
+<rect class="degisen" x="16" y="16" width="608" height="60"/><text x="24" y="36" font-size="13" class="degisen-text">Faz 6: 49 Matris yatay kaydırma · bekliyor …</text><text x="24" y="60" font-size="13" class="degisen-text">36 Canlı deneme 1 · bekliyor</text><rect x="16" y="90" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="107" font-size="13" fill="#616161">▸ PANEL  4/4 bitti · 2 sorunlu</text><rect x="16" y="118" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="135" font-size="13" fill="#616161">▸ ETKİ GÖRÜNÜMÜ  3/3 bitti · 1 sorunlu</text><rect x="16" y="146" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="163" font-size="13" fill="#616161">▸ SÜREÇ  1/1 bitti</text><rect x="16" y="174" width="608" height="24" fill="#e0e0e0" stroke="#bdbdbd"/><text x="24" y="191" font-size="13" fill="#616161">▸ …</text>
+</svg></figure>
+</body></html>
