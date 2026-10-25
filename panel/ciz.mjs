@@ -16,6 +16,9 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// metin düğümünde & tek başına etiket açmaz: özet satırında okunur ad korunur, etiket karakterleri kaçışlanır
+const escMetin = (s) => esc(s).replace(/&amp;/g, '&');
+
 // ts saniye ya da milisaniye olabilir
 const ms = (ts) => (ts < 1e12 ? ts * 1000 : ts);
 
@@ -156,33 +159,60 @@ function hukumHtml(gecmis, incelemeler) {
     '</div>';
 }
 
-// acik: { [adımNo]: true|false } kullanıcı tercihi; yoksa sorunlu olan açılır
-export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}) {
+function adimlarHtml(adimlar, simdi, acik) {
+  let html = '<ul class="adimlar">';
+  for (const { a, g, inc, sorunlu } of adimlar) {
+    const durum = adimDurumu(a, simdi);
+    const bilgi = [yurutucuEtiket(a, g), a.kapi].filter(Boolean).map(esc).join(' · ');
+    // süzgeç yalnız geçmişi olan ve sorunsuz tamamlanmış adımları gizler; çalışmamış adım görünür kalır
+    const sorunsuz = !!g && !sorunlu;
+    const acikMi = typeof acik[a.no] === 'boolean' ? acik[a.no] : sorunlu;
+    const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, acikMi, a.no) : '';
+    html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}" data-sorunsuz="${sorunsuz ? 1 : 0}">` +
+      '<div class="adim-ust">' +
+      `<span class="no">${esc(a.no)}</span>` +
+      `<span class="baslik">${esc(a.baslik)}</span>` +
+      rozet(durum) + '</div>' +
+      (bilgi ? `<div class="adim-alt">${bilgi}</div>` : '') +
+      ayrinti +
+      '</li>';
+  }
+  return html + '</ul>';
+}
+
+// acik: { [adımNo]: true|false, ['kat:' + ad]: true|false } kullanıcı tercihi.
+// secenek.sadeceSorunlu: biten bölümlerde sorunlu adım varsa kat açık gelir.
+export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {}) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
   let html = Array.isArray(gecmis) ? hukumHtml(gecmis, incelemeler) : '';
-  for (const kat of plan.kategoriler) {
-    html += `<div><h2>${esc(kat.ad)}</h2><ul class="adimlar">`;
-    for (const a of kat.adimlar) {
-      const durum = adimDurumu(a, simdi);
+  const bolumler = plan.kategoriler.map((kat) => {
+    const adimlar = (kat.adimlar || []).map((a) => {
       const g = gecmisMap.get(a.no);
-      const bilgi = [yurutucuEtiket(a, g), a.kapi].filter(Boolean).map(esc).join(' · ');
       const inc = incelemeOf(a.no, g, incelemeler);
-      const sorunlu = !!g && sorunluMu(g, inc);
-      // süzgeç yalnız geçmişi olan ve sorunsuz tamamlanmış adımları gizler; çalışmamış adım görünür kalır
-      const sorunsuz = !!g && !sorunlu;
-      const acikMi = typeof acik[a.no] === 'boolean' ? acik[a.no] : sorunlu;
-      const ayrinti = g && (g.denemeler.length || g.commit || inc) ? ayrintiHtml(g, inc, acikMi, a.no) : '';
-      html += `<li class="${durum}" data-sorunlu="${sorunlu ? 1 : 0}" data-sorunsuz="${sorunsuz ? 1 : 0}">` +
-        '<div class="adim-ust">' +
-        `<span class="no">${esc(a.no)}</span>` +
-        `<span class="baslik">${esc(a.baslik)}</span>` +
-        rozet(durum) + '</div>' +
-        (bilgi ? `<div class="adim-alt">${bilgi}</div>` : '') +
-        ayrinti +
-        '</li>';
+      return { a, g, inc, sorunlu: !!g && sorunluMu(g, inc) };
+    });
+    return {
+      kat,
+      adimlar,
+      bitti: adimlar.length > 0 && adimlar.every((x) => x.a.bitti),
+      sorunluSayi: adimlar.filter((x) => x.sorunlu).length,
+    };
+  });
+  // açık işi olan bölümler önce, tamamı bitenler sonra; her grup kendi sırasında
+  const sirali = [...bolumler.filter((x) => !x.bitti), ...bolumler.filter((x) => x.bitti)];
+  for (const x of sirali) {
+    if (!x.bitti) {
+      html += `<div><h2>${esc(x.kat.ad)}</h2>${adimlarHtml(x.adimlar, simdi, acik)}</div>`;
+      continue;
     }
-    html += '</ul></div>';
+    const varsayilan = !!secenek.sadeceSorunlu && x.sorunluSayi > 0;
+    const anahtar = 'kat:' + x.kat.ad;
+    const acikMi = typeof acik[anahtar] === 'boolean' ? acik[anahtar] : varsayilan;
+    const ozet = escMetin(x.kat.ad) + ` · ${x.adimlar.length}/${x.adimlar.length} bitti` +
+      (x.sorunluSayi ? ` · ${x.sorunluSayi} sorunlu` : '');
+    html += `<details class="kat" data-kat="${esc(x.kat.ad)}" data-varsayilan="${varsayilan ? 1 : 0}"${acikMi ? ' open' : ''}>` +
+      `<summary>${ozet}</summary>${adimlarHtml(x.adimlar, simdi, acik)}</details>`;
   }
   return html || '<span class="bos">adım yok</span>';
 }

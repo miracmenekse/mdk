@@ -440,7 +440,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/durum.mjs`: `etki` listesine biten ve `etki` alanı olan adımlar da girer, `bitti: true` alanıyla (açıklar `bitti: false`); mevcut alanlar ve tahmin aynı. (2) `panel/ciz.mjs` `etkiHtml(etki, { gecmisAcik = false } = {})`: önce açık adımların kartları (mevcut biçim); açık yoksa `<span class="bos">onay bekleyen taslak yok</span>`; biten varsa ardından `<details class="etki-gecmis"` (gecmisAcik ise ` open`) `><summary>Biten adımların taslakları (N)</summary>` içinde aynı kartlar, adım no azalan. `etki` boş ya da null → yalnız "onay bekleyen taslak yok". (3) `panel/index.html`: `details.etki-gecmis` toggle'ı bir değişkende tutulur, her çizimde `etkiHtml(d.etki, { gecmisAcik })`.
   - Kapı: `node panel/etki-gecmis.test.mjs && node panel/etki.test.mjs && node panel/arayuz.test.mjs etki`
 
-- [ ] 54. Akış: açık adımlar üstte, biten bölümler katlı
+- [x] 54. Akış: açık adımlar üstte, biten bölümler katlı
   - Problem ve hipotez: 48 adımın 44'ü bitti; açık adımlar (36-39, yeni adımlar) uzun listenin altında kalıyor. Hipotez: tamamı biten bölümler katlanınca açık iş ilk ekranda görünür.
   - Etki: etki/akis-katli.html
   - Onay: evet

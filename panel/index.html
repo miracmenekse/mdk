@@ -312,10 +312,11 @@ window.addEventListener('hashchange', sekmeSec);
 sekmeSec();
 
 let sonSimdi = null;
+let sonPlan = null;
 let zamanlayici = null;
 // süzgeç durumu: yeni veri gelince kutu ve satırlar bu değerden yeniden kurulur
 let sadeceSorunlu = false;
-// kullanıcının açıp kapattığı ayrıntılar: { [adımNo]: true|false }, her çizimde planHtml'e verilir
+// kullanıcının açıp kapattığı ayrıntılar: { [adımNo] | ['kat:' + ad]: true|false }, her çizimde planHtml'e verilir
 const acikTercih = {};
 // etki sekmesinde biten adımların taslakları açık mı; her çizimde etkiHtml'e verilir
 let gecmisAcik = false;
@@ -331,13 +332,19 @@ function filtreUygula() {
 kategorilerEl.addEventListener('change', (e) => {
   if (e.target && e.target.id === 'sadece-sorunlu') {
     sadeceSorunlu = e.target.checked;
-    filtreUygula();
+    planCiz();
   }
 });
 
 // toggle kabarcıklanmaz; yakalama aşamasında dinlenir
 kategorilerEl.addEventListener('toggle', (e) => {
-  if (e.target && e.target.matches && e.target.matches('details[data-no]')) {
+  if (e.target && e.target.matches && e.target.matches('details[data-kat]')) {
+    // varsayılan açıklıkla aynıysa tercih sayılmaz
+    const varsayilan = e.target.dataset.varsayilan === '1';
+    const anahtar = 'kat:' + e.target.dataset.kat;
+    if (e.target.open === varsayilan) delete acikTercih[anahtar];
+    else acikTercih[anahtar] = e.target.open;
+  } else if (e.target && e.target.matches && e.target.matches('details[data-no]')) {
     // varsayılanla (sorunlu = açık) aynıysa tercih sayılmaz: innerHTML ile gelen açık öğe de toggle üretebiliyor
     const varsayilan = e.target.closest('li')?.dataset.sorunlu === '1';
     if (e.target.open === varsayilan) delete acikTercih[e.target.dataset.no];
@@ -364,6 +371,12 @@ function suAnCiz() {
   }
 }
 
+function planCiz() {
+  if (!sonPlan) return;
+  kategorilerEl.innerHTML = planHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler, acikTercih, { sadeceSorunlu });
+  filtreUygula();
+}
+
 function ciz(d) {
   if (d.ad) { document.querySelector('h1').textContent = d.ad; document.title = d.ad + ' paneli'; }
   depoSeritEl.innerHTML = depoSeritHtml(d.depo);
@@ -376,8 +389,8 @@ function ciz(d) {
   kpiEl.innerHTML = kpiHtml(d);
   sonSimdi = d.simdi || null;
   suAnCiz();
-  kategorilerEl.innerHTML = planHtml(d.plan, sonSimdi, d.gecmis, d.incelemeler, acikTercih);
-  filtreUygula();
+  sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
+  planCiz();
   modellerEl.innerHTML = modellerHtml(d.modeller);
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
