@@ -7,9 +7,10 @@ import { parse } from './plan.mjs';
 import { tahmin } from './tahmin.mjs';
 import { gecmis } from './gecmis.mjs';
 import { telemetri } from './telemetri.mjs';
+import { claudeKullanim } from './claude.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] } };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -126,6 +127,7 @@ export function snapshot(dir) {
   // ponytail: her anlık görüntüde veritabanı yeniden okunur; yavaşlarsa mtime+size önbelleği
   // yalnız bu projenin (ve alt dizinlerinin) oturumları sayılır
   sonuc.telemetri = telemetri(process.env.OPENCODE_DB || join(homedir(), '.local/share/opencode/opencode.db'), fiyat, resolve(dir));
+  sonuc.claude = claudeKullanim(resolve(dir), fiyat);
 
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {

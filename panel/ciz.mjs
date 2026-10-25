@@ -241,11 +241,21 @@ export function kpiHtml(snap) {
   const olculen = modeller.filter((m) => typeof m.token === 'number' && Number.isFinite(m.token));
   const token = tel ? tel.toplam?.toplam : olculen.length ? olculen.reduce((t, m) => t + m.token, 0) : null;
   const odenen = tel ? tel.toplam?.maliyet : modeller.length ? modeller.reduce((t, m) => t + (Number(m.maliyet) || 0), 0) : null;
+  const cl = snap?.claude?.var ? snap.claude : null;
+  let claude = '—';
+  if (cl?.toplam) {
+    if (typeof cl.toplam.maliyet === 'number') {
+      claude = '~' + para(cl.toplam.maliyet) + ((cl.toplam.fiyatsiz || []).length ? ' en az' : '');
+    } else if (typeof cl.toplam.toplam === 'number') {
+      claude = kisa(cl.toplam.toplam);
+    }
+  }
   return '<div class="kpi">' +
     kutu('kpi-biten', 'biten adım', biten) +
     kutu('kpi-ilk', 'ilk denemede geçme', ilk) +
     kutu('kpi-token', tel ? 'gerçek token' : 'ölçülen token', typeof token === 'number' ? kisa(token) : '—') +
     kutu('kpi-odenen', 'ödenen', typeof odenen === 'number' ? para(odenen) : '—') +
+    kutu('kpi-claude', 'Claude (tahmin)', claude) +
     '</div>';
 }
 
@@ -269,6 +279,34 @@ export function telemetriHtml(t) {
   return `<p class="soluk kapsam">${kapsam}</p><div class="kart tasarruf">${kart}</div>` +
     '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th title="mesaj başına çıkış token / mesaj süresi; ön işleme süresi dahil, üretim hızı değildir">tok/sn (mesaj)</th></tr></thead>' +
     `<tbody>${satirlar}</tbody></table>`;
+}
+
+// Claude Code oturumları: ana oturum / alt ajan ayrımıyla token ve tahmini API maliyeti
+export function claudeHtml(c) {
+  if (!c || !c.var) return '<span class="bos">Claude oturum verisi bulunamadı</span>';
+  const t = c.toplam || {};
+  const fiyatsiz = t.fiyatsiz || [];
+  const pay = (n) => (typeof n === 'number' && t.toplam > 0 ? `%${Math.round((n / t.toplam) * 100)}` : '—');
+  const aralik = c.ilk && c.son ? (c.ilk === c.son ? c.ilk : `${c.ilk} → ${c.son}`) : '—';
+  const maliyet = typeof t.maliyet === 'number' ? `~${para(t.maliyet)}` : 'hesaplanamadı (fiyat yok)';
+  const altNot = fiyatsiz.length ? ' (en az, fiyatı bilinmeyen model dahil değil)' : '';
+  const satirlar = (c.modeller || []).map((m) =>
+    '<tr>' +
+    `<td class="model">${esc(m.model)}</td>` +
+    `<td class="sayi">${esc(tam(m.mesaj))}</td>` +
+    `<td class="sayi">${esc(tam(m.giris))}</td>` +
+    `<td class="sayi">${esc(tam(m.cikis))}</td>` +
+    `<td class="sayi" title="okuma ${esc(tam(m.cacheOkuma))} · yazma ${esc(tam(m.cacheYazma))}">${esc(tam(m.cacheOkuma + m.cacheYazma))}</td>` +
+    `<td class="sayi">${m.maliyet == null ? 'fiyat yok' : esc(para(m.maliyet))}</td>` +
+    '</tr>').join('');
+  return '<div class="kart claude-kart">' +
+    '<h3>Claude harcaması (tahmin, API karşılığı)</h3>' +
+    `<p class="soluk">${esc(aralik)} · ${esc(kisa(t.toplam || 0))} token · ana ${esc(pay(t.ana))} · alt ajan ${esc(pay(t.altajan))}</p>` +
+    `<p><b>Tahmini maliyet:</b> ${esc(maliyet)}${esc(altNot)}</p>` +
+    '<p class="soluk">abonelikteyseniz gerçek fatura farklı olabilir.</p>' +
+    '<table><thead><tr><th class="model">model</th><th>mesaj</th><th>giriş</th><th>çıkış</th><th>cache</th><th>maliyet</th></tr></thead>' +
+    `<tbody>${satirlar}</tbody></table>` +
+    '</div>';
 }
 
 // model × adım matrisi; renk tek başına anlam taşımaz, hücrede simge + sayı var

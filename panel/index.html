@@ -115,8 +115,8 @@ table td { white-space: nowrap; }
 /* başlıklar sarılabilir; model adı harf harf kırılmasın diye en az genişlik */
 table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
-/* KPI şeridi: yan yana dört kutu, dar ekranda 2×2 */
-.kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0 4px; }
+/* KPI şeridi: geniş ekranda beş kutu, dar ekranda 2 sütun */
+.kpi { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 10px 0 4px; }
 .kpi-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; min-width: 0; }
 .kpi-kutu .etiket { display: block; color: var(--soluk); font-size: 12px; overflow-wrap: anywhere; }
 .kpi-kutu b { font-size: 20px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -196,6 +196,7 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 #arastirma .bos { color: var(--bos); font-style: italic; }
 #arastirma h3 { font-size: 14px; margin: 14px 0 6px; }
 #depo h3 { font-size: 14px; margin: 14px 0 6px; }
+#claude h3 { font-size: 14px; margin: 0 0 8px; }
 #depo p { font-size: 13px; margin: 4px 0; overflow-wrap: anywhere; }
 #depo a { color: var(--vurgu-metin); }
 #depo .bos { color: var(--bos); font-style: italic; font-size: 13px; }
@@ -251,6 +252,9 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 
   <h2>Model × adım</h2>
   <section id="matris"></section>
+
+  <h2>Claude harcaması</h2>
+  <section id="claude"></section>
   </div>
 
   <div role="tabpanel" id="sekme-etki" hidden>
@@ -266,7 +270,7 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, depoSeritHtml, depoHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -275,6 +279,7 @@ const modellerEl = document.getElementById('modeller');
 const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
+const claudeEl = document.getElementById('claude');
 const kpiEl = document.getElementById('kpi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
@@ -358,6 +363,7 @@ function ciz(d) {
   modellerEl.innerHTML = modellerHtml(d.modeller);
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
+  claudeEl.innerHTML = claudeHtml(d.claude);
   etkiEl.innerHTML = etkiHtml(d.etki);
 }
 

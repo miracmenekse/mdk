@@ -364,7 +364,7 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Kapı: `bash test/hepsi.sh`
   - Not: `bash test/hepsi.sh` yalnız bu son adımda kapıdır; 44-46'nın kırmızı kapı testleri aynı depoda durduğu için önceki adımlarda hepsi.sh geçemez.
 
-- [ ] 47. Claude harcaması (Claude Code oturum dosyalarından)
+- [x] 47. Claude harcaması (Claude Code oturum dosyalarından)
   - Problem ve hipotez: KPI'daki "ödenen $0" yalnız OpenCode; planlama (ana oturum) ve `kodcu` (alt ajan) Claude token'ı hiçbir yerde yok. Hipotez: Claude harcaması görününce "ücretsiz modelle kaliteyi kaybetmeden" iddiası dürüst kapanır: OpenCode tasarrufu ile Claude maliyeti yan yana okunur. Başarı ölçütü: panelde Claude token'ı ve (fiyat biliniyorsa) tahmini maliyeti, ana oturum / alt ajan ayrımıyla görünür; fiyatı bilinmeyen model için maliyet uydurulmaz.
   - Etki: etki/claude.html
   - Onay: evet
