@@ -395,7 +395,7 @@ Problem ve hipotez: panelin her sekmesi gerçek veriyle ekran görüntüsünden 
 Kullanıcı kararı (2026-10-26): kapsam tümü; Akış için "açıklar üstte, bitenler katlı" (alternatif "sıradaki iş kartı" seçilmedi); yürütücü opencode.
 Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE ile gelen her yeniden çizimde korunur (mevcut `acikTercih` deseni). Kapılar adım çalıştırılmadan hemen önce yazılır, kırmızı doğrulanır, commit edilir; `bash test/hepsi.sh` yalnız son adımın kapısıdır.
 
-- [ ] 49. Matris yatay kaydırma
+- [x] 49. Matris yatay kaydırma
   - Problem ve hipotez: Model × adım matrisinde 31 ve 40-48 sütunları kart dışına taşıyor, kaydırılamıyor; son adımlar ve kodcu/fable satırı boş görünüyor.
   - Etki: etki/matris-kaydir.html
   - Onay: evet

@@ -328,9 +328,9 @@ export function matrisHtml(m) {
     `<th class="model">${esc(r.model.startsWith(`${r.yurutucu || 'opencode'}/`) ? r.model : `${r.yurutucu || 'opencode'}/${r.model}`)}</th>` +
     m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
     '</tr>').join('');
-  return '<table class="matris"><thead><tr><th class="model">model</th>' +
+  return '<div class="kaydir"><table class="matris"><thead><tr><th class="model">model</th>' +
     m.adimlar.map((no) => `<th>${esc(no)}</th>`).join('') +
-    `</tr></thead><tbody>${satirlar}</tbody></table>` +
+    `</tr></thead><tbody>${satirlar}</tbody></table></div>` +
     '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</p>';
 }
 
