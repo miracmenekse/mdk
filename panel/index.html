@@ -131,6 +131,13 @@ td.sayi { font-variant-numeric: tabular-nums; }
   .sekmeler { flex-wrap: nowrap; overflow-x: auto; }
   .sekmeler button { white-space: nowrap; flex: none; }
 }
+.denge { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.denge-sutun h3 { font-size: 14px; margin: 0 0 6px; }
+.denge-token { margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+.denge-token b { font-size: 18px; }
+.denge-para { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.denge-oran { grid-column: 1 / -1; margin: 0; padding-top: 8px; border-top: 1px solid var(--cizgi); font-size: 13px; font-weight: 600; }
+@media (max-width: 520px) { .denge { grid-template-columns: minmax(0, 1fr); } }
 #telemetri .bos { color: var(--bos); font-style: italic; }
 .tasarruf { margin-bottom: 8px; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .soluk { color: var(--soluk); font-size: 12px; }
@@ -253,6 +260,9 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
   </div>
 
   <div role="tabpanel" id="sekme-modeller" hidden>
+  <h2>Maliyet dengesi</h2>
+  <section id="denge"></section>
+
   <h2>Modeller</h2>
   <section id="modeller"></section>
 
@@ -279,7 +289,7 @@ details.ayrinti summary { cursor: pointer; overflow-wrap: anywhere; }
 </main>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -289,6 +299,7 @@ const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
 const claudeEl = document.getElementById('claude');
+const dengeEl = document.getElementById('denge');
 const kpiEl = document.getElementById('kpi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
@@ -392,6 +403,7 @@ function ciz(d) {
   sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
   planCiz();
   modellerEl.innerHTML = modellerHtml(d.modeller);
+  dengeEl.innerHTML = dengeHtml(d.telemetri, d.claude);
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
   claudeEl.innerHTML = claudeHtml(d.claude);

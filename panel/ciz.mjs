@@ -339,6 +339,46 @@ export function claudeHtml(c) {
     '</div>';
 }
 
+function dengeSutun(ad, token, paraHtml) {
+  const tokenHtml = typeof token === 'number' && Number.isFinite(token)
+    ? `<p class="denge-token"><b>${esc(kisa(token))}</b> token</p>`
+    : '<p class="denge-token soluk">veri yok</p>';
+  return '<div class="denge-sutun">' +
+    `<h3>${esc(ad)}</h3>` +
+    tokenHtml +
+    (paraHtml ? `<p class="denge-para">${paraHtml}</p>` : '') +
+    '</div>';
+}
+
+// maliyet dengesi: önce ölçülen token, sonra tahmini para; para farkı ya da kat oranı yazılmaz
+export function dengeHtml(tel, cl) {
+  const t = tel && tel.var ? tel : null;
+  const c = cl && cl.var ? cl : null;
+  if (!t && !c) return '';
+  const tokenT = t && typeof t.toplam?.toplam === 'number' ? t.toplam.toplam : null;
+  const tokenC = c && typeof c.toplam?.toplam === 'number' ? c.toplam.toplam : null;
+  const telPara = t
+    ? (t.tasarruf && typeof t.tasarruf.listeFiyati === 'number'
+      ? `liste fiyatıyla ~${esc(para(t.tasarruf.listeFiyati))} (kaçınılan, tahmin)`
+      : '<span class="soluk">fiyat yok</span>')
+    : '';
+  const fiyatsiz = c?.toplam?.fiyatsiz || [];
+  const clPara = c
+    ? (typeof c.toplam?.maliyet === 'number'
+      ? `~${esc(para(c.toplam.maliyet))}` +
+        (fiyatsiz.length ? ` en az <span class="soluk">(fiyatsız: ${esc(fiyatsiz.join(', '))})</span>` : '')
+      : '<span class="soluk">fiyat yok</span>')
+    : '';
+  const oran = tokenT !== null && tokenC !== null && tokenT + tokenC > 0
+    ? `<p class="denge-oran">token'ların %${Math.round((tokenT / (tokenT + tokenC)) * 100)}'i ücretsiz modelde</p>`
+    : '';
+  return '<div class="kart denge">' +
+    dengeSutun('OpenCode (ücretsiz)', tokenT, telPara) +
+    dengeSutun('Claude', tokenC, clPara) +
+    oran +
+    '</div>';
+}
+
 // model × adım matrisi; renk tek başına anlam taşımaz, hücrede simge + sayı var
 export function matrisHtml(m) {
   if (!m || !m.adimlar?.length || !m.modeller?.length) return '<span class="bos">metrik yok</span>';

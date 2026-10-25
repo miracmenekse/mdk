@@ -449,7 +449,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: (1) `panel/ciz.mjs` `planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {})`: en az bir bitmemiş adımı olan bölümler önce (kendi sıralarında), tüm adımları bitmiş bölümler sonra. Tamamı bitmiş bölüm `<details class="kat" data-kat="<ad (esc)>" data-varsayilan="1|0">` (varsayılan açıklık; ardından ` open` gerekiyorsa) içinde, `<summary>` bölüm adı + "N/N bitti" + içinde sorunlu adım varsa " · K sorunlu"; içerik bugünkü `ul.adimlar`. Açık mı: `acik['kat:' + ad]` boolean ise o; değilse `secenek.sadeceSorunlu` ve bölümde sorunlu adım varsa açık; aksi kapalı. Bitmemiş adımı olan bölüm bugünkü gibi düz `<h2>`. Adım `<details data-no>` davranışı değişmez. (2) `panel/index.html`: `details[data-kat]` toggle'ı `acikTercih['kat:' + ad]`'a yazılır (adım tercihiyle aynı nesne); tercih yalnız `data-varsayilan`'dan farklıysa saklanır (aynıysa silinir); plan çizimi `function planCiz()` içine alınır (`planHtml(..., acikTercih, { sadeceSorunlu })`), "sadece sorunlu" değişince `planCiz()` çağrılır.
   - Kapı: `node panel/akis-katli.test.mjs && node panel/gecmis-ui.test.mjs && node panel/suzgec.test.mjs && node panel/ciz.test.mjs`
 
-- [ ] 55. Maliyet dengesi kartı
+- [x] 55. Maliyet dengesi kartı
   - Problem ve hipotez: OpenCode tasarrufu (Gerçek token kartı) ile Claude harcaması (47) ayrı kartlarda; "ücretsiz modelle kaliteyi kaybetmeden" iddiası tek bakışta okunmuyor. Hipotez: ikisi yan yana, önce ölçülen token sonra tahmini para, okununca süreç maliyeti dürüstçe görülür.
   - Etki: etki/denge.html
   - Onay: evet
