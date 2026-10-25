@@ -132,12 +132,13 @@ export function snapshot(dir) {
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {
       for (const a of k.adimlar) {
-        if (a.bitti || !a.etki) continue;
+        if (!a.etki) continue;
         sonuc.etki.push({
           no: a.no,
           baslik: a.baslik,
           dosya: a.etki,
           deger: a.deger,
+          bitti: !!a.bitti,
           tahmin: tahmin(satirlar, 1),
         });
       }

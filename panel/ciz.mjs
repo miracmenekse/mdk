@@ -334,36 +334,50 @@ export function matrisHtml(m) {
     '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</p>';
 }
 
-export function etkiHtml(etki) {
-  if (!etki || etki.length === 0) return '<span class="bos">etki adımı yok</span>';
-  const maxToken = Math.max(0, ...etki.map((e) => e.tahmin?.token || 0));
-  return etki.map((e) => {
-    const t = e.tahmin || { token: 0, maliyet: 0, guven: 'dusuk' };
-    const guven = GUVEN[t.guven] ? t.guven : 'dusuk';
-    const deger = Math.max(0, Math.min(5, Math.round(e.deger ?? 0)));
-    // iki ayrı çubuk: değer (değer/5) ve tahmini token (en büyük token'a oran)
-    const degerW = (deger / 5) * 100;
-    const tokenW = maxToken > 0 ? ((t.token || 0) / maxToken) * 100 : 0;
-    const maliyetYaz = (t.maliyet || 0) > 0 ? ` · ${para(t.maliyet)}` : '';
-    const src = '/dosya?yol=' + encodeURIComponent(e.dosya || '');
-    return '<div class="etki-kart">' +
-      '<div class="etki-ust">' +
-      `<span class="no">${esc(e.no)}</span>` +
-      `<span class="baslik">${esc(e.baslik)}</span>` +
-      yildizlar(e.deger) +
-      `<span class="rozet ${guven}">${GUVEN[guven]}</span>` +
-      '</div>' +
-      `<div class="tahmin">~${Math.round(t.token || 0).toLocaleString('tr-TR')} token${maliyetYaz}</div>` +
-      '<div class="dm">' +
-      `<div class="dm-satir"><span>değer</span><div class="dm-takip"><i class="deger" style="width:${degerW.toFixed(1)}%"></i></div></div>` +
-      `<div class="dm-satir"><span>token</span><div class="dm-takip"><i class="token" style="width:${tokenW.toFixed(1)}%"></i></div></div>` +
-      '</div>' +
-      '<div class="kroki">' +
-      `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}&goster=once"></iframe></div>` +
-      `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}&goster=sonra"></iframe></div>` +
-      '</div>' +
-      '</div>';
-  }).join('');
+// tek etki kartı: değer ve tahmini token çubukları + önce/sonra krokisi
+function etkiKart(e, maxToken) {
+  const t = e.tahmin || { token: 0, maliyet: 0, guven: 'dusuk' };
+  const guven = GUVEN[t.guven] ? t.guven : 'dusuk';
+  const deger = Math.max(0, Math.min(5, Math.round(e.deger ?? 0)));
+  // iki ayrı çubuk: değer (değer/5) ve tahmini token (en büyük token'a oran)
+  const degerW = (deger / 5) * 100;
+  const tokenW = maxToken > 0 ? ((t.token || 0) / maxToken) * 100 : 0;
+  const maliyetYaz = (t.maliyet || 0) > 0 ? ` · ${para(t.maliyet)}` : '';
+  const src = '/dosya?yol=' + encodeURIComponent(e.dosya || '');
+  return '<div class="etki-kart">' +
+    '<div class="etki-ust">' +
+    `<span class="no">${esc(e.no)}</span>` +
+    `<span class="baslik">${esc(e.baslik)}</span>` +
+    yildizlar(e.deger) +
+    `<span class="rozet ${guven}">${GUVEN[guven]}</span>` +
+    '</div>' +
+    `<div class="tahmin">~${Math.round(t.token || 0).toLocaleString('tr-TR')} token${maliyetYaz}</div>` +
+    '<div class="dm">' +
+    `<div class="dm-satir"><span>değer</span><div class="dm-takip"><i class="deger" style="width:${degerW.toFixed(1)}%"></i></div></div>` +
+    `<div class="dm-satir"><span>token</span><div class="dm-takip"><i class="token" style="width:${tokenW.toFixed(1)}%"></i></div></div>` +
+    '</div>' +
+    '<div class="kroki">' +
+    `<div><div class="etiket">önce</div><iframe loading="lazy" src="${esc(src)}&goster=once"></iframe></div>` +
+    `<div><div class="etiket">sonra</div><iframe loading="lazy" src="${esc(src)}&goster=sonra"></iframe></div>` +
+    '</div>' +
+    '</div>';
+}
+
+// etki: önce açık adımlar; biten adımların taslakları katlı, adım no azalan
+export function etkiHtml(etki, { gecmisAcik = false } = {}) {
+  const liste = etki || [];
+  if (liste.length === 0) return '<span class="bos">onay bekleyen taslak yok</span>';
+  const maxToken = Math.max(0, ...liste.map((e) => e.tahmin?.token || 0));
+  const aciklar = liste.filter((e) => !e.bitti);
+  const bitenler = liste.filter((e) => e.bitti).sort((a, b) => b.no - a.no);
+  let html = aciklar.map((e) => etkiKart(e, maxToken)).join('');
+  if (bitenler.length === 0) return html;
+  if (aciklar.length === 0) html += '<span class="bos">onay bekleyen taslak yok</span>';
+  return html +
+    `<details class="etki-gecmis"${gecmisAcik ? ' open' : ''}>` +
+    `<summary>Biten adımların taslakları (${bitenler.length})</summary>` +
+    bitenler.map((e) => etkiKart(e, maxToken)).join('') +
+    '</details>';
 }
 
 const ROLLER = { altlik: 'altlık', ornek: 'örnek', 'yan-yana': 'yan yana', izle: 'izle', kullanma: 'kullanma' };

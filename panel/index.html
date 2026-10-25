@@ -317,6 +317,8 @@ let zamanlayici = null;
 let sadeceSorunlu = false;
 // kullanıcının açıp kapattığı ayrıntılar: { [adımNo]: true|false }, her çizimde planHtml'e verilir
 const acikTercih = {};
+// etki sekmesinde biten adımların taslakları açık mı; her çizimde etkiHtml'e verilir
+let gecmisAcik = false;
 
 function filtreUygula() {
   const kutu = kategorilerEl.querySelector('#sadece-sorunlu');
@@ -340,6 +342,13 @@ kategorilerEl.addEventListener('toggle', (e) => {
     const varsayilan = e.target.closest('li')?.dataset.sorunlu === '1';
     if (e.target.open === varsayilan) delete acikTercih[e.target.dataset.no];
     else acikTercih[e.target.dataset.no] = e.target.open;
+  }
+}, true);
+
+// etki geçmişi katlaması da kabarcıklanmaz: yakalama aşamasında dinlenir
+etkiEl.addEventListener('toggle', (e) => {
+  if (e.target && e.target.matches && e.target.matches('details.etki-gecmis')) {
+    gecmisAcik = e.target.open;
   }
 }, true);
 
@@ -373,7 +382,7 @@ function ciz(d) {
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
   claudeEl.innerHTML = claudeHtml(d.claude);
-  etkiEl.innerHTML = etkiHtml(d.etki);
+  etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik });
 }
 
 function baglantiYok() {

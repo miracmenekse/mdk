@@ -431,7 +431,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Ne: `panel/index.html` yalnız CSS: `@media (max-width: 520px)` içinde `.kpi` 3 sütun, `gap: 6px`; `.kpi-kutu` `padding: 6px 8px`; `.kpi-kutu b` `font-size: 15px`; `.kpi-kutu .etiket` `font-size: 11px`; `.sekmeler` `flex-wrap: nowrap; overflow-x: auto;` ve düğmeler `white-space: nowrap; flex: none`. Geniş ekran kuralları değişmez.
   - Kapı: `node panel/dar-ekran.test.mjs && node panel/sekme.test.mjs`
 
-- [ ] 53. Etki sekmesi: biten adımların taslakları
+- [x] 53. Etki sekmesi: biten adımların taslakları
   - Problem ve hipotez: biten adımların taslakları hiç görünmüyor; onay bekleyen yokken sekme "etki adımı yok" diyor ve kullanıcı taslak yok sanıyor.
   - Etki: etki/etki-gecmis.html
   - Onay: evet
