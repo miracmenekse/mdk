@@ -210,6 +210,7 @@
   "birlesimler": [
     {
       "ad": "Gerçek oturum telemetrisi",
+      "adim": 44,
       "parcalar": ["touchkale/opencode-dashboard", "thumb2086/opencode-usage-dashboard"],
       "ne": "Panelin Node sunucusu `opencode.db`'yi salt-okunur okur (node:sqlite, Node 24'te yerleşik, yeni bağımlılık yok). Model tablosuna gerçek token (giriş, çıkış, reasoning, cache), üretim hızı (tok/sn) ve araç dağılımı eklenir. Şema V1/V2 ayrımı statboard'dan alınır.",
       "neden": "Bugün model tablosu `metrikler.jsonl`'daki çalıştırıcı ölçümlerine bağlı. `opencode run` küçük görevde bile ~55-110k token yiyor ve bunun nereye gittiği görünmüyor. Bu bileşim 'ücretsiz modelle kaliteyi kaybetmeden' hipotezinin maliyet tarafını gerçek veriyle besler.",
@@ -218,6 +219,7 @@
     },
     {
       "ad": "Tasarruf kartı",
+      "adim": 44,
       "parcalar": ["thumb2086/opencode-usage-dashboard", "splunk/token-meter"],
       "ne": "Her model için 'ücretli katalog fiyatıyla ne tutardı' ile gerçek maliyet farkı. token-meter ilkesi: fiyatı bilinmeyen model 0 değil 'yok' gösterilir.",
       "neden": "Ücretsiz model kullanmanın iş değerini tek sayıyla anlatır (sunum ve mentör için güçlü). Bilinmeyen fiyatı 0 saymamak, panelin şu anki 'yanit_yok başarısızlık görünüyor' hatasıyla aynı türden yanlış okumayı önler.",
@@ -226,6 +228,7 @@
     },
     {
       "ad": "Model × adım matrisi",
+      "adim": 45,
       "parcalar": ["promptfoo/promptfoo", "ed-is-ai/featherbench", "Mattbusel/llm-bench"],
       "ne": "Satır = model, sütun = adım; hücre = geçti/kaldı + deneme sayısı + süre. Altına p50/p95 süre. Veri zaten `metrikler.jsonl`'da.",
       "neden": "Kota açıldı, 'Modeller:' satırındaki dört modeli gerçek adımlarla karşılaştırmak bekliyor. Bugün bu `karsilastir.mjs` çıktısı terminalde; panelde matris olursa 'hangi model hangi adımda zorlandı' bir bakışta çıkar.",
@@ -250,6 +253,7 @@
     },
     {
       "ad": "Claude tarafını yan yana izle",
+      "adim": 47,
       "parcalar": ["simple10/agents-observe", "illegalstudio/lazyagent"],
       "ne": "Kod yazmadan: agents-observe'u Claude Code eklentisi olarak çalıştır (4981), panelde bağlantı olarak göster. OpenCode oturumlarını da tek terminalde görmek için lazyagent denenir.",
       "neden": "Açık iş: 'Claude'un planlama token'ı ölçülmüyor'. agents-observe oturum başına token ve maliyet kırılımı veriyor (v0.9.7). Böylece planlama (Claude) ile kodlama (OpenCode) maliyeti iki ayrı panelde ama yan yana görünür.",
@@ -258,6 +262,7 @@
     },
     {
       "ad": "Panel görsel dili: KPI şeridi, sekmeler, model kartları",
+      "adim": 46,
       "parcalar": ["JayantDevkar/claude-code-karma", "Arindam200/cc-lens"],
       "ne": "Üç değişiklik: (a) üstte dört büyük sayı: biten adım, ilk denemede geçme %, toplam token, ödenen maliyet; (b) tek uzun sayfa yerine sekmeler (Akış, Modeller, Etki, Araştırma) ve 7g/30g/tümü düğmeleri; (c) model tablosu yerine model kartı: model adı, deneme/geçen, token, ortalama süre, araç çubukları, altta maliyet.",
       "neden": "İki örnek de aynı düzene yakınsıyor: önce dört sayı, sonra aralık düğmeleri, sonra kart ızgarası. Panelde bölüm sayısı arttı (Şu an, Adımlar, Modeller, Etki, Araştırma), kaydırarak bulmak zorlaşıyor. Bu, veri değiştirmeden okunurluğu artırır.",
@@ -266,6 +271,7 @@
     },
     {
       "ad": "Güven etiketli sayılar (ölçüldü / tahmin / veri yok)",
+      "adim": 41,
       "parcalar": ["foyzulkarim/claude-lens", "splunk/token-meter"],
       "ne": "Panelde gösterilen her sayıya küçük etiket: ölçüldü (çalıştırıcı ya da opencode.db'den), tahmin (bölünmüş süre/token, liste fiyatı), veri yok (0 yazılmaz). Mevcut `tahmin()`in düşük/orta/yüksek güveni aynı etikete bağlanır.",
       "neden": "İki açık hata aynı kökten: kota sessizliği (`yanit_yok`) %0 başarı gibi görünüyor, 22/23 ve 27/28 adımları bölünmüş tahmini ölçülmüş gibi gösteriyor. Etiket sayının ne kadar güvenilir olduğunu söyler; sunumda 'şüpheci jüri' sorusuna hazır cevap verir.",
