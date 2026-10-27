@@ -264,7 +264,7 @@ Not: bu adımlar UI'a dokunmaz, `Etki:`/`Onay:` yok. Adım 31 dışındakiler Cl
 ### Faz 2: kapı ve plan bölme
 Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa 37-38 yeniden planlanır.
 
-- [ ] 37. Kapı yazımı: geçmişe karşı deneme
+- [x] 37. Kapı yazımı: geçmişe karşı deneme
   - Yürütücü: claude
   - Ne: "Kapıyı kandıran yürütücü" kartını üç geçmiş kapıya uygula: adım 8 (`test -f ... && test -f ...`), adım 25 (`grep -q ... && grep -q ...`), adım 23 (kapı testindeki hatalı beklenti). Her kapı için kart, "boş ya da taslak dosyayla bu kapı geçer mi?" sorusunu yanıtlar ve bir güçlendirme önerir; Claude gerçek boşluk olup olmadığını kendi okumasıyla doğrular. `## Karar notu: Persona denemesi 2` altında kapı başına satır tablosu; `Boşluk bulunan kapı: N/3`; `Sonuç: doğrulandı` ölçütü ≥2/3. Günlüğe satır ekle. ≤60k token. Çıkan kural `ba-pm-bakis`in "Kapılar" bölümüne eklenecek biçimde bir cümleye indirilir (kodda değişiklik bu adımda yok).
   - Kapı: `node persona-denetle.mjs`
@@ -326,6 +326,18 @@ Eksenler: tanı değeri mi uygulama maliyeti mi (geliştirici); plan ile gerçek
 Öneri: C; adım 42'de zaten bu yönde uygulandı (satırda "N. denemede geçti" ve gerçek yürütücü, ayrıntıda tüm denemeler). Tur, 1. turla aynı tabana vardı; yeni seçenek B (yalnız farkta "yedek" etiketi).
 Harcanan token: 0k Claude (ücretsiz modellerde 35k; Claude yalnız birleştirdi), süre ~10 dk (süre aşımı kartı bekletti).
 Sonuç: doğrulandı (≥2 eksen; Claude maliyeti 107k → 0). Not: 3 karttan 1'i kota yüzünden düştü; kota sessizken tur ~10 dk sürer, `PERSONA_SURE` kısaltılabilir.
+
+## Karar notu: Persona denemesi 2 (adım 37, 2026-10-27, persona-tur.sh)
+Karar: "Kapıyı kandıran yürütücü" kartı üç geçmiş kapıya ayrı ayrı (3 paralel tek kartlı tur, beam-free) soruldu: boş/taslak dosyayla geçer mi, nasıl güçlenir. Claude her kapıyı scratchpad'de sahte çözümle sınadı.
+| Kapı | Kart: taslakla geçer mi | Claude sınaması | Kartın önerisi | Boşluk bulundu mu |
+|---|---|---|---|---|
+| 8: `test -f A && test -f B` | evet | boş iki dosyayla geçti | zorunlu başlıklar ve yapı işaretleri (Seçenek A —, tablo) grep | evet |
+| 25: `grep -q 'Çıktı biçimi' && grep -q 'önermeyeceği'` | hayır (yanlış) | tek satırlık taslakla geçti | dosya dolu + `persona-denetle.mjs` sıfır çıkış + belgelerde geçiş | kaçırdı (öneri yine de boşluğu kapatıyor) |
+| 23: `modeller-ui.test.mjs`, `'50%'` sayısı | evet | sabit metin döndüren sahte `modellerHtml` bu iddiayı geçti | model satırına göre ayrı iddia: a/x'te iki 50%, sonnet'te 100% ve — | evet; önerisi gerçek düzeltmeyle aynı (sonnet `ilkDenemeOrani: 1`) |
+Boşluk bulunan kapı: 2/3
+Çıkan kural (ba-pm-bakis "Kapılar" için): Kapı yalnız varlık (`test -f`) ya da tek sözcük (`grep -q`) ölçüyorsa taslak geçer; işin davranışını çalıştıran bir komut (test ya da denetleyici) ekle ve iddiaları sabit metinle taklit edilemeyecek, satıra özgü farklı değerlerle kur.
+Harcanan token: 0k Claude (ücretsiz modellerde 255k: 18k + 141k + 95k), süre ~6 dk.
+Sonuç: doğrulandı (2/3 ≥ 2/3). Not: kart 25'te "hayır" dedi; kartın evet/hayır hükmü değil, önerdiği güçlendirme ve Claude'un sınaması güvenilir.
 
 - [x] 42. Adım geçmişinde güven: sessizlik ayrı, gerçek yürütücü
   - Problem ve hipotez: adım geçmişi (Adımlar bölümü) Modeller tablosunda düzelttiğimiz hatayı hâlâ taşıyor: kota sessizliği "✕ yanit_yok · 62 sn · 0 token" yazıyor, eksik süre/token 0 görünüyor, adım satırı işi kodcu yapmış olsa da planın `Yürütücü`'sünü (opencode) yazıyor. Hipotez: bunlar düzelirse "bu adımı kim yaptı, model gerçekten başarısız mı?" sorusu panelden doğru okunur. Başarı ölçütü: devralınan adımda "kodcu (plan: opencode)", sessiz denemeler başarısızlık gibi görünmez. UI'a dokunur ama yeni ekran yok: adım 41'in onaylı davranışının geçmiş görünümüne uzantısıdır (taslak yok).

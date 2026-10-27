@@ -146,3 +146,4 @@ Kazanan: seçilen seçeneğin geldiği kart; kartlarda olmayan kaynaklar için `
 |---|---|---|---|---|---|
 | 2026-10-17 | proje-gelistirme | Geçmiş görünümü (eski kart seti; BA/PM A/B ve benchmark kart dışı) | Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici, Denetçi / güvenlik | ayrı bölüm mü, satıra gömülü mü | Minimalist ürün tasarımcısı, Bakımı yapacak geliştirici |
 | 2026-10-27 | proje-gelistirme | Adım satırında gerçek yürütücü ve başarısız denemeler (adım 36, 2. tur, persona-tur.sh; Dikkati dağınık kullanıcı kota yüzünden yanıtsız) | Dikkati dağınık kullanıcı, Bakımı yapacak geliştirici, Denetçi / güvenlik | tanı değeri mi maliyet mi; plan/gerçek izlenebilirlik mi sürtünme mi | Denetçi / güvenlik |
+| 2026-10-27 | proje-gelistirme | Geçmiş kapılarda boşluk (adım 37, 3 tek kartlı tur, persona-tur.sh) | Kapıyı kandıran yürütücü | doğrulama gücü: varlık mı davranış mı | Kapıyı kandıran yürütücü |
