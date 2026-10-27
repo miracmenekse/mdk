@@ -252,7 +252,7 @@ Not: bu adımlar UI'a dokunmaz, `Etki:`/`Onay:` yok. Adım 31 dışındakiler Cl
   - Kapı: `node persona-denetle.mjs --sayim | grep -q 'proje-gelistirme/Denetçi / güvenlik: kullanım 1, kazanma 0'`
   - Kapı: `grep -q 'Seçim kuralı' personalar.md`
 
-- [ ] 36. Canlı deneme 1: UI ve akış kararı
+- [x] 36. Canlı deneme 1: UI ve akış kararı
   - Yürütücü: claude
   - Ne: (2026-10-27 güncellendi: 58 bittikten sonra 2. tur `persona-tur.sh` ile, Claude alt ajanı kullanılmadan; 1. tur notu aşağıda.) Proje `CLAUDE.md`'deki iki panel eksiğinden biri (model tablosu `yanit_yok`'u model hatası sayıyor; adım satırı planın yürütücüsünü yazıyor, gerçekte işi yapanı değil) için `proje-gelistirme` paketiyle karar al: önce ekseni sor, 3 kart, tek tablo, öneri. Önce eşiği kontrol et: karar `ba-pm-bakis`in "küçük kararda alt ajan kullanma" kuralına göre alt ajanı hak etmiyorsa diğer eksiği seç. Alt ajanlar `sonnet` ile, toplam ≤60k token. PLAN.md'ye `## Karar notu: Persona denemesi 1` yaz (eksenler `;` ile, seçenek tablosu, `Harcanan token: Nk`, `Sonuç: doğrulandı|çürüdü` satırı; ölçüt: ≥2 eksen), günlüğe satır ekle, `proje-gelistirme` `Durum: denendi` yap. Sonuç `çürüdü` çıkarsa dur ve kullanıcıya "az kart" yolunu sor.
   - Kapı: `node persona-denetle.mjs`
@@ -305,7 +305,7 @@ GitHub'da panel için altlık/örnek olacak projeler araştırıldı; sonuç `ar
   - Kapı: `node panel/durum.test.mjs && node panel/modeller-ui.test.mjs && node panel/arayuz.test.mjs etki`
   - Kapı: `bash test/hepsi.sh`
 
-## Karar notu: Persona denemesi 1 (adım 36, 1. tur; yarım, kullanıcı kararı bekliyor)
+## Karar notu: Persona denemesi 1 (adım 36; 1. tur Claude alt ajanlarıyla yarım, 2. tur OpenCode ile tamam)
 Karar: adım satırı planlanan yürütücüyü yazıyor, gerçekte işi yapanı değil (adım 9: opencode 6 kez kaldı, kodcu geçti; 22: 3 başarısız sonra kodcu; 40: 1 başarısız sonra kodcu). `yanit_yok` sorunu adım 41'de zaten planlı olduğu için bu eksik seçildi. Kartlar: Dikkati dağınık kullanıcı, Bakımı yapacak geliştirici, Denetçi / güvenlik (karşı çıkan). Sonnet, araçsız.
 Ayrışma eksenleri (seçim kuralı 3. madde, seçenek turundan önce):
 - Dikkati dağınık kullanıcı: satır tek hüküm mü söylesin (gerçekte kim bitirdi), her denemenin dökümü mü; ayrıntı isteyene saklı.
@@ -314,6 +314,18 @@ Ayrışma eksenleri (seçim kuralı 3. madde, seçenek turundan önce):
 Gözlem: üç eksen biçimsel olarak ayrı (yoğunluk, türetme maliyeti, izlenebilirlik) ama üçü de aynı yöne bakıyor: planlanan yerine fiilî yürütücü, ayrıntı açılır bölümde. Bu "güvenli taban"; gerçek karar noktası ayrıntının (başarısız deneme sayısı ve modeller) satırda rozetle mi, yalnızca açılır bölümde mi görüneceği.
 Harcanan token (yalnızca 1. tur): 107k (3 alt ajan x ~35,8k; ajan başına sabit yük, görev metni birkaç yüz token). Onaylı sınır tur başına 60k idi; yalnızca bu tur sınırı aştı. Seçenek turu (2. tur) başlatılmadı.
 Karar bekliyor: bu sabit yük yüzünden `general-purpose` alt ajan başına 60k sınırına yalnızca 1 ajan sığar; 3 kartlı bağımsız tur yaklaşık 107k tutar.
+
+2. tur (2026-10-27, `persona-tur.sh`, kullanıcı kararı: her persona OpenCode'da ayrı oturumda ücretsiz modelle): aynı soru, aynı 3 kart. Dikkati dağınık kullanıcı: deepseek ve glm süre aşımı (kota sessizliği), yanıt yok. Bakımı yapacak geliştirici ve Denetçi / güvenlik: beam-free, geçerli biçimde 2'şer seçenek.
+Eksenler: tanı değeri mi uygulama maliyeti mi (geliştirici); plan ile gerçek ayrımı izlenebilir mi, satır sürtünmesiz mi (denetçi).
+| Seçenek | Kaynak | Satırda | Ayrıntıda | Değer | Risk |
+|---|---|---|---|---|---|
+| A | geliştirici | son bitiren yürütücü | sayı + modeller | tek kelime, ucuz | tanı için her satırı açmak gerekir |
+| B | geliştirici | "kodcu (yedek)" yalnız fark varsa | deneme sayısı | yedek tek bakışta belli | hangi modelin kaç kez kaldığı gizli |
+| C | denetçi | son bitiren + "N. deneme" | tüm başarısızlar | kim bitirdi + ne kadar zorlandı | satırda ek alan |
+| D | denetçi | planlanan yürütücü | gerçekleşen + denemeler | plan/gerçek ayrımı | satır yanıltıcı |
+Öneri: C; adım 42'de zaten bu yönde uygulandı (satırda "N. denemede geçti" ve gerçek yürütücü, ayrıntıda tüm denemeler). Tur, 1. turla aynı tabana vardı; yeni seçenek B (yalnız farkta "yedek" etiketi).
+Harcanan token: 0k Claude (ücretsiz modellerde 35k; Claude yalnız birleştirdi), süre ~10 dk (süre aşımı kartı bekletti).
+Sonuç: doğrulandı (≥2 eksen; Claude maliyeti 107k → 0). Not: 3 karttan 1'i kota yüzünden düştü; kota sessizken tur ~10 dk sürer, `PERSONA_SURE` kısaltılabilir.
 
 - [x] 42. Adım geçmişinde güven: sessizlik ayrı, gerçek yürütücü
   - Problem ve hipotez: adım geçmişi (Adımlar bölümü) Modeller tablosunda düzelttiğimiz hatayı hâlâ taşıyor: kota sessizliği "✕ yanit_yok · 62 sn · 0 token" yazıyor, eksik süre/token 0 görünüyor, adım satırı işi kodcu yapmış olsa da planın `Yürütücü`'sünü (opencode) yazıyor. Hipotez: bunlar düzelirse "bu adımı kim yaptı, model gerçekten başarısız mı?" sorusu panelden doğru okunur. Başarı ölçütü: devralınan adımda "kodcu (plan: opencode)", sessiz denemeler başarısızlık gibi görünmez. UI'a dokunur ama yeni ekran yok: adım 41'in onaylı davranışının geçmiş görünümüne uzantısıdır (taslak yok).
