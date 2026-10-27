@@ -526,6 +526,30 @@ Riskler: ücretsiz model biçime uymayabilir (çıktıda "Seçenek A" yoksa yan�
   - Kapı: `bash test/persona-tur.test.sh`
   - Kapı: `node persona-denetle.mjs`
 
+### Faz 8: persona turunu bitirme (2026-10-27)
+Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve kart `PERSONA_SURE` (300 sn) dolana dek bekliyor; adım 36'da bir kart bu yüzden düştü, tur 10 dk sürdü. Ölçüm: sessiz deneme 0 bayt yazar, yanıt veren model ilk saniyelerde `step_start` olayı yazar. Hipotez: ilk olay N saniyede gelmezse model atlanırsa tur kısalır ve kart düşmez. Ayrıca `sunum` ve `arastirma` alanları hiç gerçek işte denenmedi; gerçek birer kararla denenince kartların ayrıştığı ya da ayrışmadığı görülür. Başarı ölçütü: sessiz modelde kart ~60 sn içinde sıradaki modele geçer; iki alan `Durum: denendi`.
+
+- [ ] 59. Persona turunda sessiz modeli erken atla
+  - Değer: 3
+  - Bütçe: 300000
+  - Ne: `persona-tur.sh` `kart_kos` bekleme döngüsü: yeni değişken `ILK=${PERSONA_ILK:-60}` (saniye; `SURE` satırının altında, aynı yorum üslubuyla). Deneme dosyası (`$f.deneme`) boşken (`[ ! -s "$f.deneme" ]`) geçen süre `ILK`'ya ulaşırsa süreç grubu `SURE`'deki gibi `kill -KILL -- -"$pid"` ile öldürülür ve `durum=sessiz` olur; sonra mevcut akışla sıradaki modelle bir kez daha denenir (geçersiz/süre gibi). Dosyada çıktı varsa `ILK` uygulanmaz, yalnız `SURE` geçerlidir. `SURE` kontrolü ve `durum=sure` aynen kalır. `ozet.md` satırında durum `sessiz` yazılır (mevcut kod bunu zaten durum alanından yazar). Kullanım yorumuna `PERSONA_ILK` eklenir. Başka dosya değişmez.
+  - Kapı: `bash test/persona-tur.test.sh`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 60. Araştırma alanını gerçek kararla dene
+  - Yürütücü: claude
+  - Ne: Karar: `arastirma/arastirma.json`'da açık kalan iki birleşim (Adım panosu, Isı haritası ve sparkline) yapılsın mı, hangisi önce, yoksa araştırma kapansın mı. `arastirma` alanından 3 kartla (Uygulayıcı, Karşıt görüş avukatı, Kapsam bekçisi; karşı çıkan Karşıt görüş avukatı) `persona-tur.sh` turu. Claude kartların iddialarını `metrikler.jsonl` ve panel koduyla sınar. `## Karar notu: Persona denemesi 4` (seçenek tablosu, `Harcanan token: Nk`, `Sonuç:` satırı; ölçüt ≥2 geçerli kart ve ≥2 farklı eksen). Günlüğe satır, `arastirma` alanı `Durum: denendi`. `arastirma.json` değişmez; yapılacak bir birleşim çıkarsa yeni adım olarak önerilir, kullanıcı onayına kalır.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `grep -A1 '^## Alan: arastirma' personalar.md | grep -q 'Durum: denendi'`
+  - Kapı: `grep -q '^## Karar notu: Persona denemesi 4' PLAN.md`
+
+- [ ] 61. Sunum alanını gerçek kararla dene
+  - Yürütücü: claude
+  - Ne: Karar: NexusOS mentör showcase sayfasının bölüm sırası (`~/NexusOS/sunum/sunum-verisi.md` §1 Hikâye: kıvılcım, problem, yön, dünyada ne var, showcase, çıktılar, demo, sonraki adımlar); demo erken mi geç mi, hangi bölüm birleşir ya da çıkar. `sunum` alanından 3 kartla (İlk kez dinleyen, Şüpheci mentör, Sadeleştirici; karşı çıkan Sadeleştirici) `persona-tur.sh` turu. `## Karar notu: Persona denemesi 5` (aynı biçim ve ölçüt). Günlüğe satır, `sunum` alanı `Durum: denendi`. NexusOS dosyaları değişmez; öneri kullanıcıya sunulur, karar onundur.
+  - Kapı: `node persona-denetle.mjs`
+  - Kapı: `grep -A1 '^## Alan: sunum' personalar.md | grep -q 'Durum: denendi'`
+  - Kapı: `grep -q '^## Karar notu: Persona denemesi 5' PLAN.md`
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Kalan: sunum ve arastirma alanlarını ilk gerçek kullanımda dene; kota sessiz modeli turda erken atlamak (şu an süre dolana dek bekliyor).

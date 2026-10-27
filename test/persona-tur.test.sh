@@ -101,6 +101,23 @@ t0=$(date +%s); SURE=2 kos bash "$RUNNER" dev soru.md "Kart Bir"; sn=$(( $(date 
 D=$(DIZ); kontrol '[ $KOD = 1 ] && [ $sn -lt 15 ] && grep -q "^Durum: sure$" "$D/1-kart-bir.md"'
 kontrol '! pgrep -f "sleep 30" >/dev/null'
 
+CASE=sessiz  # m/bir hiç çıktı vermez (kota sessizliği) → PERSONA_ILK sn sonra atlanır, m/iki ile geçer
+setup 'if [ "$M" = m/bir ]; then sleep 30; fi; yanit "Seçenek A — s"'
+t0=$(date +%s); kos env PERSONA_ILK=2 bash "$RUNNER" dev soru.md "Kart Bir"; sn=$(( $(date +%s)-t0 ))
+D=$(DIZ); kontrol '[ $KOD = 0 ] && [ $sn -lt 10 ] && grep -q "^Model: m/iki$" "$D/1-kart-bir.md" && grep -q "^Durum: gecerli$" "$D/1-kart-bir.md"'
+kontrol '! pgrep -f "sleep 30" >/dev/null'
+
+CASE=hep_sessiz  # iki model de sessiz → durum "sessiz", tur süre dolmadan biter
+setup 'sleep 30; yanit "Seçenek A"'
+t0=$(date +%s); kos env PERSONA_ILK=2 bash "$RUNNER" dev soru.md "Kart Bir"; sn=$(( $(date +%s)-t0 ))
+D=$(DIZ); kontrol '[ $KOD = 1 ] && [ $sn -lt 10 ] && grep -q "^Durum: sessiz$" "$D/1-kart-bir.md" && grep -q "sessiz" "$D/ozet.md"'
+kontrol '! pgrep -f "sleep 30" >/dev/null'
+
+CASE=yavas_ama_canli  # ilk olayı hemen yazan model PERSONA_ILK'yı aşsa da öldürülmez
+setup 'echo "{\"type\":\"step_start\"}"; sleep 4; yanit "Seçenek A — c"'
+kos env PERSONA_ILK=2 bash "$RUNNER" dev soru.md "Kart Bir"
+D=$(DIZ); kontrol '[ $KOD = 0 ] && grep -q "^Model: m/bir$" "$D/1-kart-bir.md" && [ "$(wc -l <$T/cagri.log)" = 1 ]'
+
 CASE=hatali_kullanim
 setup 'yanit "Seçenek A"'
 kos bash "$RUNNER" dev soru.md; kontrol '[ $KOD = 2 ] && [ ! -e persona-tur ]'
