@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Kullanım (proje kökünde): persona-tur.sh <alan> <soru-dosyası> "<kart 1>" "<kart 2>" ["<kart 3>" ...]
+# Ortam: PERSONA_SURE, PERSONA_ILK, PERSONA_MODELLER, PERSONALAR, PLAN
 # Her persona kartını OpenCode'da ayrı oturumda (plan ajanı, salt-okunur) paralel koşturur; çıktı persona-tur/<zaman>/.
 # Çıkış: 0 en az 2 geçerli yanıt (tek kartta 1) | 1 yetersiz | 2 hatalı kullanım
 set -uo pipefail
@@ -7,6 +8,7 @@ set -uo pipefail
 ALAN=$1; SORU=$2; shift 2; KARTLAR=("$@")
 PERSONALAR=${PERSONALAR:-./personalar.md}; PLAN=${PLAN:-./PLAN.md}
 SURE=${PERSONA_SURE:-300}   # kart denemesi başına saniye
+ILK=${PERSONA_ILK:-60}   # sessiz model erken atla: ilk çıktı bekleme süresi (saniye)
 
 [ -f "$SORU" ] || { echo "soru dosyası yok: $SORU" >&2; exit 2; }
 [ -f "$PERSONALAR" ] || { echo "personalar dosyası yok: $PERSONALAR" >&2; exit 2; }
@@ -61,6 +63,9 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
     pid=$!; t0=$SECONDS
     while kill -0 "$pid" 2>/dev/null; do
       sleep 1
+      if [ ! -s "$f.deneme" ] && (( SECONDS - t0 >= ILK )); then
+        kill -KILL -- -"$pid" 2>/dev/null; durum=sessiz; break
+      fi
       (( SECONDS - t0 >= SURE )) && { kill -KILL -- -"$pid" 2>/dev/null; durum=sure; break; }
     done
     wait "$pid" 2>/dev/null

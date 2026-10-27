@@ -529,7 +529,7 @@ Riskler: ücretsiz model biçime uymayabilir (çıktıda "Seçenek A" yoksa yan�
 ### Faz 8: persona turunu bitirme (2026-10-27)
 Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve kart `PERSONA_SURE` (300 sn) dolana dek bekliyor; adım 36'da bir kart bu yüzden düştü, tur 10 dk sürdü. Ölçüm: sessiz deneme 0 bayt yazar, yanıt veren model ilk saniyelerde `step_start` olayı yazar. Hipotez: ilk olay N saniyede gelmezse model atlanırsa tur kısalır ve kart düşmez. Ayrıca `sunum` ve `arastirma` alanları hiç gerçek işte denenmedi; gerçek birer kararla denenince kartların ayrıştığı ya da ayrışmadığı görülür. Başarı ölçütü: sessiz modelde kart ~60 sn içinde sıradaki modele geçer; iki alan `Durum: denendi`.
 
-- [ ] 59. Persona turunda sessiz modeli erken atla
+- [x] 59. Persona turunda sessiz modeli erken atla
   - Değer: 3
   - Bütçe: 300000
   - Ne: `persona-tur.sh` `kart_kos` bekleme döngüsü: yeni değişken `ILK=${PERSONA_ILK:-60}` (saniye; `SURE` satırının altında, aynı yorum üslubuyla). Deneme dosyası (`$f.deneme`) boşken (`[ ! -s "$f.deneme" ]`) geçen süre `ILK`'ya ulaşırsa süreç grubu `SURE`'deki gibi `kill -KILL -- -"$pid"` ile öldürülür ve `durum=sessiz` olur; sonra mevcut akışla sıradaki modelle bir kez daha denenir (geçersiz/süre gibi). Dosyada çıktı varsa `ILK` uygulanmaz, yalnız `SURE` geçerlidir. `SURE` kontrolü ve `durum=sure` aynen kalır. `ozet.md` satırında durum `sessiz` yazılır (mevcut kod bunu zaten durum alanından yazar). Kullanım yorumuna `PERSONA_ILK` eklenir. Başka dosya değişmez.
