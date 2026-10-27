@@ -59,7 +59,7 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
   for j in 0 1; do   # geçersiz yanıtta sıradaki modelle bir kez daha
     m=${MODELLER[$(( (i+j) % n ))]}; durum=""
     # setsid: süreç kendi grubunun lideri; süre aşılınca grup topluca öldürülür
-    setsid opencode run --agent plan -m "$m" --format json "$istem" </dev/null >"$f.deneme" 2>&1 &
+    setsid opencode run --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>&1 &
     pid=$!; t0=$SECONDS
     while kill -0 "$pid" 2>/dev/null; do
       sleep 1

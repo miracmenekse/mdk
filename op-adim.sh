@@ -76,7 +76,7 @@ for m in "${MODELLER[@]}"; do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
     # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
-    setsid opencode run -m "$m" --format json \
+    setsid opencode run -m "$m" --title "adim-$N" --format json \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
 $SADE_IPUCU
