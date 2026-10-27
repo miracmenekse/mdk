@@ -271,7 +271,7 @@ Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa
   - Kapı: `grep -Eq 'Boşluk bulunan kapı: [0-3]/3' PLAN.md`
   - Kapı: `test "$(grep -c '^Sonuç: ' PLAN.md)" -ge 2`
 
-- [ ] 38. Plan bölme: geçmişe karşı deneme
+- [x] 38. Plan bölme: geçmişe karşı deneme
   - Yürütücü: claude
   - Ne: Metriklerde sorunlu üç adımı karşılaştır: adım 9 (6 deneme), adım 7 (~730k token), adım 22 (3 deneme). "Bakımı yapacak geliştirici" kartının sorusuyla ("bu en ucuz hangi yolla doğru çalışır, tek başına yenebilir mi?") bu adımların bölünüp bölünmeyeceğine ve bir bölme ölçütüne (örn. adım başına dosya sayısı, kapı sayısı, bütçe) karar ver; ölçütü `metrikler.jsonl`'daki diğer adımlara uygulayıp yanlış alarm sayısını yaz. `## Karar notu: Persona denemesi 3`; `Sonuç: doğrulandı|çürüdü`. Ölçüt `kapi-denetle.mjs`e UYARI kuralı olacaksa bunun için ayrı, kapılı bir adım açılır (bu adımda kod yok).
   - Kapı: `node persona-denetle.mjs`
@@ -338,6 +338,20 @@ Boşluk bulunan kapı: 2/3
 Çıkan kural (ba-pm-bakis "Kapılar" için): Kapı yalnız varlık (`test -f`) ya da tek sözcük (`grep -q`) ölçüyorsa taslak geçer; işin davranışını çalıştıran bir komut (test ya da denetleyici) ekle ve iddiaları sabit metinle taklit edilemeyecek, satıra özgü farklı değerlerle kur.
 Harcanan token: 0k Claude (ücretsiz modellerde 255k: 18k + 141k + 95k), süre ~6 dk.
 Sonuç: doğrulandı (2/3 ≥ 2/3). Not: kart 25'te "hayır" dedi; kartın evet/hayır hükmü değil, önerdiği güçlendirme ve Claude'un sınaması güvenilir.
+
+## Karar notu: Persona denemesi 3 (adım 38, 2026-10-27, persona-tur.sh)
+Karar: plan yazılırken "bu adım bölünmeli" uyarısı verecek ölçüt. Kart: Bakımı yapacak geliştirici (beam-free, 27k token).
+Önce veri: planın varsaydığı sorunlu adımlar yanlış seçilmiş. Adım 9'un 6 ve adım 22'nin 3 başarısız denemesi tamamen kota sessizliği (`yanit_yok`); büyüklükle ilgisi yok. 9-30 arasında ücretsiz model hiç gerçekten çalışmadı. Adım 7 ilk denemede geçti ama 730k token harcadı. Bu yüzden ölçüt, ücretsiz modelin gerçekten çalıştığı 25 adımda (1-7, 31, 40-44, 47-58; 45-46 doğrudan kodcu) sınandı. Sorunlu = en az 1 gerçek başarısız deneme: 4, 40, 41, 43, 44, 48, 58 (7 adım).
+| Seçenek | Kaynak | Eşik | Yakalanan | Yanlış alarm | Kaçan |
+|---|---|---|---|---|---|
+| A | geliştirici | kapı ≥ 2 | 6/7 | 4 (31, 42, 47, 57) | 4 |
+| B | geliştirici | kapı ≥ 2 ve (dosya ≥ 3 ya da Ne ≥ 1000 karakter) | 5/7 | 3 (31, 42, 47) | 4, 43 |
+| C | sentez | Ne ≥ 1000 karakter | 5/7 | 3 (31, 47, 54) | 4, 43 |
+| D | sentez | dosya ≥ 5 | 3/7 | 1 (47) | 4, 41, 43, 58 |
+Claude doğrulaması: kartın yakalanan ve yanlış alarm sayıları yeniden hesaplandı ve doğru çıktı; kart yalnız adım 4'ü sorunlu saymamıştı (6/7 yerine 6/6 yazdı). En iyi seçenek (B ya da C) uyarıların yaklaşık %60'ında haklı; taban oran %28. Kapı sayısı döngüsel bir işaret: büyük adıma zaten daha çok kapı yazılıyor. Sorunlu 4 ve 43 küçük adımlar; onları büyüklük değil kapının kendisi zorladı.
+Öneri: `kapi-denetle.mjs`e UYARI kuralı açılmaz (yanlış alarm, yakalanan sayısına yakın). `ba-pm-bakis`e yalnız yazım ipucu girer: "Ne" metni 1000 karakteri geçen ya da 5+ dosyaya dokunan adımı yazarken bölmeyi düşün; asıl güvence op-adim.sh'in bütçe ve kodcu devridir.
+Harcanan token: 0k Claude (ücretsiz modelde 27k), süre ~4 dk.
+Sonuç: çürüdü (plandaki varsayım çürüdü: 9 ve 22 büyüklük yüzünden değil kota yüzünden zorlandı, ve UYARI'ya değecek isabette bir ölçüt yok; persona akışı ise çalıştı).
 
 - [x] 42. Adım geçmişinde güven: sessizlik ayrı, gerçek yürütücü
   - Problem ve hipotez: adım geçmişi (Adımlar bölümü) Modeller tablosunda düzelttiğimiz hatayı hâlâ taşıyor: kota sessizliği "✕ yanit_yok · 62 sn · 0 token" yazıyor, eksik süre/token 0 görünüyor, adım satırı işi kodcu yapmış olsa da planın `Yürütücü`'sünü (opencode) yazıyor. Hipotez: bunlar düzelirse "bu adımı kim yaptı, model gerçekten başarısız mı?" sorusu panelden doğru okunur. Başarı ölçütü: devralınan adımda "kodcu (plan: opencode)", sessiz denemeler başarısızlık gibi görünmez. UI'a dokunur ama yeni ekran yok: adım 41'in onaylı davranışının geçmiş görünümüne uzantısıdır (taslak yok).
