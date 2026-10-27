@@ -26,7 +26,7 @@ Gerçek OpenCode işi yalnızca adım 1-7'de oldu (glm-5.3-flash-free, ilk denem
 - İki küçük görev (saf fonksiyon + hazır test; kenar durumlu bash betiği), 10 ücretsiz model, 10 paralel süreç. Görev 1: 8/10 geçti (`big-pickle` bir kez kaldı, görev 2'de geçti; `nemotron-3.5-lightning` 300 sn'de bitmedi). Görev 2: 9/9 geçti. Doğrulukta ayrım çıkmadı; ayıran şey süre ve token: `deepseek-v4.1-flash` 16-27 sn, `space-bunny` 16-33 sn, `nemotron-3-ultra` 505k token (kota yiyici), `mimo` 56-121 sn (yavaş).
 - Paralel 10 istekte throttle görülmedi. Bir `opencode run` en küçük görevde bile ~55-110k token (sistem istemi). Günlük limit resmi belgede yok: kaynaklar 200 (opencode Go SSS) ile 450-766 istek/gün (tek kullanıcı ölçümü) arasında; sıfırlama UTC 00:00; ayrıca per-IP/kısa süreli sınır olabilir. Ücretsiz liste "sınırlı süreli", modeller değişir.
 - `Modeller:` = glm (gerçek adımda 7/8), deepseek-v4.1-flash, space-bunny, beam. `mimo` yavaşlığı, `lightning` sessizliği yüzünden çıkarıldı. Kolay görevler doygun: ayrım için gerçek zor adımlar (çok dosyalı taşıma, UI) `ONCE=<model>` ile koşulup `karsilastir.mjs` ile okunacak.
-- `kodcu` alt ajanı artık `fable` (en yetkin Claude); eskale işleri buna gider.
+- `kodcu` alt ajanı `haiku` (son sürüm, effort varsayılan; 2026-10-27 kararı, önce fable idi); eskale işleri buna gider.
 
 ## Adım 31 model karşılaştırması (2026-10-18, gerçek zor adım, n=1-2, gürültülü)
 Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşuldu. Kapı 1 = `persona-denetle.test.mjs`, kapı 2 = `bash test/hepsi.sh`.
