@@ -4,7 +4,7 @@ Claude planlar, OpenCode (ücretsiz modellerle) geliştirir, kalite kapıdan ge�
 
 ## Süreç (global kural: ~/.claude/CLAUDE.md)
 - Plan yazarken `ba-pm-bakis` becerisini yükle (hipotez, iş değeri, akış, UI kararında personalardan farklı seçenekler, en fazla 3 soru).
-- Yeni adımları `PLAN.md`'ye **9'dan devam eden numarayla** ekle; her adımda çalıştırılabilir `- Kapı:`. Kapı test dosyalarını (`*.test.mjs`) sen (Claude) yaz, OpenCode'a değiştirtme.
+- Yeni adımları `PLAN.md`'ye **son adım numarasından devam ederek** ekle; her adımda çalıştırılabilir `- Kapı:`. Kapı test dosyalarını (`*.test.mjs`) sen (Claude) yaz, OpenCode'a değiştirtme.
 - Çalıştırma: `./op-adim.sh <no>` (temiz git ağacı şart; önce planı ve kapıları commit et). Çıkış 2 = eskale → adımı `kodcu`ya ver. Sonunda diff'i plana karşı gözden geçir.
 - İzleme: `node izle.mjs` (terminal), `bash op-panel.sh start . 4747` (panel; kullanıcı VS Code Ports sekmesinden 4747'yi yönlendirir).
 
@@ -59,3 +59,6 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 - Karar: bütçe artık **etkin token** (toplam − cache read) ile ölçülür; `Bütçe: 300000` (K73 geçen koşularda etkin 96-133k). Her metrik satırında `etkin` alanı var.
 - `OP_SADE=1` (deneysel, varsayılan kapalı): `compaction.auto/prune`, `tool_output` 300 satır/20 KB, `experimental.batch_tool`, "PLAN.md'yi okuma, grep -n ile bul, aralık oku" ipucu. K73 ölçümü (n=1, c372e2b6a'dan worktree): deepseek sade 1,09M toplam/103k etkin/285 sn (önceki sade-dışı koşu 891k/225 sn); glm sade 1,90M/133k/500 sn, 37 adım; glm sade-dışı 1,22M/96k/444 sn, 22 adım. Prune hiç tetiklenmedi (bağlam ~70k, pencere dolmuyor), batch_tool kullanılmadı, ipucu glm'yi çok sayıda küçük edit'e itti. Sonuç: bu ayarlar token azaltmadı.
 - Sıradaki aday (ölçülmedi): adım sayısını azaltmak — adım metnine ilgili dosyaların satır aralıklarını (Claude'un zaten okuduğu) koymak; büyük adımları tek dosyalık adımlara bölmek.
+
+## 2026-10-27: personalar v2
+`personalar.md` üç alan (proje-gelistirme `denendi`; sunum ve arastirma ilk gerçek kullanımda `denendi` olacak), biçim denetimi `node persona-denetle.mjs`. Persona turu Claude alt ajanında değil OpenCode'da: `./persona-tur.sh <alan> <soru> "<kart>"...` (her kart ayrı ücretsiz model oturumu, Claude token'ı ~0). Faz 2 sonucu (PLAN karar notları 2-3): `test -f`/`grep -q` kapılar taslakla geçer, davranışı çalıştıran kapı yaz; adım bölme için otomatik UYARI yok (ölçüt isabetsiz; 9/22'nin zorluğu kota sessizliğiydi).

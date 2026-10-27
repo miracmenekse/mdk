@@ -278,7 +278,7 @@ Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa
   - Kapı: `test "$(grep -c '^Sonuç: ' PLAN.md)" -ge 3`
   - Kapı: `grep -q '^## Karar notu: Persona denemesi 3' PLAN.md`
 
-- [ ] 39. Belgeler ve bellek
+- [x] 39. Belgeler ve bellek
   - Yürütücü: claude
   - Ne: `~/.claude/skills/ba-pm-bakis/SKILL.md`: iş türüne göre alan seçimi, seçim kuralı, `persona-denetle.mjs` çağrısı, Faz 2 sonuçlarından kapı ve plan bölme kuralı. Proje `CLAUDE.md`: "9'dan devam eden numarayla" notunu "son adım numarasından devam" yap, durum bölümüne personalar v2'yi ekle. PLAN.md "Sonraki iyileştirmeler" altındaki persona maddesini güncelle. Bellek: `opencode-akis-kapi-iyilestirme` ve `opencode-akis-durum` notlarını güncelle; sunum ve araştırma alanları ilk gerçek kullanımda `denendi` olacak diye not düş.
   - Kapı: `node persona-denetle.mjs`
@@ -528,5 +528,5 @@ Riskler: ücretsiz model biçime uymayabilir (çıktıda "Seçenek A" yoksa yan�
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
-- Düşünme personalarını (fikir üreten alt ajanlar) net tanımla ve ayırt edilir tut; `personalar.md` ilk sürüm, deneyerek rafine edilecek.
+- Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Kalan: sunum ve arastirma alanlarını ilk gerçek kullanımda dene; kota sessiz modeli turda erken atlamak (şu an süre dolana dek bekliyor).
 - Gözlem: adım 7 yaklaşık 730 bin token harcadı (diğerleri 40-140 bin); adım başına token bütçesi ve dar adım kuralı düşünülebilir.
