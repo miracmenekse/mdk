@@ -73,7 +73,7 @@ Durum: denendi
 - **Ayrışma ekseni:** ilk bakış: özet mi görünür, ayrıntı mı gömülü
 
 ## Alan: sunum
-Durum: denenmemiş
+Durum: denendi
 
 ### İlk kez dinleyen
 - **Optimize eder:** ilk duyuşta anlaşılırlık, terimlerin tanımlı olması, akışın izlenebilirliği
@@ -104,7 +104,7 @@ Durum: denenmemiş
 - **Ayrışma ekseni:** yoğunluk: tek mesaj mı, tam resim mi
 
 ## Alan: arastirma
-Durum: denenmemiş
+Durum: denendi
 
 ### Şüpheci hakem
 - **Optimize eder:** kaynak güvenilirliği, çelişen kanıtın görünür olması
@@ -148,3 +148,5 @@ Kazanan: seçilen seçeneğin geldiği kart; kartlarda olmayan kaynaklar için `
 | 2026-10-27 | proje-gelistirme | Adım satırında gerçek yürütücü ve başarısız denemeler (adım 36, 2. tur, persona-tur.sh; Dikkati dağınık kullanıcı kota yüzünden yanıtsız) | Dikkati dağınık kullanıcı, Bakımı yapacak geliştirici, Denetçi / güvenlik | tanı değeri mi maliyet mi; plan/gerçek izlenebilirlik mi sürtünme mi | Denetçi / güvenlik |
 | 2026-10-27 | proje-gelistirme | Geçmiş kapılarda boşluk (adım 37, 3 tek kartlı tur, persona-tur.sh) | Kapıyı kandıran yürütücü | doğrulama gücü: varlık mı davranış mı | Kapıyı kandıran yürütücü |
 | 2026-10-27 | proje-gelistirme | Adım bölme ölçütü (adım 38, persona-tur.sh; varsayım çürüdü, UYARI açılmadı) | Bakımı yapacak geliştirici | maliyet: az yanlış alarm mı, çok yakalama mı | sentez |
+| 2026-10-27 | arastirma | Açık iki birleşim yapılsın mı (adım 60; araştırma kapandı) | Uygulayıcı, Kapsam bekçisi, Karşıt görüş avukatı | eylem değeri; kapsam doygunluğu; örneklem yeterliliği | Karşıt görüş avukatı |
+| 2026-10-27 | sunum | NexusOS mentör sayfası bölüm sırası (adım 61; öneri kullanıcıda) | İlk kez dinleyen, Şüpheci mentör, Sadeleştirici | demo önce mi; sonraki adımlar kalır mı | sentez |

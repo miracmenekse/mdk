@@ -353,6 +353,35 @@ Claude doğrulaması: kartın yakalanan ve yanlış alarm sayıları yeniden hes
 Harcanan token: 0k Claude (ücretsiz modelde 27k), süre ~4 dk.
 Sonuç: çürüdü (plandaki varsayım çürüdü: 9 ve 22 büyüklük yüzünden değil kota yüzünden zorlandı, ve UYARI'ya değecek isabette bir ölçüt yok; persona akışı ise çalıştı).
 
+## Karar notu: Persona denemesi 4 (adım 60, 2026-10-27, persona-tur.sh, alan: arastirma)
+Karar: araştırmada açık kalan iki birleşim (Adım panosu, Isı haritası + sparkline) yapılsın mı, araştırma kapansın mı. Kartlar: Uygulayıcı, Kapsam bekçisi, Karşıt görüş avukatı (karşı çıkan). İlk turda karşıt avukat nemotron ve deepseek'te sessiz kaldı (adım 59'un erken atlaması iki modeli 60'ar sn'de geçti); kart beam ile tek başına yeniden koşuldu.
+Eksenler: eylem değeri, yarın ne değişir (Uygulayıcı); kapsam doygunluğu mu, kaçan görünüm mü (Kapsam bekçisi); örneklem trend için yeterli mi (Karşıt görüş avukatı).
+| Seçenek | Kaynak | Ne | Değer | Risk |
+|---|---|---|---|---|
+| A | üç kart | araştırmayı kapat, efor açık işlere | 6/8 birleşim yapıldı, kalan ikisi 3/5 | küçük bir görsel değer kaçabilir |
+| B | Uygulayıcı, Kapsam bekçisi | ısı haritası + sparkline (küçük efor) | model seçimi için süre eğilimi | veri az, boş kalır |
+| C | (önerilmedi) | Kanban panosu | "akış nerede" tek bakışta | ikinci görünümün bakımı; ihtiyacı liste karşılıyor |
+Claude doğrulaması: Kapsam bekçisinin "6 günde 62 satır, ısı haritası dolu görünür" iddiası yanlış: 6 gün 11 günlük aralığa dağılmış, takvim ısı haritası çoğunlukla boş. Süre eğilimi için ölçüm sayısı beam 4, nemotron 2, flint 2 (yalnız deepseek 16, glm 9): eğilim çizgisi anlamsız. Karşıt avukatın örneklem itirazı veriyle doğrulandı.
+Öneri: A. Araştırma kapanır; `arastirma.json` değişmez. B, ölçülen deneme sayısı model başına ~20'yi geçince yeniden açılabilir.
+Harcanan token: 0k Claude (ücretsiz modelde 56k), süre ~6 dk.
+Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; üçü aynı sonuca vardı, güvenli taban. Kartlardan biri sayısal iddiada yanıldı, Claude sınaması yakaladı.)
+
+## Karar notu: Persona denemesi 5 (adım 61, 2026-10-27, persona-tur.sh, alan: sunum)
+Karar: NexusOS mentör showcase sayfasının bölüm sırası ve kapsamı (şu an 8 bölüm: kıvılcım, problem, yön, dünyada ne var, showcase, çıktılar, demo, sonraki adımlar). Kartlar: İlk kez dinleyen, Şüpheci mentör, Sadeleştirici (karşı çıkan). Şüpheci mentör ilk turda sessiz modele düştü, beam ile yeniden koşuldu.
+Eksenler: terim ve akış ilk kez görene anlaşılır mı (İlk kez dinleyen); iddia kanıttan önce mi gelir (Şüpheci mentör); ne silinirse mesaj aynı kalır (Sadeleştirici).
+| Seçenek | Kaynak | Sıra (bölüm sayısı) | Değer | Risk |
+|---|---|---|---|---|
+| A | İlk kez dinleyen | problem → yön (8 kart tek bölüm) → demo → çıktılar özeti (6) | akış ve kanıt erken | uzman dinleyici sıkılır |
+| B | İlk kez dinleyen | kıvılcım+problem birleşir; rakipler+demolar tek "dünya ve biz" (6) | terimler ilk kullanımda tanımlı | aynı |
+| C | Şüpheci mentör | demo 2. bölüm; kıvılcım+problem tek paragraf; showcase+çıktılar birleşir (6) | iddia hemen kanıtlanır | motivasyon zayıflar |
+| D | Şüpheci mentör | sonraki adımlar çıkar, kanıtsız vaat yok (5) | budanmış anlatı | mentörden yön isteme fırsatı kaybolur |
+| E | Sadeleştirici | problem → canlı demo → yön ve çıktılar; kıvılcım+dünya+showcase tek özet (5) | mentör ilk dakikada ürünü görür | "neden farklı" kanıtsız kalabilir |
+| F | Sadeleştirici | sıra aynı; yön 8→3 kart, dünya+showcase tek cümle, sonraki adımlar 2 madde (6) | bilişsel yük azalır | 8 rakip, 8 yetenek kanıtı silinir |
+Yakınsama: üç kart da demoyu öne alıyor (3/3) ve kıvılcımı problemle birleştiriyor (3/3); rakip vitrini ile bizim çıktılar tek bölüm (2/3). Ayrışan eksen "sonraki adımlar": mentör (D) çıkarıyor, diğerleri kısaltıyor.
+Öneri (sentez, BA/PM merceği): 5 bölüm: 1) Problem (kıvılcım tek cümle) 2) Canlı demo Ç1-Ç3 3) Dünya ve biz (rakip kartları ve bizim kartlar aynı biçimde, fark cümlesiyle) 4) Yön (3 kart görünür, 8'i açılır) 5) Sonraki adımlar + mentörden istenen karar. Sonraki adımlar çıkmaz: mentör toplantısının iş değeri, hocadan yön almaktır (D'nin körlüğü). NexusOS dosyaları değişmedi; karar kullanıcının.
+Harcanan token: 0k Claude (ücretsiz modelde 55k), süre ~6 dk.
+Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı diğerlerinin önermediği "sonraki adımları çıkar" seçeneğini getirdi.)
+
 - [x] 42. Adım geçmişinde güven: sessizlik ayrı, gerçek yürütücü
   - Problem ve hipotez: adım geçmişi (Adımlar bölümü) Modeller tablosunda düzelttiğimiz hatayı hâlâ taşıyor: kota sessizliği "✕ yanit_yok · 62 sn · 0 token" yazıyor, eksik süre/token 0 görünüyor, adım satırı işi kodcu yapmış olsa da planın `Yürütücü`'sünü (opencode) yazıyor. Hipotez: bunlar düzelirse "bu adımı kim yaptı, model gerçekten başarısız mı?" sorusu panelden doğru okunur. Başarı ölçütü: devralınan adımda "kodcu (plan: opencode)", sessiz denemeler başarısızlık gibi görünmez. UI'a dokunur ama yeni ekran yok: adım 41'in onaylı davranışının geçmiş görünümüne uzantısıdır (taslak yok).
   - Bütçe: 300000
@@ -536,14 +565,14 @@ Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve ka
   - Kapı: `bash test/persona-tur.test.sh`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 60. Araştırma alanını gerçek kararla dene
+- [x] 60. Araştırma alanını gerçek kararla dene
   - Yürütücü: claude
   - Ne: Karar: `arastirma/arastirma.json`'da açık kalan iki birleşim (Adım panosu, Isı haritası ve sparkline) yapılsın mı, hangisi önce, yoksa araştırma kapansın mı. `arastirma` alanından 3 kartla (Uygulayıcı, Karşıt görüş avukatı, Kapsam bekçisi; karşı çıkan Karşıt görüş avukatı) `persona-tur.sh` turu. Claude kartların iddialarını `metrikler.jsonl` ve panel koduyla sınar. `## Karar notu: Persona denemesi 4` (seçenek tablosu, `Harcanan token: Nk`, `Sonuç:` satırı; ölçüt ≥2 geçerli kart ve ≥2 farklı eksen). Günlüğe satır, `arastirma` alanı `Durum: denendi`. `arastirma.json` değişmez; yapılacak bir birleşim çıkarsa yeni adım olarak önerilir, kullanıcı onayına kalır.
   - Kapı: `node persona-denetle.mjs`
   - Kapı: `grep -A1 '^## Alan: arastirma' personalar.md | grep -q 'Durum: denendi'`
   - Kapı: `grep -q '^## Karar notu: Persona denemesi 4' PLAN.md`
 
-- [ ] 61. Sunum alanını gerçek kararla dene
+- [x] 61. Sunum alanını gerçek kararla dene
   - Yürütücü: claude
   - Ne: Karar: NexusOS mentör showcase sayfasının bölüm sırası (`~/NexusOS/sunum/sunum-verisi.md` §1 Hikâye: kıvılcım, problem, yön, dünyada ne var, showcase, çıktılar, demo, sonraki adımlar); demo erken mi geç mi, hangi bölüm birleşir ya da çıkar. `sunum` alanından 3 kartla (İlk kez dinleyen, Şüpheci mentör, Sadeleştirici; karşı çıkan Sadeleştirici) `persona-tur.sh` turu. `## Karar notu: Persona denemesi 5` (aynı biçim ve ölçüt). Günlüğe satır, `sunum` alanı `Durum: denendi`. NexusOS dosyaları değişmez; öneri kullanıcıya sunulur, karar onundur.
   - Kapı: `node persona-denetle.mjs`
@@ -552,5 +581,5 @@ Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve ka
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
-- Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Kalan: sunum ve arastirma alanlarını ilk gerçek kullanımda dene; kota sessiz modeli turda erken atlamak (şu an süre dolana dek bekliyor).
+- Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
 - Gözlem: adım 7 yaklaşık 730 bin token harcadı (diğerleri 40-140 bin); adım başına token bütçesi ve dar adım kuralı düşünülebilir.
