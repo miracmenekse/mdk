@@ -135,7 +135,7 @@ c_kota() {
   kontrol '[ "$SN" -lt 15 ]'
   kontrol '[ "$(neden_listesi)" = kota,- ]'
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
-  kontrol 'grep -q -- "--print-logs" "$RUNNER" && grep -q -- "--log-level ERROR" "$RUNNER"'   # gerçek opencode hatayı yalnız böyle stderr'e yazar
+  kontrol 'grep -q -- "--print-logs" "$RUNNER"'   # gerçek opencode hatayı yalnız böyle stderr'e yazar (seviye: v1 --log-level, v2 OPENCODE_LOG_LEVEL)
 }
 c_butce() {
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`

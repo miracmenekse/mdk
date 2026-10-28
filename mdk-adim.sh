@@ -65,7 +65,7 @@ topla() { node -e '                       // step_finish olaylarından token, ma
   console.log(t, c, e, n)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
-IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}'
+IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"},"shell":{"*":"allow","sudo *":"deny","git push*":"deny"},"external_directory":"deny"}'   # shell, external_directory: v2 adları
 # MDK_SADE=1 (deneysel, varsayılan kapalı): bağlamı küçük tutmayı dener; K73 ölçümünde (n=1) token azaltmadı, glm adım sayısını 22→37 artırdı.
 # Ölçüm (dbeaver-mm K74): token'ın ~%90'ı her adımda yeniden gönderilen bağlam
 # (cache read); bağlamı büyüten tam dosya okumaları ve uzun komut çıktıları. prune eski araç çıktılarını budar,
@@ -84,7 +84,8 @@ for m in "${MODELLER[@]}"; do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
     # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
-    setsid opencode run -m "$m" --title "adim-$N" --format json --print-logs --log-level ERROR \
+    # v2 (önyükleme, adım 72 tamamlar): v1 ücretsiz modellerde "Unexpected server error" veriyor
+    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
 $SADE_IPUCU
