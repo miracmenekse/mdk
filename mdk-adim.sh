@@ -61,7 +61,7 @@ yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
   let t=0,c=0,e=0,n=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens; t+=k.total; c+=x.part.cost||0; e+=k.total-(k.cache?.read||0); n++ } } catch {} }
+    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens, top=k.total ?? (k.input+k.output+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0)); t+=top; c+=x.part.cost||0; e+=top-(k.cache?.read||0); n++ } } catch {} }
   console.log(t, c, e, n)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
