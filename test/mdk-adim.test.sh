@@ -26,7 +26,7 @@ STUB
 commit0() { git add -A; git commit -qm c0; CP=$(git rev-parse HEAD); }
 kos() { # ortam değişkenleri argüman olarak; adım 1'i çalıştırır
   local t0=$(date +%s)
-  ( cd "$R"; env PATH="$T/bin:$PATH" POLL=1 DENEME="${DENEME:-1}" SURE="${SURE:-30}" "$@" bash "${RUN:-$RUNNER}" 1 ) >"$T/cikti.txt" 2>&1
+  ( cd "$R"; env PATH="$T/bin:$PATH" MDK_OPENCODE=opencode POLL=1 DENEME="${DENEME:-1}" SURE="${SURE:-30}" "$@" bash "${RUN:-$RUNNER}" 1 ) >"$T/cikti.txt" 2>&1
   KOD=$?; SN=$(( $(date +%s)-t0 ))
 }
 metrik() { node -e 'const r=require("fs").readFileSync("metrikler.jsonl","utf8").trim().split("\n").map(JSON.parse);console.log(eval(process.argv[1]))' "$1"; }
@@ -188,6 +188,43 @@ c_deney() {   # adım 70: istek sayısı, deney etiketi, metrik/durum dosyası d
   kontrol '[ ! -e metrikler.jsonl ] && [ ! -e durum.json ]'
   kontrol 'node -e "const r=JSON.parse(require(\"fs\").readFileSync(\"$T/dis.jsonl\",\"utf8\").trim());process.exit(r.deney===\"L1\"&&r.istek===1&&r.gecti?0:1)"'
   kontrol 'node -e "const d=JSON.parse(require(\"fs\").readFileSync(\"$T/dis-durum.json\",\"utf8\"));process.exit(d.deney===\"L1\"&&d.durum===\"gecti\"?0:1)"'
+}
+
+c_v2() {   # adım 72: OpenCode v2 biçimi (step_finish'te total yok, son adımda step_finish yok), v2 çağrısı
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0
+  cat >"$T/bin/opencode" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$STUB_DIR/argv"; printf '%s\n' "$OPENCODE_LOG_LEVEL" >"$STUB_DIR/loglevel"; printf '%s\n' "$OPENCODE_CONFIG_CONTENT" >"$STUB_DIR/config"
+echo x > cikti.txt
+echo '{"type":"step_start"}'
+echo '{"type":"step_finish","part":{"tokens":{"input":100,"output":10,"reasoning":5,"cache":{"read":1000,"write":0}},"cost":0}}'
+echo '{"type":"step_start"}'
+echo '{"type":"step_finish","part":{"tokens":{"input":20,"output":4,"reasoning":0,"cache":{"read":1100,"write":0}},"cost":0}}'
+echo '{"type":"step_start"}'
+echo '{"type":"text","part":{"text":"bitti"}}'
+STUB
+  kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(metrik "r[0].token")" = 2239 ]'      # input+output+reasoning+cache.read+cache.write
+  kontrol '[ "$(metrik "r[0].etkin")" = 139 ]'       # cache.read hariç
+  kontrol '[ "$(metrik "r[0].istek")" = 3 ]'         # step_start sayısı (son adımda step_finish yok)
+  kontrol 'grep -qx -- --standalone "$T/argv"'       # her koşu kendi sunucusu: süreç grubu öldürülünce oturum da biter
+  kontrol '! grep -q -- --log-level "$T/argv"'       # v2'de bayrak süzmüyor; ortam değişkeni
+  kontrol 'grep -qix error "$T/loglevel"'
+  kontrol 'grep -q "\"external_directory\":\"deny\"" "$T/config"'   # v2'de varsayılan allow
+  kontrol 'grep -q "\"shell\":{" "$T/config"'                     # v2: bash izni "shell" adını aldı
+}
+c_v1_token() {   # adım 72: v1 satırı (total var) eskisi gibi sayılır
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
+  kontrol '[ "$(metrik "r[0].token")" = 100 ]'
+}
+c_v2_kota() {   # adım 72: v2 kota hatasını stdout'ta error olayı olarak basar; ILK beklenmeden bırakılır
+  local hata='{"type":"error","error":{"type":"provider.error","message":"Free usage limit reached. Free models work in OpenCode"}}'
+  setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`')" "davran(){ echo '$hata'; sleep 60; }"; commit0
+  ILK=30 SURE=60 kos
+  kontrol '[ "$KOD" = 6 ]'
+  kontrol '[ "$SN" -lt 15 ]'
+  kontrol '[ "$(neden_listesi)" = kota,kota ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}

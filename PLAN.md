@@ -664,15 +664,23 @@ Kullanıcı kararları (2026-10-28): proje adı her yerde MDK (yapıldı; depo m
   - Kapı: `node panel/matris.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
+- [ ] 72. OpenCode v2'ye geçiş
+  - Değer: 5
+  - Bütçe: 400000
+  - Ne: v1 (1.19.3) ücretsiz modelleri desteklemiyor (#59387); v2 2.2.0 `~/.local/opt/opencode-v2/node_modules/.bin/opencode` adresinde kurulu. (1) `mdk-adim.sh`: ikili `OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}` (testler `MDK_OPENCODE=opencode` ile sahte ikiliyi çağırır). Çağrı `setsid "$OC" run --standalone -m ... --title ... --format json --print-logs` (`--log-level` bayrağı kalkar; v2'de süzmüyor), ortamda `OPENCODE_LOG_LEVEL=error`. (2) İzin yapılandırması (`IZIN`, `MDK_SADE` dalı dahil): `"bash"` anahtarı yanında aynı kurallarla `"shell"` anahtarı (v2 adı) ve `"external_directory":"deny"` (v2'de varsayılan allow). (3) `topla`: v2'de `tokens.total` yok; token = `total` varsa o, yoksa `input+output+reasoning+cache.read+cache.write`; etkin = token − cache.read; istek = `max(step_start sayısı, step_finish sayısı)` (v2'de son adımın step_finish'i gelmez). (4) Kota: "Free usage limit" metni stderr log'unda YA DA stdout jsonl'ında (v2 `{"type":"error",...}` olayı) görülürse neden=kota. (5) `panel/telemetri.mjs`: veritabanında `session_v2` ve `session_message` tabloları varsa onlardan oku (session_v2.directory ile proje süzgeci, alt dizin dahil; `type='assistant'` satırlarının `data`'sında `model.{providerID,id}` → `providerID/id`, `tokens`, `time.created/completed`, `cost`; bozuk JSON atlanır); o zaman v1 `message` tablosu okunmaz. v2 tabloları yoksa eski yol aynen. Döndürülen nesnenin biçimi değişmez. `persona-tur.sh` bu adımda değişmez (Claude uyarlar).
+  - Kapı: `bash test/mdk-adim.test.sh v2 v1_token v2_kota temel kota deney`
+  - Kapı: `node panel/telemetri-v2.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
 Sonraki adımlar (kapıları sırası gelince yazılır; ölçüm sırası L1 önce, çünkü en az istek harcar):
-- 72. Deney koşturucu `deney.sh <proje> <adım> <varyant>`: adımın commit'inden önceki duruma worktree, varyantla koşu (`MDK_DENEY`, `MDK_METRIK`/`MDK_DURUM` ana depoya), sonuç diff'i Claude incelemesine saklanır.
-- 73. L5 hızlı bırakma: SORUN.md / plan çelişkisi zinciri durdurur (çıkış 7, Claude'a döner); stderr/jsonl hataları sınıflanır (`kota`, `model_yok`, `hiz_siniri`), mesaj metriğe yazılır; panel "şu an" kartında son eylem, son hata, zincir özeti.
-- 74. Süre tavanı: olay gelmezse ve opencode'un çocuk süreci (derleme/test) yoksa 120 sn'de kes; toplam tavan 15 dk, dolarken çocuk süreç çalışıyorsa bitmesini bekle (en çok +5 dk); panelde geri sayım.
-- 75. L3 sessiz kapı + L4 sade agent (özel agent, kısa istem, yalnız read/edit/bash/grep); taban ile karşılaştırma.
-- 76. L1 editör modu: araçsız tek istek, ara/değiştir blokları, betik uygular, kapı; kalırsa kapı özetiyle bir tekrar.
-- 77. Model havuzu: model başına kilit (aynı model iki süreçte değil), OpenRouter günlük istek sayacı (50/gün ortak), boş model yoksa çıkış 8 → Claude kullanıcıdan haiku onayı ister. OpenCode v2'ye geçiş denemesi (v1 1.19.3 ücretsiz modelleri artık desteklemiyor olabilir, #59387).
-- 78. Push öncesi regresyon: `mdk-push.sh` tüm kapıları (dbeaver-mm'de `kapi/hepsi.sh` + değişen plugin testleri) koşar, özet dosyası yazar; Claude okur: yeşil → push; kırmızı → düşen kapı çıktısıyla geliştiren modele düzeltme adımı.
-- 79. Plan alanı `- Değişen davranış:`: emekliye ayrılan kapılar burada; yazılmayan her eski kapı geçmek zorunda.
+- 73. Deney koşturucu `deney.sh <proje> <adım> <varyant>`: adımın commit'inden önceki duruma worktree, varyantla koşu (`MDK_DENEY`, `MDK_METRIK`/`MDK_DURUM` ana depoya), sonuç diff'i Claude incelemesine saklanır.
+- 74. L5 hızlı bırakma: SORUN.md / plan çelişkisi zinciri durdurur (çıkış 7, Claude'a döner); stderr/jsonl hataları sınıflanır (`kota`, `model_yok`, `hiz_siniri`), mesaj metriğe yazılır; panel "şu an" kartında son eylem, son hata, zincir özeti.
+- 75. Süre tavanı: olay gelmezse ve opencode'un çocuk süreci (derleme/test) yoksa 120 sn'de kes; toplam tavan 15 dk, dolarken çocuk süreç çalışıyorsa bitmesini bekle (en çok +5 dk); panelde geri sayım.
+- 76. L3 sessiz kapı + L4 sade agent (özel agent, kısa istem, yalnız read/edit/bash/grep); taban ile karşılaştırma.
+- 77. L1 editör modu: araçsız tek istek, ara/değiştir blokları, betik uygular, kapı; kalırsa kapı özetiyle bir tekrar.
+- 78. Model havuzu: model başına kilit (aynı model iki süreçte değil), OpenRouter günlük istek sayacı (50/gün ortak), boş model yoksa çıkış 8 → Claude kullanıcıdan haiku onayı ister.
+- 79. Push öncesi regresyon: `mdk-push.sh` tüm kapıları (dbeaver-mm'de `kapi/hepsi.sh` + değişen plugin testleri) koşar, özet dosyası yazar; Claude okur: yeşil → push; kırmızı → düşen kapı çıktısıyla geliştiren modele düzeltme adımı.
+- 80. Plan alanı `- Değişen davranış:`: emekliye ayrılan kapılar burada; yazılmayan her eski kapı geçmek zorunda.
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
