@@ -630,7 +630,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node panel/ciz.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 68. Panelde karar gönderimi
+- [x] 68. Panelde karar gönderimi
   - Değer: 4
   - Bütçe: 300000
   - Ne: `panel/index.html`. (1) Çizim: `etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik, izleyici: d.kararIzleyici })`; bu satırdan hemen önce `etkiEl.querySelectorAll('form.karar textarea')` değerlerini formun `data-no`'suna göre bir nesneye sakla, hemen sonra aynı `data-no`'lu yeni textarea'lara geri yaz (odaktaki alanın odağını ve imleç yerini de geri ver), böylece SSE güncellemesi yazılan notu silmez. (2) `etkiEl.addEventListener('submit', async (e) => { ... })`: `e.target.closest('form.karar')` değilse çık; `e.preventDefault()`; `tur = e.submitter.value`, `no = Number(form.dataset.no)`, `metin = textarea.value`; formdaki düğmeler `disabled = true`, `.karar-durum`'a "gönderiliyor…"; `fetch('/api/karar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ no, tur, metin }) })`; yanıt `ok` ise textarea temizlenir, durum "gönderildi"; değilse yanıtın `.hata` alanı (JSON değilse HTTP kodu) `.karar-durum`'a hata sınıfıyla yazılır, not silinmez; ağ hatası `catch` ile "panel sunucusuna ulaşılamadı"; `finally` düğmeler `disabled = false`. (3) CSS: `form.karar { … }` (textarea tam genişlik, düğmeler yan yana, dar ekranda sarar) ve `.karar-durum { … }` (küçük, soluk; hata için ayrı renk sınıfı, mevcut değişkenlerle). Başka dosya değişmez.

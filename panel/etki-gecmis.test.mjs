@@ -37,6 +37,6 @@ assert.ok(!h.split('etki-gecmis')[0].includes('İş 1'), 'biten adım açıklar�
 
 // sayfa: toggle durumu tutulur ve çizime verilir
 const sayfa = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-assert.match(sayfa, /etkiHtml\(d\.etki, \{ gecmisAcik \}\)/);
+assert.match(sayfa, /etkiHtml\(d\.etki, \{ gecmisAcik[,} ]/);
 assert.ok(/etki-gecmis/.test(sayfa.split('<script')[1] || ''), 'toggle dinleyicisi details.etki-gecmis için');
 console.log('etki-gecmis.test ok');
