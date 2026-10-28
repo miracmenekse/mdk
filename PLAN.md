@@ -624,6 +624,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Değer: 4
   - Bütçe: 300000
   - Etki: etki/etki-karar.html
+  - Onay: evet
   - Ne: `panel/ciz.mjs`. `etkiHtml(etki, { gecmisAcik = false, izleyici = false } = {})`; `izleyici` `etkiKart`'a geçer. `etkiKart` sonuna (`.kroki`'den sonra, kart kapanmadan): `e.bitti` ise hiçbir şey; `e.onay` ise `<p class="karar-durum">onaylandı</p>` (form yok); aksi hâlde `<form class="karar" data-no="${no}">` içinde `<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>`, üç düğme tam şu biçimde: `<button type="submit" name="tur" value="onay">Onayla</button>`, `value="red">Reddet</button>`, `value="yorum">Yorum</button>`, sonra `<p class="karar-durum">…</p>`. Durum satırı: `e.karar` yoksa boş; varsa `son karar: <tur> · <saat tr-TR SS:DD> · "<metin>"` (metin boşsa tırnaklı kısım yok, `esc` ile kaçışlı) ve ardından `— Claude aldı` (`e.alindi`), değilse `— Claude'a iletiliyor` (`izleyici`), değilse `— kuyrukta, Claude oturumu açılınca işlenir`. Başka dosya değişmez.
   - Kapı: `node panel/karar-ciz.test.mjs`
   - Kapı: `node panel/ciz.test.mjs`
