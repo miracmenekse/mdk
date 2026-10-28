@@ -13,9 +13,9 @@ writeFileSync(join(d, 'metrikler.jsonl'), [
   satir({ adim: 5, deneme: 2, gecti: true, token: 50000, etkin: 12500, istek: 4 }),
   satir({ adim: 5, deneme: 1, gecti: true, token: 9000, etkin: 2100, istek: 1, deney: 'L1' }),
   satir({ adim: 6, deneme: 1, gecti: false, neden: 'yanit_yok', token: 0, etkin: 0, istek: 0 }),
-  satir({ adim: 7, deneme: 1, gecti: true, token: 800 }),
+  satir({ adim: 7, deneme: 1, gecti: true, token: 800 }),                       // eski satır: etkin/istek yok
   satir({ adim: 8, deneme: 1, gecti: false, neden: 'kota', token: 0, etkin: 0, istek: 0 }),
-  JSON.stringify({ yurutucu: 'claude', model: 'opus', adim: 7, deneme: 1, gecti: true, token: null }),                       // eski satır: etkin/istek yok
+  JSON.stringify({ yurutucu: 'claude', model: 'opus', adim: 7, deneme: 1, gecti: true, token: null }),   // Claude: token ölçülmüyor
 ].join('\n') + '\n');
 
 const m = snapshot(d).matris;
