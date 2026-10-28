@@ -181,20 +181,11 @@ export function snapshot(dir) {
 
 const sayisal = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null);
 
-// hücrenin token/istek alanları: eski matris kapısı hücreyi tam eşitlikle karşılaştırdığı için
-// sayılmaz; panele JSON ile gitmeleri toJSON ile sağlanır
+// hücre: durum + hücredeki TÜM satırların etkin token'ı (yoksa token, o da yoksa 0) ve istek toplamı
 function hucre(durum, deneme, sure, liste) {
-  // hücredeki TÜM satırlar: etkin yoksa token, o da yoksa 0
   const token = liste.reduce((t, s) => t + (sayisal(s.etkin) ?? sayisal(s.token) ?? 0), 0);
   const istekler = liste.map((s) => sayisal(s.istek)).filter((x) => x !== null);
-  const istek = istekler.length ? istekler.reduce((a, b) => a + b, 0) : null;
-  const h = { durum, deneme, sure };
-  Object.defineProperties(h, {
-    token: { value: token, enumerable: false },
-    istek: { value: istek, enumerable: false },
-    toJSON: { value: () => ({ durum, deneme, sure, token, istek }), enumerable: false },
-  });
-  return h;
+  return { durum, deneme, sure, token, istek: istekler.length ? istekler.reduce((a, b) => a + b, 0) : null };
 }
 
 // model × adım: hücre = o modelin o adımdaki sonucu; sessiz (yanit_yok) satırlar gerçek deneme değildir

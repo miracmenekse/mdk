@@ -26,9 +26,10 @@ assert.deepEqual(m.adimlar, [1, 2, 3], 'adımlar sıralı, inceleme satırı ve 
 const sat_ = (yur, model) => m.modeller.find((x) => x.yurutucu === yur && x.model === model);
 assert.deepEqual(m.modeller.map((x) => `${x.yurutucu}/${x.model}`), ['kodcu/kodcu', 'opencode/a/x', 'opencode/b/y'], 'yürütücü, sonra model sırası');
 const ax = sat_('opencode', 'a/x').hucreler;
-assert.deepEqual(ax[1], { durum: 'ilk', deneme: 1, sure: 10 });
-assert.deepEqual(ax[2], { durum: 'cok', deneme: 2, sure: 30 }, 'geçen denemenin numarası ve süresi');
-assert.deepEqual(ax[3], { durum: 'kaldi', deneme: 2, sure: null }, 'kalan hücrede deneme = gerçek deneme sayısı');
+const ozet = (h) => ({ durum: h.durum, deneme: h.deneme, sure: h.sure });   // adım 71: hücrede token/istek de var
+assert.deepEqual(ozet(ax[1]), { durum: 'ilk', deneme: 1, sure: 10 });
+assert.deepEqual(ozet(ax[2]), { durum: 'cok', deneme: 2, sure: 30 }, 'geçen denemenin numarası ve süresi');
+assert.deepEqual(ozet(ax[3]), { durum: 'kaldi', deneme: 2, sure: null }, 'kalan hücrede deneme = gerçek deneme sayısı');
 const by = sat_('opencode', 'b/y').hucreler;
 assert.equal(by[1].durum, 'sessiz'); assert.equal(by[1].deneme, 0);
 assert.equal(by[3].durum, 'cok', 'sessiz satır sayılmaz: gerçek deneme 2. denemede geçti');
