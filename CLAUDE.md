@@ -62,3 +62,9 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 
 ## 2026-10-27: personalar v2
 `personalar.md` üç alan (üçü de `denendi`: adım 36-38, 60-61), biçim denetimi `node persona-denetle.mjs`. Persona turu Claude alt ajanında değil OpenCode'da: `./persona-tur.sh <alan> <soru> "<kart>"...` (her kart ayrı ücretsiz model oturumu, Claude token'ı ~0; sessiz model `PERSONA_ILK`=60 sn sonra atlanır). Faz 2 sonucu (PLAN karar notları 2-3): `test -f`/`grep -q` kapılar taslakla geçer, davranışı çalıştıran kapı yaz; adım bölme için otomatik UYARI yok (ölçüt isabetsiz; 9/22'nin zorluğu kota sessizliğiydi).
+
+## Panelden karar
+Etki taslağı onay bekleyen adım varsa kullanıcı kararını panelin Etki kartından verir (Onayla / Reddet / Yorum); karar `etki/kararlar.jsonl`'e düşer (git-ignore'lu).
+- Oturum başında ve taslak yazınca: önce `node karar-bekle.mjs --bir-kez` (kuyrukta kalanlar), sonra Monitor ile `node karar-bekle.mjs` (`timeout_ms` 1800000; süre dolunca yeniden kur, arada kart "kuyrukta" görünür, karar kaybolmaz). İzleyici yaşarken kart "Claude'a iletiliyor", Claude satırı alınca "Claude aldı" der.
+- Satır `adım <no> onay` → adımın altına `- Onay: evet`, commit, `./op-adim.sh <no>`. `red: <not>` → nota göre `etki/` taslağını düzelt, kullanıcıya tek satır yaz (kart kendiliğinden yenilenir). `yorum: <metin>` → soruysa yanıtla, istekse taslağı düzelt; onay sayılmaz.
+- PLAN.md'ye panel yazmaz, yalnız Claude yazar (op-adim kurcalama tespiti). Panel kodu başka projede (dbeaver-mm) çalışınca o projenin exclude'una `etki/kararlar.jsonl`, `etki/.karar-okundu`, `etki/.karar-izleyici` eklenmeli.

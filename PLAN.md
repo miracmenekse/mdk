@@ -638,7 +638,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node panel/arayuz.test.mjs etki`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 69. Claude tarafı: kararı izle ve işle
+- [x] 69. Claude tarafı: kararı izle ve işle
   - Yürütücü: claude
   - Ne: `CLAUDE.md`'ye "Panelden karar" bölümü: Etki taslağı onay bekleyen bir adım varken Claude `node karar-bekle.mjs` komutunu Monitor ile başlatır (`timeout_ms` en çok 30 dk; süre dolunca yeniden kurar, arada kart "kuyrukta" görünür ve karar kaybolmaz); oturum başında önce `node karar-bekle.mjs --bir-kez` ile kuyrukta kalanları alır. Gelen satıra göre: `onay` → adımın altına `- Onay: evet` yaz, commit et, `./op-adim.sh <no>`; `red` → nota göre etki taslağını düzelt, kullanıcıya tek satır bildir (panel kartı yenilenir); `yorum` → soruysa yanıtla, istekse taslağı düzelt; onaylamaz. `ba-pm-bakis` §4'e "karar panelden gelir" notu. Uçtan uca deneme: geçici bir taslaklı adımla panelden red ve onay gönder, Monitor bildirimini ve kart durumunu (kuyrukta → iletiliyor → Claude aldı) Firefox ekran görüntüsüyle doğrula; geçici adımı sil.
   - Kapı: `grep -q '^## Panelden karar' CLAUDE.md`
