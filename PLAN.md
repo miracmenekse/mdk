@@ -606,7 +606,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node panel/karar-sunucu.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 65. Karar izleyici betiği
+- [x] 65. Karar izleyici betiği
   - Değer: 4
   - Bütçe: 300000
   - Ne: Yeni `karar-bekle.mjs` (proje kökünde, yalnız `node:` modülleri; `kararlar()` için `./panel/karar.mjs`'yi içe aktar). Kullanım yorumu: `node karar-bekle.mjs [dizin] [--bir-kez]` (dizin = `--` ile başlamayan ilk argüman, yoksa `.`); Claude oturumu bunu Monitor ile çalıştırır. İşaret `etki/.karar-okundu` (tek sayı; yoksa ya da bozuksa 0). Okunmamış = `ts > işaret` olan kararlar, dosya sırasıyla; her biri için stdout'a tek satır: metin boşsa `adım <no> <tur>`, değilse `adım <no> <tur>: <metin>` (metindeki `\r?\n` dizileri tek boşluk); basınca işareti görülen en büyük `ts`'ye yazar. `--bir-kez`: bir kez yap, çık (0), pid dosyası yazma. Aksi hâlde: başta `etki/.karar-izleyici`'ye `process.pid` yaz (`mkdirSync` recursive), bir kez tara, sonra her 1 sn tara (`setInterval`); `SIGTERM`/`SIGINT`'te pid dosyasını sil ve çık (0). Başka dosya değişmez.
