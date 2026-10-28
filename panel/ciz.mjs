@@ -404,8 +404,34 @@ export function matrisHtml(m) {
     '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</p>';
 }
 
+// karar durumu: son karar varsa özet + iletim hâli
+function kararDurum(e, izleyici) {
+  if (!e.karar) return '';
+  const k = e.karar;
+  const dt = new Date(ms(k.ts));
+  const saatMetin = dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const metin = k.metin ? ` · "${esc(k.metin)}"` : '';
+  const ileti = e.alindi ? ' — Claude aldı'
+    : izleyici ? " — Claude'a iletiliyor"
+    : ' — kuyrukta, Claude oturumu açılınca işlenir';
+  return `son karar: ${esc(k.tur)} · ${saatMetin}${metin}${ileti}`;
+}
+
+// kart sonundaki karar bölümü: biten adımda yok, onaylı adımda form yok
+function kararBolum(e, izleyici) {
+  if (e.bitti) return '';
+  if (e.onay) return '<p class="karar-durum">onaylandı</p>';
+  return '<form class="karar" data-no="' + esc(e.no) + '">' +
+    '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
+    '<button type="submit" name="tur" value="onay">Onayla</button>' +
+    '<button type="submit" name="tur" value="red">Reddet</button>' +
+    '<button type="submit" name="tur" value="yorum">Yorum</button>' +
+    `<p class="karar-durum">${kararDurum(e, izleyici)}</p>` +
+    '</form>';
+}
+
 // tek etki kartı: değer ve tahmini token çubukları + önce/sonra krokisi
-function etkiKart(e, maxToken) {
+function etkiKart(e, maxToken, izleyici) {
   const t = e.tahmin || { token: 0, maliyet: 0, guven: 'dusuk' };
   const guven = GUVEN[t.guven] ? t.guven : 'dusuk';
   const deger = Math.max(0, Math.min(5, Math.round(e.deger ?? 0)));
@@ -436,23 +462,24 @@ function etkiKart(e, maxToken) {
     `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
     `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
     '</div>' +
+    kararBolum(e, izleyici) +
     '</div>';
 }
 
 // etki: önce açık adımlar; biten adımların taslakları katlı, adım no azalan
-export function etkiHtml(etki, { gecmisAcik = false } = {}) {
+export function etkiHtml(etki, { gecmisAcik = false, izleyici = false } = {}) {
   const liste = etki || [];
   if (liste.length === 0) return '<span class="bos">onay bekleyen taslak yok</span>';
   const maxToken = Math.max(0, ...liste.map((e) => e.tahmin?.token || 0));
   const aciklar = liste.filter((e) => !e.bitti);
   const bitenler = liste.filter((e) => e.bitti).sort((a, b) => b.no - a.no);
-  let html = aciklar.map((e) => etkiKart(e, maxToken)).join('');
+  let html = aciklar.map((e) => etkiKart(e, maxToken, izleyici)).join('');
   if (bitenler.length === 0) return html;
   if (aciklar.length === 0) html += '<span class="bos">onay bekleyen taslak yok</span>';
   return html +
     `<details class="etki-gecmis"${gecmisAcik ? ' open' : ''}>` +
     `<summary>Biten adımların taslakları (${bitenler.length})</summary>` +
-    bitenler.map((e) => etkiKart(e, maxToken)).join('') +
+    bitenler.map((e) => etkiKart(e, maxToken, izleyici)).join('') +
     '</details>';
 }
 

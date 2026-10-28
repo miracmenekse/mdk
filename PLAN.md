@@ -620,7 +620,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node panel/karar-durum.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 67. Etki kartında karar formu
+- [x] 67. Etki kartında karar formu
   - Değer: 4
   - Bütçe: 300000
   - Etki: etki/etki-karar.html
