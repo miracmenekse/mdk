@@ -1,9 +1,9 @@
 // Kullanım (proje kökünde): node izle.mjs [--bastan]
-// .op-log içindeki en yeni OpenCode çalışmasını terminalde canlı gösterir; yeni çalışma başlayınca ona geçer.
+// .mdk-log içindeki en yeni OpenCode çalışmasını terminalde canlı gösterir; yeni çalışma başlayınca ona geçer.
 // --bastan: en yenisini baştan oynatır (sonra izlemeye devam eder).
 import { readdirSync, statSync, openSync, readSync, closeSync } from 'node:fs';
 
-const DIR = '.op-log';
+const DIR = '.mdk-log';
 const bastan = process.argv.includes('--bastan');
 const kes = (s, n) => { s = String(s ?? '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n) + '…' : s; };
 

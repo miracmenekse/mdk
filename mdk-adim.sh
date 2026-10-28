@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Kullanım (proje kökünde): op-adim.sh <adım-no> [plan-dosyası]
+# Kullanım (proje kökünde): mdk-adim.sh <adım-no> [plan-dosyası]
 # PLAN.md adımını ücretsiz modellerden başlayarak OpenCode'a yaptırır, "Kapı" komutuyla doğrular.
 # Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor
 set -uo pipefail
-# donmuş kopya: bir adım op-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
-if [ -z "${OP_DONMUS:-}" ]; then
-  mkdir -p .op-log && cp "$0" .op-log/op-adim.run.sh && OP_DONMUS=1 exec bash .op-log/op-adim.run.sh "$@"
+# donmuş kopya: bir adım mdk-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
+if [ -z "${MDK_DONMUS:-}" ]; then
+  mkdir -p .mdk-log && cp "$0" .mdk-log/mdk-adim.run.sh && MDK_DONMUS=1 exec bash .mdk-log/mdk-adim.run.sh "$@"
 fi
 N=${1:?adım no}; PLAN=${2:-PLAN.md}
 DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
 ILK=${ILK:-90}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
-LOGD=.op-log; mkdir -p "$LOGD"
+LOGD=.mdk-log; mkdir -p "$LOGD"
 
 # adım bloğu: "- [ ] N." satırından bir sonraki adım/kategoriye kadar
 blok=$(awk -v n="$N" '
@@ -38,7 +38,7 @@ butce=$(grep -m1 -oP '^\s*- Bütçe: \K[0-9]+' <<<"$blok" || grep -m1 -oP '^Büt
 
 # geri alma güvenliği: temiz git ağacı şart (kontrol noktası = HEAD)
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
-git check-ignore -q .op-log || { echo ".gitignore'a .op-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
+git check-ignore -q .mdk-log || { echo ".gitignore'a .mdk-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
 # taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
@@ -58,11 +58,11 @@ topla() { node -e '                       // step_finish olaylarından token, ma
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}'
-# OP_SADE=1 (deneysel, varsayılan kapalı): bağlamı küçük tutmayı dener; K73 ölçümünde (n=1) token azaltmadı, glm adım sayısını 22→37 artırdı.
+# MDK_SADE=1 (deneysel, varsayılan kapalı): bağlamı küçük tutmayı dener; K73 ölçümünde (n=1) token azaltmadı, glm adım sayısını 22→37 artırdı.
 # Ölçüm (dbeaver-mm K74): token'ın ~%90'ı her adımda yeniden gönderilen bağlam
 # (cache read); bağlamı büyüten tam dosya okumaları ve uzun komut çıktıları. prune eski araç çıktılarını budar,
 # tool_output uzun çıktıyı keser, batch_tool birden çok aracı tek adımda çağırır (daha az adım = daha az tekrar).
-if [ "${OP_SADE:-0}" = 1 ]; then
+if [ "${MDK_SADE:-0}" = 1 ]; then
   export OPENCODE_CONFIG_CONTENT="{$IZIN,\"compaction\":{\"auto\":true,\"prune\":true},\"tool_output\":{\"max_lines\":300,\"max_bytes\":20000},\"experimental\":{\"batch_tool\":true}}"
   SADE_IPUCU="Verimlilik: adım metni yukarıda, PLAN.md'yi ve kapı betiklerini okuma. Dosyaları baştan sona okuma: önce grep -n ile yeri bul, sonra yalnız gereken satır aralığını oku. Birbirinden bağımsız okumaları tek adımda birlikte yap. Uzun çıktıları (derleme, test) tail ile kısalt."
 else
@@ -109,14 +109,14 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
         neden=kurcalama
       else
         for k in "${KAPILAR[@]}"; do   # ilk başarısız kapıda dur; o kapının çıktısı $log.kapi'de kalır
-          env -u OP_DONMUS bash -c "$k" >"$log.kapi" 2>&1 || { neden=kapi; break; }   # OP_DONMUS iç değişken: kapıdaki op-adim.test.sh donmuş kopya vakasını bozuyordu
+          env -u MDK_DONMUS bash -c "$k" >"$log.kapi" 2>&1 || { neden=kapi; break; }   # MDK_DONMUS iç değişken: kapıdaki mdk-adim.test.sh donmuş kopya vakasını bozuyordu
         done
       fi
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal etkin < <(topla "$log"); harcanan=$((harcanan + etkin))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"sade\":${OP_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti

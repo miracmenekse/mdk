@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const KAYIT = fileURLToPath(new URL('../op-kayit.mjs', import.meta.url));
+const KAYIT = fileURLToPath(new URL('../mdk-kayit.mjs', import.meta.url));
 const kos = (args, cwd) => spawnSync(process.execPath, [KAYIT, ...args], { cwd, encoding: 'utf8' });
 const satirlar = (d) => readFileSync(join(d, 'metrikler.jsonl'), 'utf8').trim().split('\n').map((s) => JSON.parse(s));
 

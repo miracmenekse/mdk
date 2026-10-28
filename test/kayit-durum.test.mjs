@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // kodcu/claude işleri çalıştırıcı üzerinden geçmediği için durum.json güncellenmiyor, "Şu an" kartı bayat kalıyordu.
-const KAYIT = fileURLToPath(new URL('../op-kayit.mjs', import.meta.url));
+const KAYIT = fileURLToPath(new URL('../mdk-kayit.mjs', import.meta.url));
 const kos = (args) => spawnSync(process.execPath, [KAYIT, ...args], { encoding: 'utf8' });
 const durum = (d) => JSON.parse(readFileSync(join(d, 'durum.json'), 'utf8'));
 

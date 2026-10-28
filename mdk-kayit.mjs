@@ -1,7 +1,7 @@
 // Kayıt aracı: deneme sonucunu ya da Claude incelemesini metrikler.jsonl'a ekler.
 // Kullanım:
-//   node op-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]
-//   node op-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]
+//   node mdk-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]
+//   node mdk-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]
 
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,7 +10,7 @@ const YURUTUCULER = ['kodcu', 'claude', 'opencode'];
 const INCELEMELER = ['uyumlu', 'kismen', 'uyumsuz'];
 
 function kullanim(mesaj) {
-  process.stderr.write(`${mesaj}\nKullanım: node op-kayit.mjs <adım> --yurutucu ... --model ... --gecti ... | --inceleme ...\n`);
+  process.stderr.write(`${mesaj}\nKullanım: node mdk-kayit.mjs <adım> --yurutucu ... --model ... --gecti ... | --inceleme ...\n`);
   process.exit(2);
 }
 

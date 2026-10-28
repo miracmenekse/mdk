@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# op-adim.sh testi: sahte `opencode` ile, geçici git deposunda, ağsız ve hızlı.
-# Kullanım: bash test/op-adim.test.sh [vaka|grup ...]   (boşsa hepsi; grup: temel)
-RUNNER=$(cd "$(dirname "$0")/.." && pwd)/op-adim.sh
+# mdk-adim.sh testi: sahte `opencode` ile, geçici git deposunda, ağsız ve hızlı.
+# Kullanım: bash test/mdk-adim.test.sh [vaka|grup ...]   (boşsa hepsi; grup: temel)
+RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
 HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once"
@@ -21,7 +21,7 @@ echo '{"type":"step_finish","part":{"tokens":{"total":100},"cost":0}}'
 STUB
   chmod +x "$T/bin/opencode"; printf '%s\n' "$2" >"$T/davran.sh"
   cd "$R" && git init -q && git config user.name t && git config user.email t@t
-  printf 'durum.json\nmetrikler.jsonl\n.op-log/\n' >.gitignore; printf '%s\n' "$1" >PLAN.md
+  printf 'durum.json\nmetrikler.jsonl\n.mdk-log/\n' >.gitignore; printf '%s\n' "$1" >PLAN.md
 }
 commit0() { git add -A; git commit -qm c0; CP=$(git rev-parse HEAD); }
 kos() { # ortam değişkenleri argüman olarak; adım 1'i çalıştırır
@@ -58,10 +58,10 @@ c_eskale() {
   kontrol '[ "$(paste -sd, "$T/modeller.log")" = m/a,m/b ]'
 }
 c_donmus() {
-  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo "echo KOTU (((" >> op-adim.sh; echo x > cikti.txt; }'
-  cp "$RUNNER" op-adim.sh; commit0; RUN=./op-adim.sh kos
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo "echo KOTU (((" >> mdk-adim.sh; echo x > cikti.txt; }'
+  cp "$RUNNER" mdk-adim.sh; commit0; RUN=./mdk-adim.sh kos
   kontrol '[ "$KOD" = 0 ]'
-  kontrol '[ -f .op-log/op-adim.run.sh ]'
+  kontrol '[ -f .mdk-log/mdk-adim.run.sh ]'
 }
 c_kurcalama() {
   setup "$(plan m/a '  - Kapı: `node x.test.mjs`')" 'davran(){ echo "process.exit(0)" > x.test.mjs; }'
@@ -169,7 +169,7 @@ c_butce_ok() {
 c_sorun() {
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo "plan eksik" > SORUN.md; echo x > cikti.txt; }'; commit0; kos
   kontrol '[ "$KOD" = 2 ]'   # kapı geçse bile SORUN.md varsa deneme başarısız
-  kontrol 'ls .op-log/sorun-1-* >/dev/null 2>&1'   # reset öncesi kopyalanmalı
+  kontrol 'ls .mdk-log/sorun-1-* >/dev/null 2>&1'   # reset öncesi kopyalanmalı
   kontrol '[ "$(neden_listesi)" = sorun ]'
   kontrol '[ "$(git rev-parse HEAD)" = "$CP" ]'
 }
@@ -183,4 +183,4 @@ for CASE in $SECILEN; do
   declare -F "c_$CASE" >/dev/null || { echo "bilinmeyen vaka: $CASE"; exit 64; }
   echo "· $CASE"; "c_$CASE"; cd /
 done
-[ $FAIL = 0 ] && echo "op-adim.test ok" || { echo "op-adim.test BAŞARISIZ"; exit 1; }
+[ $FAIL = 0 ] && echo "mdk-adim.test ok" || { echo "mdk-adim.test BAŞARISIZ"; exit 1; }

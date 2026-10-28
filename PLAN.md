@@ -1,4 +1,4 @@
-# opencode-akis
+# MDK (MM Development Kit)
 
 Amaç: Claude planlar, OpenCode (ücretsiz modellerle) geliştirir; kalite kapıdan geçerek garanti edilir.
 Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
@@ -79,28 +79,28 @@ Taslak: etki/gecmis.html. Uygulama maliyeti tahmini: bir veri adımı (~60-140k 
 Not (2026-10-17): Parti A'da ücretsiz modeller "Rate limit exceeded" verdi; çalıştırıcı bunu 6 × 900 sn "kapı geçmedi" sandı (0 token, boş günlük). Bu adımlar eskale edildi, `kodcu` yapar. Yanıt vermeme tespiti adım 11'e eklendi.
 - [x] 9. Çoklu kapı
   - Yürütücü: kodcu
-  - Ne: `op-adim.sh`: bir adımda birden fazla `- Kapı: \`...\`` satırı olabilir. Hepsi sırayla çalışır, ilk başarısız olanda durur ve o kapının çıktısı `$log.kapi` dosyasına yazılır; hepsi 0 verirse adım geçer. Şu an `grep -m1` yalnızca ilkini alıyor. Hiç Kapı satırı yoksa mevcut davranış kalır (çıkış 4). Betikteki donmuş kopya ve kurcalama kontrolü bloklarına dokunma.
-  - Kapı: `bash test/op-adim.test.sh temel coklu`
+  - Ne: `mdk-adim.sh`: bir adımda birden fazla `- Kapı: \`...\`` satırı olabilir. Hepsi sırayla çalışır, ilk başarısız olanda durur ve o kapının çıktısı `$log.kapi` dosyasına yazılır; hepsi 0 verirse adım geçer. Şu an `grep -m1` yalnızca ilkini alıyor. Hiç Kapı satırı yoksa mevcut davranış kalır (çıkış 4). Betikteki donmuş kopya ve kurcalama kontrolü bloklarına dokunma.
+  - Kapı: `bash test/mdk-adim.test.sh temel coklu`
 
 - [x] 10. Taslak onayı zorunluluğu
   - Yürütücü: kodcu
-  - Ne: `op-adim.sh`: adım bloğunda `- Etki:` satırı varsa ve `- Onay: evet` satırı yoksa, opencode'u HİÇ çağırmadan `adım N taslak onayı bekliyor: PLAN.md'ye "- Onay: evet" ekle` yazıp çıkış kodu 5 ile çık. Kontrol, git ağacı kontrollerinden sonra, deneme döngüsünden önce yapılır.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay`
+  - Ne: `mdk-adim.sh`: adım bloğunda `- Etki:` satırı varsa ve `- Onay: evet` satırı yoksa, opencode'u HİÇ çağırmadan `adım N taslak onayı bekliyor: PLAN.md'ye "- Onay: evet" ekle` yazıp çıkış kodu 5 ile çık. Kontrol, git ağacı kontrollerinden sonra, deneme döngüsünden önce yapılır.
+  - Kapı: `bash test/mdk-adim.test.sh temel coklu onay`
 
 - [x] 11. Süreç grubu, süre sınırı ve başarısızlık nedeni
   - Yürütücü: kodcu
-  - Ne: `op-adim.sh`: `timeout` yerine `opencode run` komutunu `setsid ... </dev/null >"$log" 2>"$log.err" &` ile arka planda başlat, `pid=$!` al. Her `POLL` saniyede (ortam değişkeni, varsayılan 3) `kill -0 $pid` ile kontrol et; `SURE` saniyeyi aşarsa süreç grubunu öldür: `kill -TERM -- -$pid`, 2 sn sonra `kill -KILL -- -$pid`. Süreç bitince `wait $pid` yap; bitişte grupta (`pgrep -g $pid`) yetim süreç kalmadığından emin ol, kalmışsa KILL. Metrik satırına `neden` alanı ekle: başarılıysa `null`; değilse `"sure"` (süre aşımı), `"kurcalama"` ya da `"kapi"` (öncelik bu sırada). Başarısızlık mesajına nedeni yaz. Ayrıca sağlayıcı sessizliği: `ILK` (ortam değişkeni, varsayılan 90) saniye içinde günlüğe (`$log`) hiç olay yazılmazsa (dosya boş) süreç grubunu aynı şekilde öldür, `neden` = `"yanit_yok"`, o modelin kalan denemelerini atla ve sıradaki modele geç (sessiz modeli yeniden denemek boşuna; ücretsiz kota dolunca OpenCode çıkmadan sessizce bekliyor). Tüm modeller `yanit_yok` ile biterse çıkış kodu 6 (eskale 2 değil), durum `"saglayici"`, mesaj "sağlayıcı yanıt vermiyor". Başlık satırındaki çıkış kodu açıklamasına 6'yı ekle.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok`
+  - Ne: `mdk-adim.sh`: `timeout` yerine `opencode run` komutunu `setsid ... </dev/null >"$log" 2>"$log.err" &` ile arka planda başlat, `pid=$!` al. Her `POLL` saniyede (ortam değişkeni, varsayılan 3) `kill -0 $pid` ile kontrol et; `SURE` saniyeyi aşarsa süreç grubunu öldür: `kill -TERM -- -$pid`, 2 sn sonra `kill -KILL -- -$pid`. Süreç bitince `wait $pid` yap; bitişte grupta (`pgrep -g $pid`) yetim süreç kalmadığından emin ol, kalmışsa KILL. Metrik satırına `neden` alanı ekle: başarılıysa `null`; değilse `"sure"` (süre aşımı), `"kurcalama"` ya da `"kapi"` (öncelik bu sırada). Başarısızlık mesajına nedeni yaz. Ayrıca sağlayıcı sessizliği: `ILK` (ortam değişkeni, varsayılan 90) saniye içinde günlüğe (`$log`) hiç olay yazılmazsa (dosya boş) süreç grubunu aynı şekilde öldür, `neden` = `"yanit_yok"`, o modelin kalan denemelerini atla ve sıradaki modele geç (sessiz modeli yeniden denemek boşuna; ücretsiz kota dolunca OpenCode çıkmadan sessizce bekliyor). Tüm modeller `yanit_yok` ile biterse çıkış kodu 6 (eskale 2 değil), durum `"saglayici"`, mesaj "sağlayıcı yanıt vermiyor". Başlık satırındaki çıkış kodu açıklamasına 6'yı ekle.
+  - Kapı: `bash test/mdk-adim.test.sh temel coklu onay neden sure yanit_yok`
 
 - [x] 12. Token bütçesi
   - Yürütücü: kodcu
-  - Ne: `op-adim.sh`: adım bloğunda `- Bütçe: N` (token) ya da dosyanın başında `Bütçe: N` satırı varsa (adım satırı önceliklidir), bekleme döngüsünde her turda günlükteki `step_finish` olaylarının `part.tokens.total` toplamını (mevcut `topla` fonksiyonu) hesapla; N'yi aşarsa süreç grubunu aynı şekilde öldür ve `neden` alanına `"butce"` yaz. Bütçe yoksa kontrol yapma. Kontrol adım sınırında olduğundan tek adım bütçeyi biraz aşabilir; bunu betikte `# ponytail:` yorumuyla not et.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok`
+  - Ne: `mdk-adim.sh`: adım bloğunda `- Bütçe: N` (token) ya da dosyanın başında `Bütçe: N` satırı varsa (adım satırı önceliklidir), bekleme döngüsünde her turda günlükteki `step_finish` olaylarının `part.tokens.total` toplamını (mevcut `topla` fonksiyonu) hesapla; N'yi aşarsa süreç grubunu aynı şekilde öldür ve `neden` alanına `"butce"` yaz. Bütçe yoksa kontrol yapma. Kontrol adım sınırında olduğundan tek adım bütçeyi biraz aşabilir; bunu betikte `# ponytail:` yorumuyla not et.
+  - Kapı: `bash test/mdk-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok`
 
 - [x] 13. SORUN.md ve model sırası
   - Yürütücü: kodcu
-  - Ne: `op-adim.sh`: (1) Deneme bitince depo kökünde `SORUN.md` varsa onu `.op-log/sorun-N-<epoch>.md` olarak kopyala, kapı geçse bile denemeyi başarısız say (`neden: "sorun"`), bir sonraki denemenin `ipucu`na `SORUN.md` içeriğini ekle, sonra mevcut geri alma akışı (reset + clean) çalışsın. (2) `ONCE=<model>` ortam değişkeni verilirse ve model `Modeller` listesindeyse onu listenin başına al; listede yoksa yok say.
-  - Kapı: `bash test/op-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok sorun once`
+  - Ne: `mdk-adim.sh`: (1) Deneme bitince depo kökünde `SORUN.md` varsa onu `.mdk-log/sorun-N-<epoch>.md` olarak kopyala, kapı geçse bile denemeyi başarısız say (`neden: "sorun"`), bir sonraki denemenin `ipucu`na `SORUN.md` içeriğini ekle, sonra mevcut geri alma akışı (reset + clean) çalışsın. (2) `ONCE=<model>` ortam değişkeni verilirse ve model `Modeller` listesindeyse onu listenin başına al; listede yoksa yok say.
+  - Kapı: `bash test/mdk-adim.test.sh temel coklu onay neden sure yanit_yok butce butce_ok sorun once`
 
 ## Veri ve araçlar
 Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 14-20 `kodcu` ile yapılır, parti C öncesi kota yeniden yoklanır. Kapı testleri her adımın başında `kodcu` tarafından verilen dosyalardan depoya kopyalanır.
@@ -110,7 +110,7 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `bash test/hepsi.sh`
 
 - [x] 15. Kayıt aracı (kodcu satırları ve inceleme sonucu)
-  - Ne: Proje kökünde `op-kayit.mjs`. Kullanım 1: `node op-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]` → `<dizin>/metrikler.jsonl` dosyasına `{ts, adim, yurutucu, model, deneme (varsayılan 1), gecti, sure_sn, token, maliyet: 0, neden}` satırı ekler. Kullanım 2: `node op-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]` → `{tur: "inceleme", ts, adim, inceleme, not}` ekler. Eksik ya da geçersiz değerde kullanımı stderr'e yazıp çıkış 2 ile dur (dosyaya yazma). Varsayılan dizin `.`. Yalnızca Node yerleşik modülleri.
+  - Ne: Proje kökünde `mdk-kayit.mjs`. Kullanım 1: `node mdk-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]` → `<dizin>/metrikler.jsonl` dosyasına `{ts, adim, yurutucu, model, deneme (varsayılan 1), gecti, sure_sn, token, maliyet: 0, neden}` satırı ekler. Kullanım 2: `node mdk-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]` → `{tur: "inceleme", ts, adim, inceleme, not}` ekler. Eksik ya da geçersiz değerde kullanımı stderr'e yazıp çıkış 2 ile dur (dosyaya yazma). Varsayılan dizin `.`. Yalnızca Node yerleşik modülleri.
   - Kapı: `node test/kayit.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
@@ -130,8 +130,8 @@ Not (2026-10-17): ücretsiz kota hâlâ dolu (3 modelde 45 sn sessizlik); adım 
   - Kapı: `bash test/hepsi.sh`
 
 - [x] 19. Panel başlat/durdur betiği
-  - Ne: `op-panel.sh start|stop|durum [dizin] [port]` (dizin varsayılan `.`, port 4747). `start`: `setsid nohup node <bu betiğin dizini>/panel/sunucu.mjs <dizin> <port> >"<dizin>/.op-log/panel.log" 2>&1 &` ile başlat, pid'i `<dizin>/.op-log/panel.pid` dosyasına yaz; pid dosyasındaki süreç yaşıyorsa "zaten çalışıyor" yaz, çıkış 0. `stop`: pid'e `kill`, pid dosyasını sil; yoksa "çalışmıyor", çıkış 0. `durum`: çalışıyorsa `çalışıyor pid=<n> http://127.0.0.1:<port>` yazıp 0, değilse `çalışmıyor` yazıp 1. `pkill -f` KULLANMA.
-  - Kapı: `bash test/op-panel.test.sh`
+  - Ne: `mdk-panel.sh start|stop|durum [dizin] [port]` (dizin varsayılan `.`, port 4747). `start`: `setsid nohup node <bu betiğin dizini>/panel/sunucu.mjs <dizin> <port> >"<dizin>/.mdk-log/panel.log" 2>&1 &` ile başlat, pid'i `<dizin>/.mdk-log/panel.pid` dosyasına yaz; pid dosyasındaki süreç yaşıyorsa "zaten çalışıyor" yaz, çıkış 0. `stop`: pid'e `kill`, pid dosyasını sil; yoksa "çalışmıyor", çıkış 0. `durum`: çalışıyorsa `çalışıyor pid=<n> http://127.0.0.1:<port>` yazıp 0, değilse `çalışmıyor` yazıp 1. `pkill -f` KULLANMA.
+  - Kapı: `bash test/mdk-panel.test.sh`
   - Kapı: `bash test/hepsi.sh`
 
 - [x] 20. Kapı denetleyici
@@ -174,7 +174,7 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
 
 - [x] 28. Kayıt aracı durum.json'u günceller
   - Yürütücü: kodcu
-  - Ne: `op-kayit.mjs`: çalıştırma kaydı (`--yurutucu ... --gecti ...`) yazıldığında `<dizin>/durum.json` da yazılır: `{ adim, baslik, model, deneme, durum, ts: Date.now() }`; `durum` = `gecti` (gecti true) ya da `eskale` (gecti false); `baslik` `<dizin>/PLAN.md` içindeki `- [ ] N. Başlık` ya da `- [x] N. Başlık` satırından alınır, PLAN.md ya da satır yoksa `null`. `--inceleme` kaydı `durum.json`'a dokunmaz. Hatalı kullanımda (çıkış 2) hiçbir dosya yazılmaz.
+  - Ne: `mdk-kayit.mjs`: çalıştırma kaydı (`--yurutucu ... --gecti ...`) yazıldığında `<dizin>/durum.json` da yazılır: `{ adim, baslik, model, deneme, durum, ts: Date.now() }`; `durum` = `gecti` (gecti true) ya da `eskale` (gecti false); `baslik` `<dizin>/PLAN.md` içindeki `- [ ] N. Başlık` ya da `- [x] N. Başlık` satırından alınır, PLAN.md ya da satır yoksa `null`. `--inceleme` kaydı `durum.json`'a dokunmaz. Hatalı kullanımda (çıkış 2) hiçbir dosya yazılmaz.
   - Kapı: `node test/kayit-durum.test.mjs`
   - Kapı: `node test/kayit.test.mjs`
   - Kapı: `bash test/hepsi.sh`
@@ -197,7 +197,7 @@ Kapılar bunları yakalamamıştı; gerçek Firefox görüntüsünde çıktı.
 ## Süreç (Claude)
 - [x] 24. İnceleme kayıtları ve karşılaştırma verisi
   - Yürütücü: claude
-  - Ne: Her partiden sonra Claude diff'i plana karşı inceler, sonucu `node op-kayit.mjs <adım> --inceleme ...` ile kaydeder; eskale olan adımı `kodcu`'ya verir ve sonucunu `op-kayit.mjs --yurutucu kodcu` ile kaydeder; bazı adımlarda `ONCE=` ile 2. ve 3. model denenir.
+  - Ne: Her partiden sonra Claude diff'i plana karşı inceler, sonucu `node mdk-kayit.mjs <adım> --inceleme ...` ile kaydeder; eskale olan adımı `kodcu`'ya verir ve sonucunu `mdk-kayit.mjs --yurutucu kodcu` ile kaydeder; bazı adımlarda `ONCE=` ile 2. ve 3. model denenir.
   - Kapı: `test "$(grep -c '"tur":"inceleme"' metrikler.jsonl)" -ge 10`
 
 - [x] 25. Personaları ve süreç belgelerini güncelle
@@ -280,7 +280,7 @@ Faz 2'nin kapsamı adım 36'nın sonucuna bağlıdır; 36 `çürüdü` çıkarsa
 
 - [x] 39. Belgeler ve bellek
   - Yürütücü: claude
-  - Ne: `~/.claude/skills/ba-pm-bakis/SKILL.md`: iş türüne göre alan seçimi, seçim kuralı, `persona-denetle.mjs` çağrısı, Faz 2 sonuçlarından kapı ve plan bölme kuralı. Proje `CLAUDE.md`: "9'dan devam eden numarayla" notunu "son adım numarasından devam" yap, durum bölümüne personalar v2'yi ekle. PLAN.md "Sonraki iyileştirmeler" altındaki persona maddesini güncelle. Bellek: `opencode-akis-kapi-iyilestirme` ve `opencode-akis-durum` notlarını güncelle; sunum ve araştırma alanları ilk gerçek kullanımda `denendi` olacak diye not düş.
+  - Ne: `~/.claude/skills/ba-pm-bakis/SKILL.md`: iş türüne göre alan seçimi, seçim kuralı, `persona-denetle.mjs` çağrısı, Faz 2 sonuçlarından kapı ve plan bölme kuralı. Proje `CLAUDE.md`: "9'dan devam eden numarayla" notunu "son adım numarasından devam" yap, durum bölümüne personalar v2'yi ekle. PLAN.md "Sonraki iyileştirmeler" altındaki persona maddesini güncelle. Bellek: `mdk-kapi-iyilestirme` ve `mdk-durum` notlarını güncelle; sunum ve araştırma alanları ilk gerçek kullanımda `denendi` olacak diye not düş.
   - Kapı: `node persona-denetle.mjs`
   - Kapı: `! grep -q "9'dan devam" CLAUDE.md`
   - Kapı: `grep -q 'persona-denetle' ~/.claude/skills/ba-pm-bakis/SKILL.md`
@@ -349,7 +349,7 @@ Karar: plan yazılırken "bu adım bölünmeli" uyarısı verecek ölçüt. Kart
 | C | sentez | Ne ≥ 1000 karakter | 5/7 | 3 (31, 47, 54) | 4, 43 |
 | D | sentez | dosya ≥ 5 | 3/7 | 1 (47) | 4, 41, 43, 58 |
 Claude doğrulaması: kartın yakalanan ve yanlış alarm sayıları yeniden hesaplandı ve doğru çıktı; kart yalnız adım 4'ü sorunlu saymamıştı (6/7 yerine 6/6 yazdı). En iyi seçenek (B ya da C) uyarıların yaklaşık %60'ında haklı; taban oran %28. Kapı sayısı döngüsel bir işaret: büyük adıma zaten daha çok kapı yazılıyor. Sorunlu 4 ve 43 küçük adımlar; onları büyüklük değil kapının kendisi zorladı.
-Öneri: `kapi-denetle.mjs`e UYARI kuralı açılmaz (yanlış alarm, yakalanan sayısına yakın). `ba-pm-bakis`e yalnız yazım ipucu girer: "Ne" metni 1000 karakteri geçen ya da 5+ dosyaya dokunan adımı yazarken bölmeyi düşün; asıl güvence op-adim.sh'in bütçe ve kodcu devridir.
+Öneri: `kapi-denetle.mjs`e UYARI kuralı açılmaz (yanlış alarm, yakalanan sayısına yakın). `ba-pm-bakis`e yalnız yazım ipucu girer: "Ne" metni 1000 karakteri geçen ya da 5+ dosyaya dokunan adımı yazarken bölmeyi düşün; asıl güvence mdk-adim.sh'in bütçe ve kodcu devridir.
 Harcanan token: 0k Claude (ücretsiz modelde 27k), süre ~4 dk.
 Sonuç: çürüdü (plandaki varsayım çürüdü: 9 ve 22 büyüklük yüzünden değil kota yüzünden zorlandı, ve UYARI'ya değecek isabette bir ölçüt yok; persona akışı ise çalıştı).
 
@@ -443,11 +443,11 @@ Hipotez: panel "şu an ne oluyor, kim ne kadar harcıyor, hangi model nerede zor
   - Kapı: `bash test/hepsi.sh`
 
 ### Faz 5: proje durumu paneli (dbeaver-mm, 2026-10-22)
-Hipotez: kullanıcı dbeaver-mm'in durumunu ("son kullanıcılar hangi sürümde, yayımlanmamış ne var, Windows derlemesi geçti mi, VM kopyasında yarım iş var mı") bugün terminal ve GitHub arasında topluyor; tek panelde ilk bakışta görürse kontrol tek adıma iner ve yarım iş/kırık derleme unutulmaz. Başarı ölçütü: `op-panel.sh start ~/projects/dbeaver-mm 4748` açılınca bu dört soru kaydırmadan cevaplanır; ağ yoksa panel düşmez, "son bilinen veri" der. Kapsam dışı: GitHub'a yazma (etiket, release, push), ana makinedeki kurulu sürümü okumak (VM'den erişim yok).
+Hipotez: kullanıcı dbeaver-mm'in durumunu ("son kullanıcılar hangi sürümde, yayımlanmamış ne var, Windows derlemesi geçti mi, VM kopyasında yarım iş var mı") bugün terminal ve GitHub arasında topluyor; tek panelde ilk bakışta görürse kontrol tek adıma iner ve yarım iş/kırık derleme unutulmaz. Başarı ölçütü: `mdk-panel.sh start ~/projects/dbeaver-mm 4748` açılınca bu dört soru kaydırmadan cevaplanır; ağ yoksa panel düşmez, "son bilinen veri" der. Kapsam dışı: GitHub'a yazma (etiket, release, push), ana makinedeki kurulu sürümü okumak (VM'den erişim yok).
 Seçenekler: (A) yalnız yeni "Depo" sekmesi; (B, seçildi 2026-10-22) A + üstte depo şeridi ve git deposu olan projede açılış sekmesi Depo — bir adım uzun ama "genel durum" sorusunu ilk bakışta cevaplar; (C) panel yerine `durum.sh` terminal özeti — en ucuz ama iki yere bakılır.
 
 - [x] 48. Depo durumu (sürüm, yayımlanmamış K'ler, CI, yerel) ve projeye süzülmüş token
-  - Problem ve hipotez: yukarıda (Faz 5). Ayrıca Gerçek token kartı tüm OpenCode oturumlarını sayıyor; dbeaver-mm panelinde opencode-akis'in token'ı görünüyor.
+  - Problem ve hipotez: yukarıda (Faz 5). Ayrıca Gerçek token kartı tüm OpenCode oturumlarını sayıyor; dbeaver-mm panelinde mdk'in token'ı görünüyor.
   - Etki: etki/depo.html
   - Onay: evet
   - Değer: 5
@@ -481,7 +481,7 @@ Ortak kural: `<details>` kullanan her yeni öğenin açık/kapalı durumu SSE il
   - Kapı: `node panel/sayi-bicimi.test.mjs && node panel/modeller-ui.test.mjs && node panel/gecmis-ui.test.mjs`
 
 - [x] 51. Depo: yalnız anlamlı kutular, tekrarsız commit listesi
-  - Problem ve hipotez: sürüm etiketi ve CI olmayan projede (opencode-akis) dört kutudan üçü "—"; "Windows derlemesi" dbeaver-mm'e özgü. "Son K commit'leri" yayımlanmamış listesini tekrar ediyor.
+  - Problem ve hipotez: sürüm etiketi ve CI olmayan projede (mdk) dört kutudan üçü "—"; "Windows derlemesi" dbeaver-mm'e özgü. "Son K commit'leri" yayımlanmamış listesini tekrar ediyor.
   - Etki: etki/depo-sade.html
   - Onay: evet
   - Değer: 3
@@ -551,7 +551,7 @@ Riskler: ücretsiz model biçime uymayabilir (çıktıda "Seçenek A" yoksa yan�
 - [x] 58. Persona turu betiği
   - Değer: 4
   - Bütçe: 300000
-  - Ne: Proje köküne `persona-tur.sh` (bash; `op-adim.sh` ile aynı üslup). Kullanım: `persona-tur.sh <alan> <soru-dosyası> "<kart 1>" "<kart 2>" ["<kart 3>" ...]`. (1) `personalar.md` (değişken `PERSONALAR`, varsayılan `./personalar.md`) içinden `## Alan: <alan>` bölümündeki `### <kart>` bloğu (bir sonraki `### ` ya da `## ` başlığına kadar) ve `## Ortak` altındaki `### Çıktı biçimi` ile `### Ayırt edicilik şartı` blokları alınır. Alan ya da kart yoksa stderr'e neden, çıkış 2, hiçbir dosya yazılmaz; argüman eksikse kullanım satırı, çıkış 2. (2) Modeller `PLAN.md`'deki `Modeller:` satırından (değişken `PLAN`, varsayılan `./PLAN.md`; `PERSONA_MODELLER` virgüllü listeyle ezer). Kart i (0'dan) ilk denemede `modeller[i % n]` ile, geçersiz yanıtta sıradaki modelle (`modeller[(i+1) % n]`) bir kez daha koşar. (3) Her kart paralel, stdin kapalı: `opencode run --agent plan -m <model> --format json "<istem>"`; istem = "Sen şu personasın:" + kart bloğu + ortak iki blok + "Problem:" + soru dosyasının içeriği + "Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver." Kullanıcının önerisi ve diğer kartlar isteme girmez. Süre sınırı `PERSONA_SURE` sn (varsayılan 300): aşan süreç öldürülür (`setsid` + grup), yanıt geçersiz sayılır. (4) Yanıt metni json olaylarında `type === "text"` olanların `part.text`'i birleştirilerek alınır; geçerli = metinde `Seçenek A` geçer. Token = `step_finish` `part.tokens.total` toplamı. (5) Çıktı `persona-tur/<YYYYMMDD-HHMMSS>/` altında (dizin varsa sonuna `-2`, `-3`… eklenir; eski turun dosyaları karışmaz): kart başına `<i+1>-<kart adı: küçük harf, harf/rakam dışı her dizi tek tire, baş/son tire yok>.md` (başlık `# <kart>`, `Model: <model>`, `Token: <n>`, `Durum: gecerli|gecersiz|sure`, ardından yanıt metni), ham olaylar `<aynı ad>.jsonl`, ve `ozet.md`: alan, soru, kart başına tek satır `- <kart> · <model> · <durum> · <token> token`, ardından geçerli yanıtların metni. Son satırda dizin yolu stdout'a yazılır. (6) Çıkış: en az 2 geçerli yanıt ya da tek kartlı turda 1 geçerli → 0, aksi 1. `.gitignore`'a `persona-tur/`.
+  - Ne: Proje köküne `persona-tur.sh` (bash; `mdk-adim.sh` ile aynı üslup). Kullanım: `persona-tur.sh <alan> <soru-dosyası> "<kart 1>" "<kart 2>" ["<kart 3>" ...]`. (1) `personalar.md` (değişken `PERSONALAR`, varsayılan `./personalar.md`) içinden `## Alan: <alan>` bölümündeki `### <kart>` bloğu (bir sonraki `### ` ya da `## ` başlığına kadar) ve `## Ortak` altındaki `### Çıktı biçimi` ile `### Ayırt edicilik şartı` blokları alınır. Alan ya da kart yoksa stderr'e neden, çıkış 2, hiçbir dosya yazılmaz; argüman eksikse kullanım satırı, çıkış 2. (2) Modeller `PLAN.md`'deki `Modeller:` satırından (değişken `PLAN`, varsayılan `./PLAN.md`; `PERSONA_MODELLER` virgüllü listeyle ezer). Kart i (0'dan) ilk denemede `modeller[i % n]` ile, geçersiz yanıtta sıradaki modelle (`modeller[(i+1) % n]`) bir kez daha koşar. (3) Her kart paralel, stdin kapalı: `opencode run --agent plan -m <model> --format json "<istem>"`; istem = "Sen şu personasın:" + kart bloğu + ortak iki blok + "Problem:" + soru dosyasının içeriği + "Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver." Kullanıcının önerisi ve diğer kartlar isteme girmez. Süre sınırı `PERSONA_SURE` sn (varsayılan 300): aşan süreç öldürülür (`setsid` + grup), yanıt geçersiz sayılır. (4) Yanıt metni json olaylarında `type === "text"` olanların `part.text`'i birleştirilerek alınır; geçerli = metinde `Seçenek A` geçer. Token = `step_finish` `part.tokens.total` toplamı. (5) Çıktı `persona-tur/<YYYYMMDD-HHMMSS>/` altında (dizin varsa sonuna `-2`, `-3`… eklenir; eski turun dosyaları karışmaz): kart başına `<i+1>-<kart adı: küçük harf, harf/rakam dışı her dizi tek tire, baş/son tire yok>.md` (başlık `# <kart>`, `Model: <model>`, `Token: <n>`, `Durum: gecerli|gecersiz|sure`, ardından yanıt metni), ham olaylar `<aynı ad>.jsonl`, ve `ozet.md`: alan, soru, kart başına tek satır `- <kart> · <model> · <durum> · <token> token`, ardından geçerli yanıtların metni. Son satırda dizin yolu stdout'a yazılır. (6) Çıkış: en az 2 geçerli yanıt ya da tek kartlı turda 1 geçerli → 0, aksi 1. `.gitignore`'a `persona-tur/`.
   - Kapı: `bash test/persona-tur.test.sh`
   - Kapı: `node persona-denetle.mjs`
 
@@ -582,12 +582,12 @@ Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve ka
 - [x] 62. Ücretsiz kota dolunca modeli hemen bırak
   - Değer: 4
   - Bütçe: 300000
-  - Ne: `op-adim.sh`. Kota dolunca opencode "Free usage limit reached" hatasını yalnızca kendi log'una yazıp sessizce yeniden dener; şimdi bu durum `ILK` (90 sn) sonra `yanit_yok` oluyor. (1) `opencode run` satırına `--print-logs --log-level ERROR` ekle (hata satırı böylece stderr'e, yani mevcut `"$log.err"` dosyasına düşer; stdout JSON'u değişmez). (2) Bekleme döngüsünde `yanit_yok` kontrolünden ÖNCE: `grep -q "Free usage limit" "$log.err"` ise `neden=kota` (süreç grubu diğer nedenlerdeki gibi öldürülür). (3) `kota` da `yanit_yok` gibi davranır: `SAGLAYICI`'yi 0 yapmaz ve aynı modeli yeniden denemeden sıradaki modele geçer (mevcut `[ "$neden" = yanit_yok ]` iki satırını `yanit_yok`|`kota` kapsayacak biçimde genişlet). (4) Tüm modeller `yanit_yok`/`kota` ise mevcut çıkış 6 korunur; mesaj kota görüldüyse "ücretsiz kota dolu" ifadesini içerir (ör. bir `kota_goruldu=1` değişkeniyle). Eskale (çıkış 2) yapılmaz. Başka dosya değişmez.
-  - Kapı: `bash test/op-adim.test.sh kota`
+  - Ne: `mdk-adim.sh`. Kota dolunca opencode "Free usage limit reached" hatasını yalnızca kendi log'una yazıp sessizce yeniden dener; şimdi bu durum `ILK` (90 sn) sonra `yanit_yok` oluyor. (1) `opencode run` satırına `--print-logs --log-level ERROR` ekle (hata satırı böylece stderr'e, yani mevcut `"$log.err"` dosyasına düşer; stdout JSON'u değişmez). (2) Bekleme döngüsünde `yanit_yok` kontrolünden ÖNCE: `grep -q "Free usage limit" "$log.err"` ise `neden=kota` (süreç grubu diğer nedenlerdeki gibi öldürülür). (3) `kota` da `yanit_yok` gibi davranır: `SAGLAYICI`'yi 0 yapmaz ve aynı modeli yeniden denemeden sıradaki modele geçer (mevcut `[ "$neden" = yanit_yok ]` iki satırını `yanit_yok`|`kota` kapsayacak biçimde genişlet). (4) Tüm modeller `yanit_yok`/`kota` ise mevcut çıkış 6 korunur; mesaj kota görüldüyse "ücretsiz kota dolu" ifadesini içerir (ör. bir `kota_goruldu=1` değişkeniyle). Eskale (çıkış 2) yapılmaz. Başka dosya değişmez.
+  - Kapı: `bash test/mdk-adim.test.sh kota`
   - Kapı: `bash test/hepsi.sh`
 
 ### Faz 9: panelden taslak kararı (2026-10-28)
-Problem ve hipotez: kullanıcı etki taslağını panelde görüyor ama onay/red/yorumu CLI sohbetine yazmak zorunda; iki pencere arasında gidip geliyor ve taslak onayı akışı tıkanıyor. Hipotez: karar panelden bir tıkla bir dosyaya (etki/kararlar.jsonl) düşer, açık Claude oturumu bu dosyayı Monitor ile izler; kullanıcı CLI'a hiç yazmadan onay → adım yürütülür, red/yorum → taslak düzeltilir. Persona turu (`persona-tur/20261028-113106`, 3/3 geçerli): üç kart da dosya kuyruğunda birleşti; ayrışan eksenler (1) "kuyrukta mı, Claude aldı mı" açıkça görünmeli, (2) PLAN.md'yi panel değil Claude yazmalı (çoklu yazıcı çakışması, op-adim kurcalama tespiti). Kullanıcı kararı: dosya + Claude izler; red ve yorum ayrı tür.
+Problem ve hipotez: kullanıcı etki taslağını panelde görüyor ama onay/red/yorumu CLI sohbetine yazmak zorunda; iki pencere arasında gidip geliyor ve taslak onayı akışı tıkanıyor. Hipotez: karar panelden bir tıkla bir dosyaya (etki/kararlar.jsonl) düşer, açık Claude oturumu bu dosyayı Monitor ile izler; kullanıcı CLI'a hiç yazmadan onay → adım yürütülür, red/yorum → taslak düzeltilir. Persona turu (`persona-tur/20261028-113106`, 3/3 geçerli): üç kart da dosya kuyruğunda birleşti; ayrışan eksenler (1) "kuyrukta mı, Claude aldı mı" açıkça görünmeli, (2) PLAN.md'yi panel değil Claude yazmalı (çoklu yazıcı çakışması, mdk-adim kurcalama tespiti). Kullanıcı kararı: dosya + Claude izler; red ve yorum ayrı tür.
 Başarı ölçütü: kullanıcı bir taslağı yalnız panelden onaylar ve adım CLI'a yazmadan başlar; red notuyla gönderilen taslak Claude tarafından düzeltilip panelde yenilenir. Kart her zaman üç durumdan birini söyler: Claude aldı / Claude'a iletiliyor / kuyrukta (oturum açılınca işlenir).
 Akış: kart → (isteğe bağlı) not → Onayla | Reddet | Yorum (1-2 tık). Hata: kart altında kırmızı tek satır, yazılan not silinmez. Güvenlik: sunucu yalnız `127.0.0.1`; POST yalnız `application/json` (başka sitenin basit form isteği reddedilir), Host yerel olmalı, Origin varsa Host ile aynı olmalı.
 Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tur","metin"}`), `etki/.karar-okundu` (Claude'un aldığı son `ts`), `etki/.karar-izleyici` (izleyen `karar-bekle.mjs` sürecinin pid'i).
@@ -640,7 +640,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
 
 - [x] 69. Claude tarafı: kararı izle ve işle
   - Yürütücü: claude
-  - Ne: `CLAUDE.md`'ye "Panelden karar" bölümü: Etki taslağı onay bekleyen bir adım varken Claude `node karar-bekle.mjs` komutunu Monitor ile başlatır (`timeout_ms` en çok 30 dk; süre dolunca yeniden kurar, arada kart "kuyrukta" görünür ve karar kaybolmaz); oturum başında önce `node karar-bekle.mjs --bir-kez` ile kuyrukta kalanları alır. Gelen satıra göre: `onay` → adımın altına `- Onay: evet` yaz, commit et, `./op-adim.sh <no>`; `red` → nota göre etki taslağını düzelt, kullanıcıya tek satır bildir (panel kartı yenilenir); `yorum` → soruysa yanıtla, istekse taslağı düzelt; onaylamaz. `ba-pm-bakis` §4'e "karar panelden gelir" notu. Uçtan uca deneme: geçici bir taslaklı adımla panelden red ve onay gönder, Monitor bildirimini ve kart durumunu (kuyrukta → iletiliyor → Claude aldı) Firefox ekran görüntüsüyle doğrula; geçici adımı sil.
+  - Ne: `CLAUDE.md`'ye "Panelden karar" bölümü: Etki taslağı onay bekleyen bir adım varken Claude `node karar-bekle.mjs` komutunu Monitor ile başlatır (`timeout_ms` en çok 30 dk; süre dolunca yeniden kurar, arada kart "kuyrukta" görünür ve karar kaybolmaz); oturum başında önce `node karar-bekle.mjs --bir-kez` ile kuyrukta kalanları alır. Gelen satıra göre: `onay` → adımın altına `- Onay: evet` yaz, commit et, `./mdk-adim.sh <no>`; `red` → nota göre etki taslağını düzelt, kullanıcıya tek satır bildir (panel kartı yenilenir); `yorum` → soruysa yanıtla, istekse taslağı düzelt; onaylamaz. `ba-pm-bakis` §4'e "karar panelden gelir" notu. Uçtan uca deneme: geçici bir taslaklı adımla panelden red ve onay gönder, Monitor bildirimini ve kart durumunu (kuyrukta → iletiliyor → Claude aldı) Firefox ekran görüntüsüyle doğrula; geçici adımı sil.
   - Kapı: `grep -q '^## Panelden karar' CLAUDE.md`
   - Kapı: `bash test/hepsi.sh`
 

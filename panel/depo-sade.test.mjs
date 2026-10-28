@@ -12,7 +12,7 @@ const yerel = { dal: 'main', ileri: 2, geri: 0, degisik: [] };
 // dbeaver-mm biçimi: sürüm + windows-release → dört kutu sürer
 assert.deepEqual(kutular(depoSeritHtml({ var: true, surum: 'v0.3.6', yayimlanmamis: [], ci: [CODEQL, WIN], yerel })),
   ['kpi-surum', 'kpi-yayimlanmamis', 'kpi-ci', 'kpi-yerel']);
-// opencode-akis biçimi: etiket yok, CI yok → yalnız yerel
+// mdk biçimi: etiket yok, CI yok → yalnız yerel
 const tek = depoSeritHtml({ var: true, surum: null, yayimlanmamis: null, ci: [], yerel });
 assert.deepEqual(kutular(tek), ['kpi-yerel']);
 assert.ok(tek.startsWith('<div class="kpi">') && !duz(tek).includes('—'), 'boş kutu yok');

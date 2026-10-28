@@ -1,6 +1,6 @@
 durum.json
 metrikler.jsonl
-.op-log/
+.mdk-log/
 node_modules/
 persona-tur/
 etki/kararlar.jsonl

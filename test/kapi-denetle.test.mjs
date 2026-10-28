@@ -18,7 +18,7 @@ Modeller: a/x
 - [ ] 4. Güçlü
   - Kapı: \`node panel/x.test.mjs\`
 - [ ] 5. Betik
-  - Kapı: \`bash test/op-adim.test.sh temel\`
+  - Kapı: \`bash test/mdk-adim.test.sh temel\`
 - [ ] 6. Başka yürütücü
   - Yürütücü: claude
   - Kapı: \`true\`
