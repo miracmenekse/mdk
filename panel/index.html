@@ -193,6 +193,25 @@ table.matris th.model { position: sticky; left: 0; background: var(--kart); z-in
   background: var(--kart);
 }
 .kroki .etiket { font-size: 12px; color: var(--soluk); margin-bottom: 4px; }
+form.karar { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+form.karar textarea {
+  flex: 1 1 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 13px;
+  color: var(--metin);
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+form.karar button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
+form.karar button:disabled { opacity: .5; cursor: default; }
+form.karar button:focus-visible { outline: 2px solid var(--vurgu); }
+.karar-durum { flex: 1 1 100%; margin: 2px 0 0; font-size: 12px; color: var(--soluk); }
+.karar-durum.hata { color: var(--maliyet); }
 #buyuk iframe { width: 92vw; height: 88vh; border: 0; }
 #buyuk { max-width: none; max-height: none; padding: 0; }
 #buyuk-kapat { position: absolute; top: 8px; right: 8px; z-index: 1; font: inherit; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
@@ -399,6 +418,47 @@ buyukEl.addEventListener('close', () => {
   buyukIframe.src = '';
 });
 
+// karar formu: gönderim JSON ile; hata olursa not silinmez
+etkiEl.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form.karar');
+  if (!form) return;
+  e.preventDefault();
+  const tur = e.submitter.value;
+  const no = Number(form.dataset.no);
+  const textarea = form.querySelector('textarea');
+  const durum = form.querySelector('.karar-durum');
+  const dugmeler = form.querySelectorAll('button');
+  dugmeler.forEach((b) => { b.disabled = true; });
+  durum.textContent = 'gönderiliyor…';
+  durum.classList.remove('hata');
+  // yanıt gelmeden SSE ile yeniden çizim olabilir: form o an sayfada değilse canlı olanı bul
+  const canli = () => etkiEl.querySelector(`form.karar[data-no="${no}"]`) || form;
+  try {
+    const yanit = await fetch('/api/karar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ no, tur, metin: textarea.value }),
+    });
+    const f = canli();
+    if (yanit.ok) {
+      f.querySelector('textarea').value = '';
+      f.querySelector('.karar-durum').textContent = 'gönderildi';
+    } else {
+      // gövde JSON değilse (ör. 413 boş gövde) HTTP kodu yazılır
+      let hata = 'HTTP ' + yanit.status;
+      try { hata = (await yanit.json()).hata || hata; } catch {}
+      f.querySelector('.karar-durum').textContent = hata;
+      f.querySelector('.karar-durum').classList.add('hata');
+    }
+  } catch {
+    const d = canli().querySelector('.karar-durum');
+    d.textContent = 'panel sunucusuna ulaşılamadı';
+    d.classList.add('hata');
+  } finally {
+    canli().querySelectorAll('button').forEach((b) => { b.disabled = false; });
+  }
+});
+
 // sayaç yalnızca durum 'calisiyor' iken akar
 function suAnCiz() {
   clearInterval(zamanlayici);
@@ -436,7 +496,21 @@ function ciz(d) {
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
   claudeEl.innerHTML = claudeHtml(d.claude);
-  etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik });
+  // yazılan not yeniden çizimde silinmesin: değerler ve odak saklanır, çizimden sonra geri verilir
+  const notlar = {};
+  etkiEl.querySelectorAll('form.karar').forEach((f) => { notlar[f.dataset.no] = f.querySelector('textarea').value; });
+  const odak = document.activeElement;
+  const odakNo = odak && odak.matches && odak.matches('form.karar textarea') ? odak.closest('form.karar').dataset.no : null;
+  const secim = odakNo !== null ? [odak.selectionStart, odak.selectionEnd] : null;
+  etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik, izleyici: d.kararIzleyici });
+  etkiEl.querySelectorAll('form.karar').forEach((f) => {
+    const t = f.querySelector('textarea');
+    if (notlar[f.dataset.no] !== undefined) t.value = notlar[f.dataset.no];
+  });
+  if (odakNo !== null) {
+    const t = etkiEl.querySelector(`form.karar[data-no="${odakNo}"] textarea`);
+    if (t) { t.focus(); t.setSelectionRange(secim[0], secim[1]); }
+  }
 }
 
 function baglantiYok() {
