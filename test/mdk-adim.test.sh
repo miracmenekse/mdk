@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -176,6 +176,18 @@ c_sorun() {
 c_once() {
   setup "$(plan 'm/a, m/b' '  - Kapı: `test -f cikti.txt`')" 'davran(){ :; }'; commit0; kos ONCE=m/b
   kontrol '[ "$(paste -sd, "$T/modeller.log")" = m/b,m/a ]'
+}
+c_deney() {   # adım 70: istek sayısı, deney etiketi, metrik/durum dosyası dışarıda
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; echo "{\"type\":\"step_finish\",\"part\":{\"tokens\":{\"total\":50},\"cost\":0}}"; }'; commit0
+  kos
+  kontrol '[ "$(metrik "r[0].istek")" = 2 ]'
+  kontrol '[ "$(metrik "r[0].deney")" = null ]'
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0
+  kos MDK_METRIK="$T/dis.jsonl" MDK_DURUM="$T/dis-durum.json" MDK_DENEY=L1
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ ! -e metrikler.jsonl ] && [ ! -e durum.json ]'
+  kontrol 'node -e "const r=JSON.parse(require(\"fs\").readFileSync(\"$T/dis.jsonl\",\"utf8\").trim());process.exit(r.deney===\"L1\"&&r.istek===1&&r.gecti?0:1)"'
+  kontrol 'node -e "const d=JSON.parse(require(\"fs\").readFileSync(\"$T/dis-durum.json\",\"utf8\"));process.exit(d.deney===\"L1\"&&d.durum===\"gecti\"?0:1)"'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
