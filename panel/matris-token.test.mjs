@@ -13,14 +13,18 @@ writeFileSync(join(d, 'metrikler.jsonl'), [
   satir({ adim: 5, deneme: 2, gecti: true, token: 50000, etkin: 12500, istek: 4 }),
   satir({ adim: 5, deneme: 1, gecti: true, token: 9000, etkin: 2100, istek: 1, deney: 'L1' }),
   satir({ adim: 6, deneme: 1, gecti: false, neden: 'yanit_yok', token: 0, etkin: 0, istek: 0 }),
-  satir({ adim: 7, deneme: 1, gecti: true, token: 800 }),                       // eski satır: etkin/istek yok
+  satir({ adim: 7, deneme: 1, gecti: true, token: 800 }),
+  satir({ adim: 8, deneme: 1, gecti: false, neden: 'kota', token: 0, etkin: 0, istek: 0 }),
+  JSON.stringify({ yurutucu: 'claude', model: 'opus', adim: 7, deneme: 1, gecti: true, token: null }),                       // eski satır: etkin/istek yok
 ].join('\n') + '\n');
 
 const m = snapshot(d).matris;
 const taban = m.modeller.find((r) => r.model === 'opencode/a' && !r.deney);
 const l1 = m.modeller.find((r) => r.model === 'opencode/a' && r.deney === 'L1');
 assert.ok(taban && l1, 'deney koşusu ayrı satır olmalı (deney alanı)');
-assert.equal(m.modeller.length, 2);
+assert.equal(m.modeller.length, 3);
+assert.equal(m.modeller.find((r) => r.model === 'opus').hucreler[7].token, null, 'ölçülmemiş token 0 değil null');
+assert.equal(taban.hucreler[8].durum, 'sessiz', 'kota da sessizlik sayılır');
 assert.equal(taban.hucreler[5].token, 42500, 'hücre token = denemelerin etkin toplamı');
 assert.equal(taban.hucreler[5].istek, 11, 'hücre istek = denemelerin istek toplamı');
 assert.equal(taban.hucreler[5].durum, 'cok');

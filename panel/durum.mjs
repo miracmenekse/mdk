@@ -183,7 +183,8 @@ const sayisal = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null);
 
 // hücre: durum + hücredeki TÜM satırların etkin token'ı (yoksa token, o da yoksa 0) ve istek toplamı
 function hucre(durum, deneme, sure, liste) {
-  const token = liste.reduce((t, s) => t + (sayisal(s.etkin) ?? sayisal(s.token) ?? 0), 0);
+  const tokenler = liste.map((s) => sayisal(s.etkin) ?? sayisal(s.token)).filter((x) => x !== null);
+  const token = tokenler.length ? tokenler.reduce((a, b) => a + b, 0) : null;   // hiç ölçülmediyse 0 değil null
   const istekler = liste.map((s) => sayisal(s.istek)).filter((x) => x !== null);
   return { durum, deneme, sure, token, istek: istekler.length ? istekler.reduce((a, b) => a + b, 0) : null };
 }
@@ -209,7 +210,7 @@ function matris(satirlar) {
     .map(({ yurutucu, model, deney, satir }) => {
       const hucreler = {};
       for (const [adim, liste] of Object.entries(satir)) {
-        const gercek = liste.filter((s) => s.neden !== 'yanit_yok');
+        const gercek = liste.filter((s) => s.neden !== 'yanit_yok' && s.neden !== 'kota');   // kota da sağlayıcı sessizliği
         const gecen = gercek.find((s) => s.gecti === true);
         if (gecen) {
           hucreler[adim] = hucre(gecen.deneme === 1 ? 'ilk' : 'cok', gecen.deneme, typeof gecen.sure_sn === 'number' ? gecen.sure_sn : null, liste);
