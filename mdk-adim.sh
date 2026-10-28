@@ -41,6 +41,10 @@ git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
 git check-ignore -q .mdk-log || { echo ".gitignore'a .mdk-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
+# ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (adım 70: 7 deneme boşa gitti)
+if [ -f test/hepsi.sh ] && [ -z "${MDK_ONKONTROL_YOK:-}" ]; then
+  ok=$(env -u MDK_DONMUS bash test/hepsi.sh 2>&1) || { echo "adım $N başlamadı: test/hepsi.sh HEAD'de kırmızı (kapıyı düzelt):"; tail -5 <<<"$ok"; exit 4; }
+fi
 # taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
 if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet\b' <<<"$blok"; then
   echo "adım $N taslak onayı bekliyor: PLAN.md'ye \"- Onay: evet\" ekle"; exit 5
