@@ -613,7 +613,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node test/karar-bekle.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 66. Durumda karar bilgisi
+- [x] 66. Durumda karar bilgisi
   - Değer: 3
   - Bütçe: 300000
   - Ne: `panel/durum.mjs`. `kararlar(dir)` (`./karar.mjs`) bir kez okunur; `etki/.karar-okundu` sayısı (yoksa/bozuksa 0). `sonuc.etki.push` nesnesine üç alan: `onay: !!a.onay`, `karar`: bu adımın (`no` eşit) EN SON (dosyada en sonda) kararı ya da `null`, `alindi`: `karar !== null && karar.ts <= işaret`. Yeni `sonuc.kararIzleyici`: `etki/.karar-izleyici` içeriği pozitif tam sayı pid ise ve `process.kill(pid, 0)` hata vermiyorsa `true`, aksi hâlde `false` (dosya yok, bozuk, süreç yok). Plan yoksa da `kararIzleyici` alanı olur. Başka dosya değişmez (`panel/etki.test.mjs` yeni alanları zaten bekliyor).

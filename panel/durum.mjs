@@ -8,9 +8,10 @@ import { tahmin } from './tahmin.mjs';
 import { gecmis } from './gecmis.mjs';
 import { telemetri } from './telemetri.mjs';
 import { claudeKullanim } from './claude.mjs';
+import { kararlar } from './karar.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -129,16 +130,46 @@ export function snapshot(dir) {
   sonuc.telemetri = telemetri(process.env.OPENCODE_DB || join(homedir(), '.local/share/opencode/opencode.db'), fiyat, resolve(dir));
   sonuc.claude = claudeKullanim(resolve(dir), fiyat);
 
+  let isaret = 0;
+  try {
+    const n = Number(readFileSync(join(dir, 'etki', '.karar-okundu'), 'utf8').trim());
+    if (Number.isFinite(n)) isaret = n;
+  } catch {
+    isaret = 0; // dosya yok ya da okunamıyor
+  }
+
+  // adım başına dosyada en sonda görülen karar geçerlidir
+  const sonKarar = new Map();
+  for (const k of kararlar(dir)) sonKarar.set(k.no, k);
+
+  try {
+    const pid = Number(readFileSync(join(dir, 'etki', '.karar-izleyici'), 'utf8').trim());
+    if (Number.isInteger(pid) && pid > 0) {
+      try {
+        process.kill(pid, 0);
+        sonuc.kararIzleyici = true;
+      } catch {
+        sonuc.kararIzleyici = false; // süreç yok
+      }
+    }
+  } catch {
+    sonuc.kararIzleyici = false; // dosya yok ya da okunamıyor
+  }
+
   if (sonuc.plan) {
     for (const k of sonuc.plan.kategoriler) {
       for (const a of k.adimlar) {
         if (!a.etki) continue;
+        const karar = sonKarar.get(a.no) ?? null;
         sonuc.etki.push({
           no: a.no,
           baslik: a.baslik,
           dosya: a.etki,
           deger: a.deger,
           bitti: !!a.bitti,
+          onay: !!a.onay,
+          karar,
+          alindi: karar !== null && karar.ts <= isaret,
           tahmin: tahmin(satirlar, 1),
         });
       }
