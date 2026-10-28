@@ -649,7 +649,7 @@ Problem ve hipotez: Ücretsiz yürütücülerde sürenin %81'i başarısız dene
 Başarı ölçütü: aynı geçmiş adımlarda (63, 64, 66, 67 ve bir dbeaver-mm K) taban yola göre istek sayısı ve etkin token en az yarıya iner, geçme oranı düşmez, Claude diff incelemesi plana uyumlu der. Ölçümler panelde Model × adım matrisinde (deney satırları, hücrede token ve istek) görünür.
 Kullanıcı kararları (2026-10-28): proje adı her yerde MDK (yapıldı; depo miracmenekse/mdk). Push öncesi token'sız statik regresyon (tüm kapılar); Claude çıktıyı okur, yeşilse push, kırmızıysa geri bildirimle geliştiren modele düzeltme. Süre tavanı net ve kısa, ama arkada çalışan bir süreci (derleme, test) kesmez. Sağlayıcılar (OpenCode, OpenRouter) ayrı; aynı anda birden çok model farklı süreçlerde kullanılabilir; boş model yoksa kullanıcıdan onay alınıp haiku.
 
-- [ ] 70. Metrikte istek sayısı ve deney etiketi
+- [x] 70. Metrikte istek sayısı ve deney etiketi
   - Değer: 4
   - Bütçe: 300000
   - Ne: `mdk-adim.sh`. (1) `topla` dördüncü değer olarak `step_finish` olay sayısını (istek) döner; okuyan iki `read -r` satırı buna uyarlanır. (2) Metrik ve durum dosyası yolu ortamdan: `METRIK=${MDK_METRIK:-metrikler.jsonl}`, `DURUM=${MDK_DURUM:-durum.json}`; `yaz_metrik` ve `yaz_durum` bunlara yazar (deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün). (3) Metrik satırına `"istek":<sayı>` ve `"deney":` alanı: `MDK_DENEY` boş değilse JSON dizesi, boşsa `null`; `yaz_durum`'un yazdığı nesneye de `deney` (boşsa null). Değer JSON için kaçışlanır (node `JSON.stringify` ile). Başka davranış değişmez.

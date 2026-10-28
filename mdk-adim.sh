@@ -13,6 +13,10 @@ SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
 ILK=${ILK:-90}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
 LOGD=.mdk-log; mkdir -p "$LOGD"
+# deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün
+METRIK=${MDK_METRIK:-metrikler.jsonl}
+DURUM=${MDK_DURUM:-durum.json}
+deneyj=$(node -e 'process.stdout.write(process.env.MDK_DENEY?JSON.stringify(process.env.MDK_DENEY):"null")')
 
 # adım bloğu: "- [ ] N." satırından bir sonraki adım/kategoriye kadar
 blok=$(awk -v n="$N" '
@@ -51,14 +55,14 @@ if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet\b' <<<"$blok"
 fi
 
 # küçük JSON yardımcıları (jq yok)
-yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM=$3 node -e '
-  const e=process.env; require("fs").writeFileSync("durum.json", JSON.stringify({adim:+e.D_ADIM,baslik:e.D_BASLIK,
-  model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,ts:Date.now()}))'; }
-yaz_metrik() { M_JSON="$1" node -e 'require("fs").appendFileSync("metrikler.jsonl", process.env.M_JSON+"\n")'; }
-topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç)
-  let t=0,c=0,e=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens; t+=k.total; c+=x.part.cost||0; e+=k.total-(k.cache?.read||0) } } catch {} }
-  console.log(t, c, e)' "$1"; }
+yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM=$3 D_DOSYA=$DURUM node -e '
+  const e=process.env; require("fs").writeFileSync(e.D_DOSYA, JSON.stringify({adim:+e.D_ADIM,baslik:e.D_BASLIK,
+  model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,deney:e.MDK_DENEY||null,ts:Date.now()}))'; }
+yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
+topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
+  let t=0,c=0,e=0,n=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
+    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens; t+=k.total; c+=x.part.cost||0; e+=k.total-(k.cache?.read||0); n++ } } catch {} }
+  console.log(t, c, e, n)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"}}'
@@ -93,7 +97,7 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       elif [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli
-        read -r _ _ tok < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce   # bütçe etkin token: önbellekten yeniden okunan bağlam sayılmaz
+        read -r _ _ tok _ < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce   # bütçe etkin token: önbellekten yeniden okunan bağlam sayılmaz
       fi
       [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
     done
@@ -118,9 +122,9 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       fi
     fi
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
-    read -r tok mal etkin < <(topla "$log"); harcanan=$((harcanan + etkin))
+    read -r tok mal etkin istek < <(topla "$log"); harcanan=$((harcanan + etkin))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
