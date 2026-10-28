@@ -69,14 +69,14 @@ else
   export OPENCODE_CONFIG_CONTENT="{$IZIN}"; SADE_IPUCU=""
 fi
 
-ipucu=""; SAGLAYICI=1; durdu=""; harcanan=0; sorun_icerik=""
+ipucu=""; SAGLAYICI=1; durdu=""; kota_goruldu=0; harcanan=0; sorun_icerik=""
 for m in "${MODELLER[@]}"; do
   harcanan=0   # bütçe model başına: aşan model bırakılır, sıradaki kendi bütçesiyle başlar
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
     # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
-    setsid opencode run -m "$m" --title "adim-$N" --format json \
+    setsid opencode run -m "$m" --title "adim-$N" --format json --print-logs --log-level ERROR \
       "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
 $SADE_IPUCU
@@ -85,7 +85,8 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
     while kill -0 "$pid" 2>/dev/null; do
       sleep "$POLL"
       el=$(( $(date +%s) - t0 ))
-      if [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
+      if grep -q "Free usage limit" "$log.err" 2>/dev/null; then neden=kota   # kota dolu: açık hatayı stderr'de gör, ILK'yı bekleme
+      elif [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli
         read -r _ _ tok < <(topla "$log"); [ $((harcanan + tok)) -gt "$butce" ] && neden=butce   # bütçe etkin token: önbellekten yeniden okunan bağlam sayılmaz
@@ -129,16 +130,20 @@ $(tail -c 1500 "$log.kapi")" ;;
 $sorun_icerik" ;;
     esac
     git reset -q --hard "$CP"; git clean -fdq    # temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
+    [ "$neden" = kota ] && kota_goruldu=1
     echo "adım $N: $m deneme $d başarısız ($neden)"
-    [ "$neden" = yanit_yok ] || SAGLAYICI=0
+    case $neden in yanit_yok|kota) ;; *) SAGLAYICI=0 ;; esac   # kota/sessizlik model değil sağlayıcı sorunu: eskale etme
     [ "$neden" = butce ] && { durdu=butce; break; }   # bu modelin bütçesi bitti: sıradaki modele geç
-    [ "$neden" = yanit_yok ] && break   # sessiz modeli yeniden denemek boşuna: sıradaki modele geç
+    case $neden in yanit_yok|kota) break ;; esac   # sessiz/kotalı modeli yeniden denemek boşuna: sıradaki modele geç
   done
 done
 if [ "$durdu" = butce ]; then
   yaz_durum "" 0 eskale; echo "adım $N eskale: modeller tükendi, en az biri token bütçesini ($butce/model) aştı"; exit 2
 fi
 if [ $SAGLAYICI = 1 ]; then
+  if [ "$kota_goruldu" = 1 ]; then
+    yaz_durum "" 0 saglayici; echo "adım $N: ücretsiz kota dolu (tüm modeller kota/sessizlik verdi)"; exit 6
+  fi
   yaz_durum "" 0 saglayici; echo "adım $N: sağlayıcı yanıt vermiyor (tüm modeller $ILK sn içinde olay üretmedi)"; exit 6
 fi
 yaz_durum "" 0 eskale; echo "adım $N eskale: tüm modeller tükendi"; exit 2

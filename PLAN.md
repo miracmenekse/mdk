@@ -579,7 +579,7 @@ Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve ka
   - Kapı: `grep -A1 '^## Alan: sunum' personalar.md | grep -q 'Durum: denendi'`
   - Kapı: `grep -q '^## Karar notu: Persona denemesi 5' PLAN.md`
 
-- [ ] 62. Ücretsiz kota dolunca modeli hemen bırak
+- [x] 62. Ücretsiz kota dolunca modeli hemen bırak
   - Değer: 4
   - Bütçe: 300000
   - Ne: `op-adim.sh`. Kota dolunca opencode "Free usage limit reached" hatasını yalnızca kendi log'una yazıp sessizce yeniden dener; şimdi bu durum `ILK` (90 sn) sonra `yanit_yok` oluyor. (1) `opencode run` satırına `--print-logs --log-level ERROR` ekle (hata satırı böylece stderr'e, yani mevcut `"$log.err"` dosyasına düşer; stdout JSON'u değişmez). (2) Bekleme döngüsünde `yanit_yok` kontrolünden ÖNCE: `grep -q "Free usage limit" "$log.err"` ise `neden=kota` (süreç grubu diğer nedenlerdeki gibi öldürülür). (3) `kota` da `yanit_yok` gibi davranır: `SAGLAYICI`'yi 0 yapmaz ve aynı modeli yeniden denemeden sıradaki modele geçer (mevcut `[ "$neden" = yanit_yok ]` iki satırını `yanit_yok`|`kota` kapsayacak biçimde genişlet). (4) Tüm modeller `yanit_yok`/`kota` ise mevcut çıkış 6 korunur; mesaj kota görüldüyse "ücretsiz kota dolu" ifadesini içerir (ör. bir `kota_goruldu=1` değişkeniyle). Eskale (çıkış 2) yapılmaz. Başka dosya değişmez.
