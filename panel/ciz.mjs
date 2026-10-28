@@ -379,6 +379,12 @@ export function dengeHtml(tel, cl) {
     '</div>';
 }
 
+// kısa token: 1000 ve üstü tek ondalıklı k (42,5k), altı olduğu gibi
+function kisaToken(n) {
+  if (n < 1000) return String(n);
+  return (n / 1000).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'k';
+}
+
 // model × adım matrisi; renk tek başına anlam taşımaz, hücrede simge + sayı var
 export function matrisHtml(m) {
   if (!m || !m.adimlar?.length || !m.modeller?.length) return '<span class="bos">metrik yok</span>';
@@ -392,16 +398,25 @@ export function matrisHtml(m) {
       sessiz: ['○', 'yalnız kota sessizliği (sağlayıcı yanıt vermedi)'],
     }[h.durum] || ['', 'bilinmiyor'];
     const sinif = ['ilk', 'cok', 'kaldi', 'sessiz'].includes(h.durum) ? h.durum : 'bos';
-    return `<td class="hucre ${sinif}" title="adım ${esc(no)}: ${esc(title)}">${esc(metin)}</td>`;
+    const token = Number.isFinite(h.token) ? h.token : null;
+    const istek = Number.isFinite(h.istek) ? h.istek : null;
+    const altTok = token == null ? '' : ` · ${token.toLocaleString('tr-TR')} token`;
+    const altIstek = istek == null ? '' : ` · ${istek.toLocaleString('tr-TR')} istek`;
+    const kucuk = token == null ? '' : `<small>${esc(kisaToken(token))}</small>`;
+    return `<td class="hucre ${sinif}" title="adım ${esc(no)}: ${esc(title)}${esc(altTok)}${esc(altIstek)}">${esc(metin)}${kucuk}</td>`;
   };
-  const satirlar = m.modeller.map((r) => '<tr>' +
-    `<th class="model">${esc(r.model.startsWith(`${r.yurutucu || 'opencode'}/`) ? r.model : `${r.yurutucu || 'opencode'}/${r.model}`)}</th>` +
-    m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
-    '</tr>').join('');
+  const satirlar = m.modeller.map((r) => {
+    const ad = r.model.startsWith(`${r.yurutucu || 'opencode'}/`) ? r.model : `${r.yurutucu || 'opencode'}/${r.model}`;
+    const etiket = r.deney ? `${ad} · ${r.deney}` : ad;
+    return '<tr>' +
+      `<th class="model">${esc(etiket)}</th>` +
+      m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
+      '</tr>';
+  }).join('');
   return '<div class="kaydir"><table class="matris"><thead><tr><th class="model">model</th>' +
     m.adimlar.map((no) => `<th>${esc(no)}</th>`).join('') +
     `</tr></thead><tbody>${satirlar}</tbody></table></div>` +
-    '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi</p>';
+    '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi · alttaki sayı = harcanan etkin token</p>';
 }
 
 // karar durumu: son karar varsa özet + iletim hâli

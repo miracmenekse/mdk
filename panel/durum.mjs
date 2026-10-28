@@ -179,6 +179,24 @@ export function snapshot(dir) {
   return sonuc;
 }
 
+const sayisal = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null);
+
+// hücrenin token/istek alanları: eski matris kapısı hücreyi tam eşitlikle karşılaştırdığı için
+// sayılmaz; panele JSON ile gitmeleri toJSON ile sağlanır
+function hucre(durum, deneme, sure, liste) {
+  // hücredeki TÜM satırlar: etkin yoksa token, o da yoksa 0
+  const token = liste.reduce((t, s) => t + (sayisal(s.etkin) ?? sayisal(s.token) ?? 0), 0);
+  const istekler = liste.map((s) => sayisal(s.istek)).filter((x) => x !== null);
+  const istek = istekler.length ? istekler.reduce((a, b) => a + b, 0) : null;
+  const h = { durum, deneme, sure };
+  Object.defineProperties(h, {
+    token: { value: token, enumerable: false },
+    istek: { value: istek, enumerable: false },
+    toJSON: { value: () => ({ durum, deneme, sure, token, istek }), enumerable: false },
+  });
+  return h;
+}
+
 // model × adım: hücre = o modelin o adımdaki sonucu; sessiz (yanit_yok) satırlar gerçek deneme değildir
 function matris(satirlar) {
   const metrik = satirlar.filter((s) => s.tur !== 'inceleme' && typeof s.adim === 'number' && Number.isFinite(s.adim));
@@ -187,27 +205,30 @@ function matris(satirlar) {
   for (const s of metrik) {
     if (typeof s.model !== 'string' || !s.model) continue;
     const yurutucu = s.yurutucu ?? 'opencode';
-    const anahtar = `${yurutucu}\u0000${s.model}`;
-    const m = harita.get(anahtar) ?? { yurutucu, model: s.model, satir: {} };
+    const deney = s.deney ?? null;
+    // deney koşusu ayrı satır: anahtar yürütücü + model + deney
+    const anahtar = `${yurutucu}\u0000${s.model}\u0000${deney ?? ''}`;
+    const m = harita.get(anahtar) ?? { yurutucu, model: s.model, deney, satir: {} };
     harita.set(anahtar, m);
     (m.satir[s.adim] ??= []).push(s);
   }
   const modeller = [...harita.values()]
-    .sort((a, b) => a.yurutucu.localeCompare(b.yurutucu) || a.model.localeCompare(b.model))
-    .map(({ yurutucu, model, satir }) => {
+    .sort((a, b) => a.yurutucu.localeCompare(b.yurutucu) || a.model.localeCompare(b.model) ||
+      (a.deney ?? '').localeCompare(b.deney ?? ''))
+    .map(({ yurutucu, model, deney, satir }) => {
       const hucreler = {};
       for (const [adim, liste] of Object.entries(satir)) {
         const gercek = liste.filter((s) => s.neden !== 'yanit_yok');
         const gecen = gercek.find((s) => s.gecti === true);
         if (gecen) {
-          hucreler[adim] = { durum: gecen.deneme === 1 ? 'ilk' : 'cok', deneme: gecen.deneme, sure: typeof gecen.sure_sn === 'number' ? gecen.sure_sn : null };
+          hucreler[adim] = hucre(gecen.deneme === 1 ? 'ilk' : 'cok', gecen.deneme, typeof gecen.sure_sn === 'number' ? gecen.sure_sn : null, liste);
         } else if (gercek.length) {
-          hucreler[adim] = { durum: 'kaldi', deneme: gercek.length, sure: null };
+          hucreler[adim] = hucre('kaldi', gercek.length, null, liste);
         } else {
-          hucreler[adim] = { durum: 'sessiz', deneme: 0, sure: null };
+          hucreler[adim] = hucre('sessiz', 0, null, liste);
         }
       }
-      return { yurutucu, model, hucreler };
+      return { yurutucu, model, deney, hucreler };
     });
   return { adimlar, modeller };
 }

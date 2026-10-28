@@ -656,7 +656,7 @@ Kullanıcı kararları (2026-10-28): proje adı her yerde MDK (yapıldı; depo m
   - Kapı: `bash test/mdk-adim.test.sh deney temel`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 71. Matriste token, istek ve deney satırları
+- [x] 71. Matriste token, istek ve deney satırları
   - Değer: 5
   - Bütçe: 300000
   - Ne: `panel/durum.mjs` `matris()`: satır anahtarı yürütücü + model + `deney` (yoksa ayrı satır değil; satır nesnesine `deney: s.deney ?? null`). Her hücreye `token` (hücredeki TÜM satırların `etkin ?? token ?? 0` toplamı) ve `istek` (satırlarda `istek` sayısı varsa toplamı, hiçbiri yoksa `null`). `panel/ciz.mjs` `matrisHtml`: satır adı deney varsa `model · deney` (kaçışlı); hücre metninde simgenin altında küçük `<small>` ile kısa token: 1000 ve üstü `tr-TR` tek ondalıklı `k` (42500 → `42,5k`), altı olduğu gibi; `title` sonuna `· <token tr-TR> token` ve istek biliniyorsa `· <n> istek`. Lejant'a "alttaki sayı = harcanan etkin token" eklenir. CSS: hücredeki `small` blok, küçük, soluk (mevcut değişkenler). Başka dosya değişmez.
