@@ -32,7 +32,7 @@ Modeller: a/x
 writeFileSync(join(d, 'metrikler.jsonl'), JSON.stringify({ model: 'a/x', deneme: 1, gecti: true, token: 1000, maliyet: 0, sure_sn: 5 }) + '\n');
 const e = snapshot(d).etki;
 assert.equal(e.length, 2);
-assert.deepEqual(e[0], { no: 1, baslik: 'Raporu değiştir', dosya: 'etki/rapor.html', deger: 5, bitti: false, tahmin: { token: 1000, maliyet: 0, guven: 'dusuk' } });
+assert.deepEqual(e[0], { no: 1, baslik: 'Raporu değiştir', dosya: 'etki/rapor.html', deger: 5, bitti: false, onay: false, karar: null, alindi: false, tahmin: { token: 1000, maliyet: 0, guven: 'dusuk' } });
 assert.equal(e[1].no, 2);
 assert.equal(e[1].bitti, true);
 assert.equal(e[1].dosya, 'etki/eski.html');
