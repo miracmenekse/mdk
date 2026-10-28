@@ -592,7 +592,7 @@ Başarı ölçütü: kullanıcı bir taslağı yalnız panelden onaylar ve adım
 Akış: kart → (isteğe bağlı) not → Onayla | Reddet | Yorum (1-2 tık). Hata: kart altında kırmızı tek satır, yazılan not silinmez. Güvenlik: sunucu yalnız `127.0.0.1`; POST yalnız `application/json` (başka sitenin basit form isteği reddedilir), Host yerel olmalı, Origin varsa Host ile aynı olmalı.
 Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tur","metin"}`), `etki/.karar-okundu` (Claude'un aldığı son `ts`), `etki/.karar-izleyici` (izleyen `karar-bekle.mjs` sürecinin pid'i).
 
-- [ ] 63. Karar modülü
+- [x] 63. Karar modülü
   - Değer: 3
   - Bütçe: 300000
   - Ne: Yeni `panel/karar.mjs` (yalnız `node:fs`, `node:path`). `export function kararEkle(kok, girdi, simdi = Date.now())`: `girdi` nesne olmalı; `no` pozitif tam sayı (`Number.isInteger`, `> 0`; metin "63" kabul edilmez); `tur` `'onay' | 'red' | 'yorum'`; `metin` verilmezse `''`, verilirse string olmalı, `trim()` edilir, en çok 2000 karakter; `red` ve `yorum`da kırpılmış metin boş olamaz. Geçersizse Türkçe mesajlı `Error` fırlatır ve dosyaya dokunmaz. Geçerliyse `{ ts: simdi, no, tur, metin }` nesnesini (bu anahtar sırasıyla) `join(kok, 'etki', 'kararlar.jsonl')` dosyasına `JSON.stringify(...) + '\n'` olarak ekler (`mkdirSync(..., { recursive: true })`, `appendFileSync`) ve nesneyi döner. `export function kararlar(kok)`: dosya yoksa `[]`; satır satır `JSON.parse`, bozuk/boş satırı atlar; dosya sırasıyla dizi döner. Başka dosya değişmez.
