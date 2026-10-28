@@ -1,11 +1,13 @@
 // Canlı sunucu: REST + SSE ile panel verisini 127.0.0.1'de sunar.
 
 import { createServer } from 'node:http';
-import { watch, existsSync, readFileSync, realpathSync } from 'node:fs';
+import { watch, existsSync, readFileSync, realpathSync, mkdirSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
+import { parse } from './plan.mjs';
+import { kararEkle } from './karar.mjs';
 
 const IP = '127.0.0.1';
 
@@ -61,17 +63,132 @@ export async function baslat(dir, port, { calistir } = {}) {
     fetchSaati.unref();
   }
 
+  // etki/ altındaki kararlar ve taslaklar da paneli yeniden çizdirir.
+  // Dizin açılışta yoksa sonradan oluştuğunda (karar ya da elle) izleme başlar;
+  // böylece testlerin kendi mkdirSync çağrısı EEXIST ile düşmez.
+  let etkiIzleyici = null;
+  const etkiIzle = () => {
+    if (etkiIzleyici) return;
+    try {
+      mkdirSync(join(kok, 'etki'), { recursive: true });
+      etkiIzleyici = watch(join(kok, 'etki'), () => planla());
+    } catch {
+      // etki/ oluşturulamıyor ya da izlenemiyorsa karar yine kaydedilir
+    }
+  };
+
   let izleyici = null;
   try {
     izleyici = watch(kok, (olay, dosya) => {
+      if (dosya === 'etki') etkiIzle();
       if (!dosya || izlenecekler.includes(join(kok, dosya))) planla();
     });
   } catch {
     // dizin yok ya da izlenemiyorsa SSE yalnızca ilk anlık görüntüyü gönderir
   }
+  if (existsSync(join(kok, 'etki'))) etkiIzle();
+
+  const hata = (yanit, kod, neden) => {
+    yanit.writeHead(kod, { 'content-type': 'application/json; charset=utf-8' });
+    yanit.end(JSON.stringify({ hata: neden }));
+  };
+
+  const kararAl = (istek, yanit) => {
+    const host = String(istek.headers.host || '');
+    let ana;
+    try {
+      ana = new URL(`http://${host}`).hostname;
+    } catch {
+      ana = '';
+    }
+    if (ana !== '127.0.0.1' && ana !== 'localhost') {
+      hata(yanit, 403, 'istek yerel adresten gelmiyor');
+      return;
+    }
+    const origin = istek.headers.origin;
+    if (origin !== undefined && origin !== `http://${host}`) {
+      hata(yanit, 403, 'istek kaynağı bu sunucu değil');
+      return;
+    }
+
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 4096) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume(); // kalan gövdeyi boşalt, soketi kapatma
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      let plan;
+      try {
+        plan = parse(readFileSync(join(kok, 'PLAN.md'), 'utf8'));
+      } catch {
+        hata(yanit, 404, 'PLAN.md okunamadı');
+        return;
+      }
+      let adim = null;
+      for (const kategori of plan.kategoriler) {
+        for (const a of kategori.adimlar) {
+          if (a.no === girdi?.no) adim = a;
+        }
+      }
+      if (!adim || !adim.etki || adim.bitti) {
+        hata(yanit, 404, 'adım yok, etki taşımıyor ya da bitmiş');
+        return;
+      }
+
+      let karar;
+      try {
+        karar = kararEkle(kok, girdi);
+      } catch (e) {
+        hata(yanit, 400, e.message);
+        return;
+      }
+
+      etkiIzle();
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true, karar }));
+      planla();
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
 
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
+
+    if (istek.method === 'POST' && pathname === '/api/karar') {
+      kararAl(istek, yanit);
+      return;
+    }
 
     if (istek.method !== 'GET') {
       yanit.writeHead(405).end();
@@ -192,6 +309,7 @@ export async function baslat(dir, port, { calistir } = {}) {
       clearInterval(depoSaati);
       clearInterval(fetchSaati);
       izleyici?.close();
+      etkiIzleyici?.close();
       for (const res of clientler) res.end();
       clientler.clear();
       sunucu.closeAllConnections();

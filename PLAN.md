@@ -599,7 +599,7 @@ Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tu
   - Kapı: `node panel/karar.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 64. Sunucuda karar rotası
+- [x] 64. Sunucuda karar rotası
   - Değer: 4
   - Bütçe: 300000
   - Ne: `panel/sunucu.mjs`. `if (istek.method !== 'GET')` bloğundan ÖNCE: `istek.method === 'POST' && pathname === '/api/karar'` ise ayrı bir işleve (aynı dosyada, ör. `kararAl(istek, yanit)`) git; diğer GET dışı istekler (OPTIONS dahil) 405 kalır. Sıra ve kodlar: (1) `Host` başlığının ana bilgisayar kısmı `127.0.0.1` ya da `localhost` değilse 403; `Origin` başlığı varsa ve `http://<Host başlığı>` değilse 403. (2) `content-type` `application/json` ile başlamıyorsa 415. (3) Gövde 4096 baytı geçerse 413: yanıtı hemen yaz, kalan gövdeyi `istek.resume()` ile boşalt, soketi kapatma (`destroy` yok; istemci ECONNRESET almasın). (4) `JSON.parse` hatasında 400. (5) Plan (`parse(readFileSync(join(kok,'PLAN.md')))`, `panel/plan.mjs`) içinde `no`'lu adım yoksa, `etki`'si yoksa ya da `bitti` ise 404. (6) `kararEkle(kok, girdi)` (`panel/karar.mjs`) hata fırlatırsa 400. Başarıda 200 `{"tamam":true,"karar":{...}}` ve `planla()` çağrılır (SSE). Ayrıca panel yeniden çizilsin diye `etki/` dizini de izlenir: başlangıçta `mkdirSync(join(kok,'etki'), { recursive: true })` (try içinde), ikinci bir `watch(join(kok,'etki'), () => planla())` (try içinde; `kapat()`'ta o da kapanır). 413 dışındaki hatalarda gövde `{"hata":"<Türkçe neden>"}`, `content-type: application/json; charset=utf-8`. PLAN.md'ye yazılmaz. Başka dosya değişmez.
