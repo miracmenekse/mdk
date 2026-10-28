@@ -586,6 +586,63 @@ Problem ve hipotez: kota dolu model persona turunda hiç çıktı vermiyor ve ka
   - Kapı: `bash test/op-adim.test.sh kota`
   - Kapı: `bash test/hepsi.sh`
 
+### Faz 9: panelden taslak kararı (2026-10-28)
+Problem ve hipotez: kullanıcı etki taslağını panelde görüyor ama onay/red/yorumu CLI sohbetine yazmak zorunda; iki pencere arasında gidip geliyor ve taslak onayı akışı tıkanıyor. Hipotez: karar panelden bir tıkla bir dosyaya (etki/kararlar.jsonl) düşer, açık Claude oturumu bu dosyayı Monitor ile izler; kullanıcı CLI'a hiç yazmadan onay → adım yürütülür, red/yorum → taslak düzeltilir. Persona turu (`persona-tur/20261028-113106`, 3/3 geçerli): üç kart da dosya kuyruğunda birleşti; ayrışan eksenler (1) "kuyrukta mı, Claude aldı mı" açıkça görünmeli, (2) PLAN.md'yi panel değil Claude yazmalı (çoklu yazıcı çakışması, op-adim kurcalama tespiti). Kullanıcı kararı: dosya + Claude izler; red ve yorum ayrı tür.
+Başarı ölçütü: kullanıcı bir taslağı yalnız panelden onaylar ve adım CLI'a yazmadan başlar; red notuyla gönderilen taslak Claude tarafından düzeltilip panelde yenilenir. Kart her zaman üç durumdan birini söyler: Claude aldı / Claude'a iletiliyor / kuyrukta (oturum açılınca işlenir).
+Akış: kart → (isteğe bağlı) not → Onayla | Reddet | Yorum (1-2 tık). Hata: kart altında kırmızı tek satır, yazılan not silinmez. Güvenlik: sunucu yalnız `127.0.0.1`; POST yalnız `application/json` (başka sitenin basit form isteği reddedilir), Host yerel olmalı, Origin varsa Host ile aynı olmalı.
+Dosyalar (hepsi `.gitignore`): `etki/kararlar.jsonl` (her satır `{"ts","no","tur","metin"}`), `etki/.karar-okundu` (Claude'un aldığı son `ts`), `etki/.karar-izleyici` (izleyen `karar-bekle.mjs` sürecinin pid'i).
+
+- [ ] 63. Karar modülü
+  - Değer: 3
+  - Bütçe: 300000
+  - Ne: Yeni `panel/karar.mjs` (yalnız `node:fs`, `node:path`). `export function kararEkle(kok, girdi, simdi = Date.now())`: `girdi` nesne olmalı; `no` pozitif tam sayı (`Number.isInteger`, `> 0`; metin "63" kabul edilmez); `tur` `'onay' | 'red' | 'yorum'`; `metin` verilmezse `''`, verilirse string olmalı, `trim()` edilir, en çok 2000 karakter; `red` ve `yorum`da kırpılmış metin boş olamaz. Geçersizse Türkçe mesajlı `Error` fırlatır ve dosyaya dokunmaz. Geçerliyse `{ ts: simdi, no, tur, metin }` nesnesini (bu anahtar sırasıyla) `join(kok, 'etki', 'kararlar.jsonl')` dosyasına `JSON.stringify(...) + '\n'` olarak ekler (`mkdirSync(..., { recursive: true })`, `appendFileSync`) ve nesneyi döner. `export function kararlar(kok)`: dosya yoksa `[]`; satır satır `JSON.parse`, bozuk/boş satırı atlar; dosya sırasıyla dizi döner. Başka dosya değişmez.
+  - Kapı: `node panel/karar.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 64. Sunucuda karar rotası
+  - Değer: 4
+  - Bütçe: 300000
+  - Ne: `panel/sunucu.mjs`. `if (istek.method !== 'GET')` bloğundan ÖNCE: `istek.method === 'POST' && pathname === '/api/karar'` ise ayrı bir işleve (aynı dosyada, ör. `kararAl(istek, yanit)`) git; diğer GET dışı istekler (OPTIONS dahil) 405 kalır. Sıra ve kodlar: (1) `Host` başlığının ana bilgisayar kısmı `127.0.0.1` ya da `localhost` değilse 403; `Origin` başlığı varsa ve `http://<Host başlığı>` değilse 403. (2) `content-type` `application/json` ile başlamıyorsa 415. (3) Gövde 4096 baytı geçerse 413: yanıtı hemen yaz, kalan gövdeyi `istek.resume()` ile boşalt, soketi kapatma (`destroy` yok; istemci ECONNRESET almasın). (4) `JSON.parse` hatasında 400. (5) Plan (`parse(readFileSync(join(kok,'PLAN.md')))`, `panel/plan.mjs`) içinde `no`'lu adım yoksa, `etki`'si yoksa ya da `bitti` ise 404. (6) `kararEkle(kok, girdi)` (`panel/karar.mjs`) hata fırlatırsa 400. Başarıda 200 `{"tamam":true,"karar":{...}}` ve `planla()` çağrılır (SSE). Ayrıca panel yeniden çizilsin diye `etki/` dizini de izlenir: başlangıçta `mkdirSync(join(kok,'etki'), { recursive: true })` (try içinde), ikinci bir `watch(join(kok,'etki'), () => planla())` (try içinde; `kapat()`'ta o da kapanır). 413 dışındaki hatalarda gövde `{"hata":"<Türkçe neden>"}`, `content-type: application/json; charset=utf-8`. PLAN.md'ye yazılmaz. Başka dosya değişmez.
+  - Kapı: `node panel/karar-sunucu.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 65. Karar izleyici betiği
+  - Değer: 4
+  - Bütçe: 300000
+  - Ne: Yeni `karar-bekle.mjs` (proje kökünde, yalnız `node:` modülleri; `kararlar()` için `./panel/karar.mjs`'yi içe aktar). Kullanım yorumu: `node karar-bekle.mjs [dizin] [--bir-kez]` (dizin = `--` ile başlamayan ilk argüman, yoksa `.`); Claude oturumu bunu Monitor ile çalıştırır. İşaret `etki/.karar-okundu` (tek sayı; yoksa ya da bozuksa 0). Okunmamış = `ts > işaret` olan kararlar, dosya sırasıyla; her biri için stdout'a tek satır: metin boşsa `adım <no> <tur>`, değilse `adım <no> <tur>: <metin>` (metindeki `\r?\n` dizileri tek boşluk); basınca işareti görülen en büyük `ts`'ye yazar. `--bir-kez`: bir kez yap, çık (0), pid dosyası yazma. Aksi hâlde: başta `etki/.karar-izleyici`'ye `process.pid` yaz (`mkdirSync` recursive), bir kez tara, sonra her 1 sn tara (`setInterval`); `SIGTERM`/`SIGINT`'te pid dosyasını sil ve çık (0). Başka dosya değişmez.
+  - Kapı: `node test/karar-bekle.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 66. Durumda karar bilgisi
+  - Değer: 3
+  - Bütçe: 300000
+  - Ne: `panel/durum.mjs`. `kararlar(dir)` (`./karar.mjs`) bir kez okunur; `etki/.karar-okundu` sayısı (yoksa/bozuksa 0). `sonuc.etki.push` nesnesine üç alan: `onay: !!a.onay`, `karar`: bu adımın (`no` eşit) EN SON (dosyada en sonda) kararı ya da `null`, `alindi`: `karar !== null && karar.ts <= işaret`. Yeni `sonuc.kararIzleyici`: `etki/.karar-izleyici` içeriği pozitif tam sayı pid ise ve `process.kill(pid, 0)` hata vermiyorsa `true`, aksi hâlde `false` (dosya yok, bozuk, süreç yok). Plan yoksa da `kararIzleyici` alanı olur. Başka dosya değişmez (`panel/etki.test.mjs` yeni alanları zaten bekliyor).
+  - Kapı: `node panel/karar-durum.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 67. Etki kartında karar formu
+  - Değer: 4
+  - Bütçe: 300000
+  - Etki: etki/etki-karar.html
+  - Ne: `panel/ciz.mjs`. `etkiHtml(etki, { gecmisAcik = false, izleyici = false } = {})`; `izleyici` `etkiKart`'a geçer. `etkiKart` sonuna (`.kroki`'den sonra, kart kapanmadan): `e.bitti` ise hiçbir şey; `e.onay` ise `<p class="karar-durum">onaylandı</p>` (form yok); aksi hâlde `<form class="karar" data-no="${no}">` içinde `<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>`, üç düğme tam şu biçimde: `<button type="submit" name="tur" value="onay">Onayla</button>`, `value="red">Reddet</button>`, `value="yorum">Yorum</button>`, sonra `<p class="karar-durum">…</p>`. Durum satırı: `e.karar` yoksa boş; varsa `son karar: <tur> · <saat tr-TR SS:DD> · "<metin>"` (metin boşsa tırnaklı kısım yok, `esc` ile kaçışlı) ve ardından `— Claude aldı` (`e.alindi`), değilse `— Claude'a iletiliyor` (`izleyici`), değilse `— kuyrukta, Claude oturumu açılınca işlenir`. Başka dosya değişmez.
+  - Kapı: `node panel/karar-ciz.test.mjs`
+  - Kapı: `node panel/ciz.test.mjs`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 68. Panelde karar gönderimi
+  - Değer: 4
+  - Bütçe: 300000
+  - Ne: `panel/index.html`. (1) Çizim: `etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik, izleyici: d.kararIzleyici })`; bu satırdan hemen önce `etkiEl.querySelectorAll('form.karar textarea')` değerlerini formun `data-no`'suna göre bir nesneye sakla, hemen sonra aynı `data-no`'lu yeni textarea'lara geri yaz (odaktaki alanın odağını ve imleç yerini de geri ver), böylece SSE güncellemesi yazılan notu silmez. (2) `etkiEl.addEventListener('submit', async (e) => { ... })`: `e.target.closest('form.karar')` değilse çık; `e.preventDefault()`; `tur = e.submitter.value`, `no = Number(form.dataset.no)`, `metin = textarea.value`; formdaki düğmeler `disabled = true`, `.karar-durum`'a "gönderiliyor…"; `fetch('/api/karar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ no, tur, metin }) })`; yanıt `ok` ise textarea temizlenir, durum "gönderildi"; değilse yanıtın `.hata` alanı (JSON değilse HTTP kodu) `.karar-durum`'a hata sınıfıyla yazılır, not silinmez; ağ hatası `catch` ile "panel sunucusuna ulaşılamadı"; `finally` düğmeler `disabled = false`. (3) CSS: `form.karar { … }` (textarea tam genişlik, düğmeler yan yana, dar ekranda sarar) ve `.karar-durum { … }` (küçük, soluk; hata için ayrı renk sınıfı, mevcut değişkenlerle). Başka dosya değişmez.
+  - Kapı: `node panel/karar-ui.test.mjs`
+  - Kapı: `node panel/arayuz.test.mjs etki`
+  - Kapı: `bash test/hepsi.sh`
+
+- [ ] 69. Claude tarafı: kararı izle ve işle
+  - Yürütücü: claude
+  - Ne: `CLAUDE.md`'ye "Panelden karar" bölümü: Etki taslağı onay bekleyen bir adım varken Claude `node karar-bekle.mjs` komutunu Monitor ile başlatır (`timeout_ms` en çok 30 dk; süre dolunca yeniden kurar, arada kart "kuyrukta" görünür ve karar kaybolmaz); oturum başında önce `node karar-bekle.mjs --bir-kez` ile kuyrukta kalanları alır. Gelen satıra göre: `onay` → adımın altına `- Onay: evet` yaz, commit et, `./op-adim.sh <no>`; `red` → nota göre etki taslağını düzelt, kullanıcıya tek satır bildir (panel kartı yenilenir); `yorum` → soruysa yanıtla, istekse taslağı düzelt; onaylamaz. `ba-pm-bakis` §4'e "karar panelden gelir" notu. Uçtan uca deneme: geçici bir taslaklı adımla panelden red ve onay gönder, Monitor bildirimini ve kart durumunu (kuyrukta → iletiliyor → Claude aldı) Firefox ekran görüntüsüyle doğrula; geçici adımı sil.
+  - Kapı: `grep -q '^## Panelden karar' CLAUDE.md`
+  - Kapı: `bash test/hepsi.sh`
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).

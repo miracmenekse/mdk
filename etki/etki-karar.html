@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: panelden karar</title>
+<style>
+body{font-family:system-ui,sans-serif;color:#333;margin:1rem}figure{margin:0 0 1.25rem}
+figcaption{font-size:.85rem;color:#666;margin-bottom:.35rem}
+svg{display:block;width:100%;max-width:640px;height:auto;background:#f7f7f7;border:1px solid #ccc}
+.degisen{stroke:#c2410c;fill:#ffedd5}.degisen-text{fill:#9a3412}
+</style></head><body>
+<figure><figcaption>Önce: kart yalnız gösterir; onay/red/yorum CLI sohbetine yazılır</figcaption>
+<svg id="once" viewBox="0 0 640 190" role="img" aria-label="Önce: etki kartı yalnız gösterir">
+<rect x="16" y="16" width="608" height="160" fill="#eeeeee" stroke="#bdbdbd"/>
+<text x="28" y="40" font-size="13" fill="#616161">63  Panelden karar  ★★★★☆  düşük güven</text>
+<text x="28" y="60" font-size="12" fill="#757575">~120.000 token</text>
+<rect x="28" y="76" width="280" height="88" fill="#e0e0e0" stroke="#bdbdbd"/><text x="36" y="94" font-size="12" fill="#616161">önce</text>
+<rect x="324" y="76" width="288" height="88" fill="#e0e0e0" stroke="#bdbdbd"/><text x="332" y="94" font-size="12" fill="#616161">sonra</text>
+</svg></figure>
+<figure><figcaption>Sonra: kartın altında not kutusu + Onayla / Reddet / Yorum; gönderince durum satırı, açık Claude oturumu kararı alıp devam eder</figcaption>
+<svg id="sonra" viewBox="0 0 640 320" role="img" aria-label="Sonra: etki kartında karar formu">
+<rect x="16" y="16" width="608" height="290" fill="#eeeeee" stroke="#bdbdbd"/>
+<text x="28" y="40" font-size="13" fill="#616161">63  Panelden karar  ★★★★☆  düşük güven</text>
+<text x="28" y="60" font-size="12" fill="#757575">~120.000 token</text>
+<rect x="28" y="76" width="280" height="88" fill="#e0e0e0" stroke="#bdbdbd"/><text x="36" y="94" font-size="12" fill="#616161">önce</text>
+<rect x="324" y="76" width="288" height="88" fill="#e0e0e0" stroke="#bdbdbd"/><text x="332" y="94" font-size="12" fill="#616161">sonra</text>
+<rect class="degisen" x="28" y="178" width="584" height="54"/>
+<text x="38" y="200" font-size="12" class="degisen-text">not (red ve yorumda zorunlu): "butonlar sağda olsun"</text>
+<rect class="degisen" x="28" y="242" width="90" height="28"/><text x="44" y="261" font-size="13" class="degisen-text">Onayla</text>
+<rect class="degisen" x="128" y="242" width="90" height="28"/><text x="146" y="261" font-size="13" class="degisen-text">Reddet</text>
+<rect class="degisen" x="228" y="242" width="90" height="28"/><text x="250" y="261" font-size="13" class="degisen-text">Yorum</text>
+<text x="28" y="292" font-size="12" class="degisen-text">son karar: red · 11:42 · "butonlar sağda olsun" — Claude'a iletildi</text>
+</svg></figure>
+</body></html>

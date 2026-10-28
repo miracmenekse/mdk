@@ -3,3 +3,6 @@ metrikler.jsonl
 .op-log/
 node_modules/
 persona-tur/
+etki/kararlar.jsonl
+etki/.karar-okundu
+etki/.karar-izleyici
