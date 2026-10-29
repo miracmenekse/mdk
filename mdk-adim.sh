@@ -12,6 +12,7 @@ DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
 ILK=${ILK:-90}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
+OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}   # v2: v1 ücretsiz modellerde hata veriyor (#59387)
 LOGD=.mdk-log; mkdir -p "$LOGD"
 # deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün
 METRIK=${MDK_METRIK:-metrikler.jsonl}
@@ -60,11 +61,13 @@ yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM
   model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,deney:e.MDK_DENEY||null,ts:Date.now()}))'; }
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
-  let t=0,c=0,e=0,n=0,cur=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens, top=k.total ?? (k.input+k.output+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0)); t+=top; c+=x.part.cost||0; e+=top-(k.cache?.read||0); n++ }
+  let t=0,c=0,e=0,ss=0,sf=0,cur=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
+    try { const x=JSON.parse(l);
+      if (x.type==="step_start") ss++       // v2: son adımda step_finish gelmez, istek step_start sayısından sayılır
+      if (x.type==="step_finish") { const k=x.part.tokens, top=k.total ?? (k.input+k.output+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0)); t+=top; c+=x.part.cost||0; e+=top-(k.cache?.read||0); sf++ }
       if (x.type==="assistant" && x.model_call_id) cur.add(x.model_call_id)   // cursor-agent: istek = farklı model çağrısı
       if (x.type==="result" && x.usage) { const u=x.usage, top=u.inputTokens+u.outputTokens+u.cacheReadTokens+u.cacheWriteTokens; t+=top; e+=top-u.cacheReadTokens } } catch {} }
-  console.log(t, c, e, n+cur.size)' "$1"; }
+  console.log(t, c, e, Math.max(ss,sf)+cur.size)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"},"shell":{"*":"allow","sudo *":"deny","git push*":"deny"},"external_directory":"deny"}'   # shell, external_directory: v2 adları
@@ -102,15 +105,15 @@ $ipucu"
       setsid "${MDK_CURSOR:-cursor-agent}" -p --output-format stream-json --trust --model "${m#cursor/}" "$istem" </dev/null >"$log" 2>"$log.err" &
     else
       yurm=opencode
-      # v2 (önyükleme, adım 72 tamamlar): v1 ücretsiz modellerde "Unexpected server error" veriyor
-      OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
+      # v2 (adım 72): v1 ücretsiz modellerde "Unexpected server error" veriyor
+      OPENCODE_LOG_LEVEL=error setsid "$OC" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
         "$istem" </dev/null >"$log" 2>"$log.err" &
     fi
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
       sleep "$POLL"
       el=$(( $(date +%s) - t0 ))
-      if grep -q "Free usage limit" "$log.err" 2>/dev/null; then neden=kota   # kota dolu: açık hatayı stderr'de gör, ILK'yı bekleme
+      if grep -q "Free usage limit" "$log.err" "$log" 2>/dev/null; then neden=kota   # kota dolu: stderr'deki log ya da v2'nin stdout error olayı; ILK'yı bekleme
       elif [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli

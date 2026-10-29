@@ -664,7 +664,7 @@ Kullanıcı kararları (2026-10-28): proje adı her yerde MDK (yapıldı; depo m
   - Kapı: `node panel/matris.test.mjs`
   - Kapı: `bash test/hepsi.sh`
 
-- [ ] 72. OpenCode v2'ye geçiş
+- [x] 72. OpenCode v2'ye geçiş
   - Değer: 5
   - Bütçe: 400000
   - Ne: v1 (1.19.3) ücretsiz modelleri desteklemiyor (#59387); v2 2.2.0 `~/.local/opt/opencode-v2/node_modules/.bin/opencode` adresinde kurulu. (1) `mdk-adim.sh`: ikili `OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}` (testler `MDK_OPENCODE=opencode` ile sahte ikiliyi çağırır). Çağrı `setsid "$OC" run --standalone -m ... --title ... --format json --print-logs` (`--log-level` bayrağı kalkar; v2'de süzmüyor), ortamda `OPENCODE_LOG_LEVEL=error`. (2) İzin yapılandırması (`IZIN`, `MDK_SADE` dalı dahil): `"bash"` anahtarı yanında aynı kurallarla `"shell"` anahtarı (v2 adı) ve `"external_directory":"deny"` (v2'de varsayılan allow). (3) `topla`: v2'de `tokens.total` yok; token = `total` varsa o, yoksa `input+output+reasoning+cache.read+cache.write`; etkin = token − cache.read; istek = `max(step_start sayısı, step_finish sayısı)` (v2'de son adımın step_finish'i gelmez). (4) Kota: "Free usage limit" metni stderr log'unda YA DA stdout jsonl'ında (v2 `{"type":"error",...}` olayı) görülürse neden=kota. (5) `panel/telemetri.mjs`: veritabanında `session_v2` ve `session_message` tabloları varsa onlardan oku (session_v2.directory ile proje süzgeci, alt dizin dahil; `type='assistant'` satırlarının `data`'sında `model.{providerID,id}` → `providerID/id`, `tokens`, `time.created/completed`, `cost`; bozuk JSON atlanır); o zaman v1 `message` tablosu okunmaz. v2 tabloları yoksa eski yol aynen. Döndürülen nesnenin biçimi değişmez. `persona-tur.sh` bu adımda değişmez (Claude uyarlar).
