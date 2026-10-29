@@ -4,7 +4,15 @@ Amaç: Claude planlar, OpenCode (ücretsiz modellerle) geliştirir; kalite kapı
 Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
 
 Yürütücü: opencode
-Modeller: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free, opencode/mimo-v2.6-flash-free, opencode/flint-40b-free, openrouter/nvidia/nemotron-3-ultra-550b-a55b:free, cursor/auto
+Modeller: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash
+Görev kod: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash
+Görev tasarim: opencode-go/glm-5.3-flash, opencode-go/mimo-v2.6-pro
+Görev persona: opencode-go/gpt-6-luna, opencode-go/beam-free
+Görev kapi: opencode-go/gemini-4-argon, opencode-go/gpt-5.6-luna
+Görev inceleme: opencode-go/gemini-4-argon, opencode-go/gpt-5.6-luna
+Görev eskale: opencode-go/qwen3.8-max, opencode-go/glm-5.3
+Görev mekanik: opencode-go/mimo-v2.6-flash
+Görev arastirma: opencode-go/glm-5.3-flash
 
 Bütçe: 300000
 
@@ -713,7 +721,7 @@ Başarı ölçütü: Faz 11 sonrası 5 adımlık bir dilimde (a) ilk denemede ge
 Akış: Claude adıma `- Görev: <tür>` yazar (yoksa `kod`); `./mdk-adim.sh <no>` o türün modellerini dener. Paralel: `./mdk-paralel.sh <no> <no>...`. Hata/boş durum: tanımsız tür → çıkış 4 ve geçerli türlerin listesi; kilitli model → sıradaki.
 Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebilir; 74'teki `kota` sınıflaması burada da geçerli). gemini-4-argon pahalı; kapı/incelemede yedeğe düşme oranı izlenmeli. Çalıştırıcıya dokunan adımlar `kodcu`nun (beceri kuralı).
 
-- [ ] 81. Görev satırları ve Modeller temizliği
+- [x] 81. Görev satırları ve Modeller temizliği
   - Yürütücü: claude
   - Ne: PLAN.md başında `Modeller:` → `opencode-go/glm-5.3-flash, opencode-go/glm-5.3` (eski free/OpenRouter/cursor adları çıkar). Altına her tür için bir satır, karar notundaki tablodan (yalnız Go modelleri; `claude-*` satırı yazılmaz, o türler Claude alt ajanında): `Görev kod: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash` (deepseek: Faz 6'da 9/9 ilk denemede, ölçülmüş yedek), `Görev tasarim: …`, `Görev persona: opencode-go/gpt-6-luna, opencode-go/beam-free`, `Görev kapi: opencode-go/gemini-4-argon, opencode-go/gpt-5.6-luna`, `Görev inceleme: …`, `Görev eskale: opencode-go/qwen3.8-max, opencode-go/glm-5.3`, `Görev mekanik: opencode-go/mimo-v2.6-flash`, `Görev arastirma: opencode-go/glm-5.3-flash`. demo-akis/PLAN.md ve dbeaver-mm `Modeller:` satırları aynı biçime (dbeaver-mm kendi commit akışıyla: doğrudan main). Sonra `test/hepsi.sh` yeşil olmalı (mdk-adim HEAD'de yeşil ister). `opencode-go/` önekiyle bir gerçek `mdk-adim` duman koşusu: önek `yurm`/kota sınıflamasını bozmuyor mu.
   - Kapı: `! grep -nE '^Modeller:.*(openrouter|-free|cursor/)' PLAN.md && grep -cE '^Görev [a-z]+: opencode-go/' PLAN.md | grep -qx 8`
