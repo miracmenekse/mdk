@@ -32,8 +32,18 @@ mapfile -t KAPILAR < <(grep -oP '^\s*- Kapı: `\K[^`]+' <<<"$blok")
 [ ${#KAPILAR[@]} -gt 0 ] || { echo "adım $N için Kapı yok"; exit 4; }
 yur=$(grep -m1 -oP '^\s*- Yürütücü: \K\S+' <<<"$blok" || grep -m1 -oP '^Yürütücü: \K\S+' "$PLAN")
 [ "${yur:-kodcu}" = opencode ] || { echo "adım $N yürütücüsü ${yur:-kodcu}"; exit 3; }
-IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" | tr -d ' ')"
-[ ${#MODELLER[@]} -gt 0 ] || { echo "PLAN'da Modeller satırı yok"; exit 4; }
+# görev türü (adım 82): adım satırı yoksa kod; tanımsız tür modele gitmeden çıkar
+gorev=$(grep -m1 -oP '^\s*- Görev: \K\S+' <<<"$blok" || true); gorev=${gorev:-kod}
+gorev_satir=$(grep -m1 -oP "^Görev \Q$gorev\E: \K.*" "$PLAN" || true)
+if [ -z "$gorev_satir" ] && [ "$gorev" != kod ]; then
+  echo "tanımsız görev türü: $gorev (geçerli: $(grep -oP '^Görev \K[^:]+(?=:)' "$PLAN" | paste -sd' ' -))"; exit 4
+fi
+# model listesi: adım > Görev <tür> > dosya Modeller
+modline=$(grep -m1 -oP '^\s*- Modeller: \K.*' <<<"$blok" || true)
+[ -n "$modline" ] || modline=$gorev_satir
+[ -n "$modline" ] || modline=$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" || true)
+IFS=, read -ra MODELLER <<<"$(tr -d ' ' <<<"$modline")"
+[ ${#MODELLER[@]} -gt 0 ] || { echo "Modeller satırı yok (adım, Görev ya da PLAN)"; exit 4; }
 # ONCE=<model>: listede varsa bu çalıştırmada önce o denenir (listede yoksa yok sayılır)
 if [ -n "${ONCE:-}" ] && [[ " ${MODELLER[*]} " == *" $ONCE "* ]]; then
   SIRA=("$ONCE"); for x in "${MODELLER[@]}"; do [ "$x" = "$ONCE" ] || SIRA+=("$x"); done; MODELLER=("${SIRA[@]}")
@@ -146,7 +156,7 @@ $ipucu"
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal etkin istek < <(topla "$log"); harcanan=$((harcanan + etkin))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"$yurm\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"$yurm\",\"model\":\"$m\",\"gorev\":\"$gorev\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
