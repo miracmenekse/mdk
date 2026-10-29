@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -225,6 +225,40 @@ c_v2_kota() {   # adım 72: v2 kota hatasını stdout'ta error olayı olarak bas
   kontrol '[ "$KOD" = 6 ]'
   kontrol '[ "$SN" -lt 15 ]'
   kontrol '[ "$(neden_listesi)" = kota,kota ]'
+}
+
+c_cursor() {   # Cursor CLI: cursor/<model> cursor-agent ile koşar (yalnız Auto), token result.usage'dan, izinler .cursor/cli.json'da
+  setup "$(plan cursor/auto '  - Kapı: `test -f cikti.txt`')" 'davran(){ :; }'; commit0
+  cat >"$T/bin/cursor-agent" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >"$STUB_DIR/argv"; cp .cursor/cli.json "$STUB_DIR/izin" 2>/dev/null
+echo x > cikti.txt
+echo '{"type":"system","subtype":"init","model":"Auto"}'
+echo '{"type":"assistant","model_call_id":"a1","message":{}}'
+echo '{"type":"assistant","model_call_id":"a1","message":{}}'
+echo '{"type":"assistant","model_call_id":"a2","message":{}}'
+echo '{"type":"assistant","message":{}}'
+echo '{"type":"result","subtype":"success","is_error":false,"usage":{"inputTokens":100,"outputTokens":10,"cacheReadTokens":1000,"cacheWriteTokens":5}}'
+STUB
+  chmod +x "$T/bin/cursor-agent"; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ ! -s "$T/modeller.log" ]'                 # opencode çağrılmadı
+  kontrol '[ "$(metrik "r[0].yurutucu")" = cursor ] && [ "$(metrik "r[0].model")" = cursor/auto ]'
+  kontrol '[ "$(metrik "r[0].token")" = 1115 ] && [ "$(metrik "r[0].etkin")" = 115 ]'   # etkin: cacheRead hariç
+  kontrol '[ "$(metrik "r[0].istek")" = 2 ]'           # farklı model_call_id sayısı
+  kontrol 'grep -qx -- -p "$T/argv" && grep -qx -- --trust "$T/argv" && grep -qx stream-json "$T/argv"'
+  kontrol 'grep -A1 -x -- --model "$T/argv" | grep -qx auto'
+  kontrol '! grep -qxE -- "--force|--yolo|-f" "$T/argv"'   # her şeye izin yok; izin listesi geçerli
+  kontrol 'grep -q "\"Shell(git push)\"" "$T/izin" && grep -q "\"Shell(sudo)\"" "$T/izin"'
+  kontrol '[ -z "$(git status --porcelain)" ]'          # izin dosyası ağacı kirletmez, commit'e girmez
+  kontrol '! git log -1 --name-only --format= | grep -q "^\.cursor/"'
+}
+c_cursor_kota() {   # Cursor plan kotası dolunca: kota, model atlanır, sağlayıcı çıkışı (6)
+  setup "$(plan cursor/auto '  - Kapı: `test -f cikti.txt`')" 'davran(){ :; }'; commit0
+  printf '#!/usr/bin/env bash\necho "Error: You have hit your usage limit. Upgrade to Pro" >&2; exit 1\n' >"$T/bin/cursor-agent"
+  chmod +x "$T/bin/cursor-agent"; DENEME=2 kos
+  kontrol '[ "$KOD" = 6 ]'
+  kontrol '[ "$(neden_listesi)" = kota ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}

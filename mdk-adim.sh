@@ -60,9 +60,11 @@ yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM
   model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,deney:e.MDK_DENEY||null,ts:Date.now()}))'; }
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
-  let t=0,c=0,e=0,n=0; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens, top=k.total ?? (k.input+k.output+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0)); t+=top; c+=x.part.cost||0; e+=top-(k.cache?.read||0); n++ } } catch {} }
-  console.log(t, c, e, n)' "$1"; }
+  let t=0,c=0,e=0,n=0,cur=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
+    try { const x=JSON.parse(l); if (x.type==="step_finish") { const k=x.part.tokens, top=k.total ?? (k.input+k.output+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0)); t+=top; c+=x.part.cost||0; e+=top-(k.cache?.read||0); n++ }
+      if (x.type==="assistant" && x.model_call_id) cur.add(x.model_call_id)   // cursor-agent: istek = farklı model çağrısı
+      if (x.type==="result" && x.usage) { const u=x.usage, top=u.inputTokens+u.outputTokens+u.cacheReadTokens+u.cacheWriteTokens; t+=top; e+=top-u.cacheReadTokens } } catch {} }
+  console.log(t, c, e, n+cur.size)' "$1"; }
 
 # başsız çalışmada izin sormasın; sudo/push yasak (AGENTS.md ile birlikte)
 IZIN='"permission":{"edit":"allow","bash":{"*":"allow","sudo *":"deny","git push*":"deny"},"shell":{"*":"allow","sudo *":"deny","git push*":"deny"},"external_directory":"deny"}'   # shell, external_directory: v2 adları
@@ -77,19 +79,33 @@ else
   export OPENCODE_CONFIG_CONTENT="{$IZIN}"; SADE_IPUCU=""
 fi
 
+# Cursor CLI (cursor/<model>; ücretsiz planda yalnız cursor/auto): --force yok, izin listesi proje .cursor/cli.json'da.
+# Dosya her denemeden önce yeniden yazılır (model değiştirse de sonraki deneme etkilenmez) ve git'ten gizlenir.
+CURSOR_IZIN='{"permissions":{"allow":["Read(**)","Write(**)","Shell(bash)","Shell(sh)","Shell(node)","Shell(npm)","Shell(npx)","Shell(git)","Shell(grep)","Shell(sed)","Shell(awk)","Shell(cat)","Shell(ls)","Shell(head)","Shell(tail)","Shell(wc)","Shell(find)","Shell(sort)","Shell(diff)","Shell(mkdir)","Shell(cp)","Shell(mv)","Shell(rm)","Shell(touch)","Shell(chmod)","Shell(echo)","Shell(test)","Shell(python3)"],"deny":["Shell(sudo)","Shell(git push)"]}}'
+cursor_izin() { mkdir -p .cursor; printf '%s\n' "$CURSOR_IZIN" >.cursor/cli.json
+  grep -qxF .cursor/cli.json "$(git rev-parse --git-path info/exclude)" 2>/dev/null || echo .cursor/cli.json >>"$(git rev-parse --git-path info/exclude)"; }
+
 ipucu=""; SAGLAYICI=1; durdu=""; kota_goruldu=0; harcanan=0; sorun_icerik=""
 for m in "${MODELLER[@]}"; do
   harcanan=0   # bütçe model başına: aşan model bırakılır, sıradaki kendi bütçesiyle başlar
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
-    # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
-    # v2 (önyükleme, adım 72 tamamlar): v1 ücretsiz modellerde "Unexpected server error" veriyor
-    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
-      "PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
+    istem="PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
 $blok
 $SADE_IPUCU
-$ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tty okuması takılıyordu
+$ipucu"
+    # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
+    # stdin kapalı: süreç grubunda tty okuması takılıyordu
+    if [[ $m == cursor/* ]]; then
+      yurm=cursor; cursor_izin
+      setsid "${MDK_CURSOR:-cursor-agent}" -p --output-format stream-json --trust --model "${m#cursor/}" "$istem" </dev/null >"$log" 2>"$log.err" &
+    else
+      yurm=opencode
+      # v2 (önyükleme, adım 72 tamamlar): v1 ücretsiz modellerde "Unexpected server error" veriyor
+      OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
+        "$istem" </dev/null >"$log" 2>"$log.err" &
+    fi
     pid=$!
     while kill -0 "$pid" 2>/dev/null; do
       sleep "$POLL"
@@ -103,6 +119,8 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
       [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
     done
     wait "$pid" 2>/dev/null
+    # ponytail: Cursor kota metni henüz görülmedi, tahmin; gerçek mesaj görülünce daralt
+    [ -z "$neden" ] && [ "$yurm" = cursor ] && grep -qiE "usage limit|rate limit|upgrade to|quota" "$log.err" 2>/dev/null && neden=kota
     pgrep -g "$pid" >/dev/null && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
     # kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
     git add -A
@@ -125,7 +143,7 @@ $ipucu" </dev/null >"$log" 2>"$log.err" &   # stdin kapalı: süreç grubunda tt
     git add -A; read -r ek sil dos < <(git diff --cached --numstat | awk '{a+=$1;s+=$2;f++} END{print a+0,s+0,f+0}')
     read -r tok mal etkin istek < <(topla "$log"); harcanan=$((harcanan + etkin))
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
-    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"opencode\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
+    yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"$yurm\",\"model\":\"$m\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
       sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
