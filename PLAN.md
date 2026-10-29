@@ -697,11 +697,11 @@ Kaynak: OpenRouter `GET /api/v1/benchmarks` (as_of 2026-10-29): AA intelligence/
 
 | Görev | Zorluk | 1. model | Yedek |
 |---|---|---|---|
-| Kod yazma | orta | glm-5.3-flash | glm-5.3 |
+| Kod yazma | orta | glm-5.3-flash (ölçüldü: 86, 90 ilk denemede; 85 kapı bozukken düştü) | glm-5.3 (ölçüldü: 89 ilk denemede, flash kilitliyken) |
 | Tasarım (UI, kroki) | orta | glm-5.3-flash | mimo-v2.6-pro |
 | Persona | kolay | gpt-6-luna (ölçüldü: adım 36 sorusu 3/3 geçerli, ~9k token/kart, 14 sn) | beam-free |
 | Kapı (test) yazma | zor | gemini-4-argon | gpt-5.6-luna |
-| Kod inceleme | zor | gemini-4-argon | gpt-5.6-luna |
+| Kod inceleme | zor | gemini-4-argon (ölçüldü: 86, 89, 90 biçim doğru, ~9 sn, UYUM 100) | gpt-5.6-luna |
 | Eskale / zor hata | zor | qwen3.8-max | glm-5.3 |
 | Mekanik küçük iş | kolay | mimo-v2.6-flash | claude-haiku-5-5 |
 | Görsel doğrulama (görüntü girdisi şart) | orta | claude-haiku-5-5 | glm-5.3-flash |
@@ -714,6 +714,14 @@ Kaynak: OpenRouter `GET /api/v1/benchmarks` (as_of 2026-10-29): AA intelligence/
 - Google AI Pro OpenCode'a bağlanamaz (Haziran 2026'dan beri kişisel hesap OAuth'u kapalı, 3. taraf kullanım kural dışı); yalnız Gemini uygulaması/NotebookLM'de elle. Derin araştırmada Claude soruyu hazırlar, kullanıcı Deep Research'te koşar, raporu verir; Claude özeti `arastirma/arastirma.json`'a işler. Kısa araştırma (tek soru, birkaç kaynak) Go modeliyle.
 - Bunlar benchmark puanı, bizim işte ölçülmedi: 73 (deney koşturucu) ile her görevde 1. model yedeğe karşı denenir. Gemini-4-argon görev başına pahalı (tau 0,50$): Go limitini hızlı yerse yedeğe geç. Gemini-4-argon'un kod endeksi yok (kapı puanı yalnız GPQA+zekâ). mimo-v2.6-flash'ın mekanik puanı yalnız tau-bench'e dayanır.
 - Yoklama (2026-10-29, `opencode-go/<model>` tek istek): listedeki tüm modeller yanıt verdi. Elenen: `muse-spark-*-contributor` (istek verisiyle eğitir; workspace Privacy'de izin ister, özel kod için açılmaz), `mimo-v2.5-pro` (kullanımdan kalktı → mimo-v2.6-pro). Kapı ve inceleme yedeği, kodu yazan glm'den bağımsız olsun diye gpt-5.6-luna.
+
+### Faz 11 ölçümü (2026-10-29, adım 88; n küçük, gürültülü)
+Go'da koşan adımlar 85, 86, 89, 90 (81 Claude; 82-84 kodcu, metrikte opencode satırı yok). Sessiz/kota/kilitli satırlar sayılmadı.
+- (a) İlk denemede geçme: Faz 11 2/4 (%50: 89, 90; 86 ilk koşuda 600 sn süre tavanı, ikinci koşuda geçti; 85 bozuk kapı, Claude hatası). Faz 9-10 (63-72) 2/9 (%22). Ölçüt sağlandı, ama 89-90 küçük adım kuralıyla yazıldı; farkın bir kısmı adım boyundan.
+- (b) Paralel: 89+90 `mdk-paralel.sh` duvar süresi 362 sn; aynı koşudaki adım süreleri 330 + 362 = 692 sn (sıralı tahmini) → %48 kısa. Ölçüt (≥%30) sağlandı. Model kilidi gerçek koşuda çalıştı: 89, glm-5.3-flash 90'da kilitliyken glm-5.3'ü aldı.
+- (c) `gorev` alanı: 81 sonrası 11/11 opencode satırında dolu. Sağlandı.
+- İnceleme: `mdk-incele.sh` 86, 89, 90'da gemini-4-argon ile ~9 sn, biçim ilk modelde doğru, üçü de UYUM 100 (Claude diff'i yine okudu, uyumlu).
+- Bulunan sorun: ilk paralel koşu iki adımda da "ön koşul" ile düştü; `panel/guven.test.mjs` git'e girmeyen `metrikler.jsonl`'u okuyordu, worktree'de yok (4c45663 ile düzeltildi). Açık: ön regresyon (~2 dk) süresince panelde durum görünmüyor; `mdk-paralel` özet tablosu "ön koşul"un nedenini yazmıyor (log `.mdk-log/paralel-<no>.log`).
 
 ### Faz 11: görev türüne göre model ve paralel oturum (2026-10-29)
 Problem ve hipotez: tek `Modeller:` zinciri her işe aynı modelleri sırayla deniyor; kapıyı ve incelemeyi kodu yazanla aynı model ailesi yapabiliyor, işler sırayla koştuğu için bekleme uzun. Hipotez: görev türüne göre model (karar notu "görev türüne göre model") ve bağımsız adımların paralel koşması, ilk denemede geçme oranını düşürmeden adım başına süreyi ve Claude token'ını azaltır.
@@ -758,7 +766,7 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: `CLAUDE.md` (mdk) ve global `~/.claude/CLAUDE.md` "Görev dağıtımı": OpenCode Go, `- Görev:` alanı, `mdk-paralel.sh`, `mdk-incele.sh`; `claude-*` türler (görsel doğrulama, belge, log özeti) Claude alt ajanında; derin araştırma Gemini Deep Research (kullanıcı elle). `ba-pm-bakis` SKILL.md: persona OpenCode'da `Görev persona:` modeliyle ("ücretsiz model" ifadesi düzeltilir).
   - Kapı: `grep -q 'Görev persona' ~/.claude/skills/ba-pm-bakis/SKILL.md && grep -q 'mdk-paralel' CLAUDE.md && ! grep -q 'ücretsiz modelle' ~/.claude/skills/ba-pm-bakis/SKILL.md`
 
-- [ ] 88. Gerçek deneme ve ölçüm
+- [x] 88. Gerçek deneme ve ölçüm
   - Yürütücü: claude
   - Ne: Claude, ayrı dosyalara dokunan iki küçük Go adımı tam yazar (Ne + Kapı; 73-80 tek satırlık taslak, 74 ve 75 çalıştırıcıya dokunduğu için kodcu'nun, uygun değil) ve `mdk-paralel.sh` ile koşar; her birini `mdk-incele.sh` ile incele. 85 ve 86'nın kendi metrikleri de (a) ölçütüne girer. Başarı ölçütünü (a-c) metriklerden hesapla, karar notunun altına yaz; görev tablosunda ölçülen satırları "ölçüldü" diye işaretle.
   - Kapı: `grep -q 'Faz 11 ölçümü' PLAN.md`
