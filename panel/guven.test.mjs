@@ -1,6 +1,6 @@
 // Kapı: güven etiketli sayılar. Kullanım: node panel/guven.test.mjs
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -95,7 +95,11 @@ const html = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'index.h
 for (const e of ['olculdu', 'veri-yok', 'kismi', 'tahmin']) assert.ok(html.includes(`.guven.${e}`), `index.html: .guven.${e} kuralı yok`);
 
 // gerçek proje verisi: kota sessizliği satırları (adım 9) artık model hatası sayılmaz
-const gercek = snapshot(join(dirname(fileURLToPath(import.meta.url)), '..'));
-assert.ok(gercek.modeller.some((x) => x.sessiz > 0), 'gerçek metriklerde sessiz satırlar sayılmalı');
-assert.ok(gercek.modeller.every((x) => ['olculdu', 'kismi', 'tahmin', 'veri-yok'].includes(x.etiket)));
+// metrikler.jsonl git'e girmez: worktree'de (mdk-paralel) yok, o zaman atlanır
+const kok = join(dirname(fileURLToPath(import.meta.url)), '..');
+if (existsSync(join(kok, 'metrikler.jsonl'))) {
+  const gercek = snapshot(kok);
+  assert.ok(gercek.modeller.some((x) => x.sessiz > 0), 'gerçek metriklerde sessiz satırlar sayılmalı');
+  assert.ok(gercek.modeller.every((x) => ['olculdu', 'kismi', 'tahmin', 'veri-yok'].includes(x.etiket)));
+}
 console.log('guven.test ok');
