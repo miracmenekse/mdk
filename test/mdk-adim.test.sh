@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma ortam_yalitim"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -337,6 +337,13 @@ c_plan_dokunma() { # geçen adım commit edilir ama PLAN.md'de [x] işaretlenmez
   kontrol 'grep -q "^- \[ \] 1\." PLAN.md'
   kontrol 'git log -1 --format=%s | grep -q "^adım 1:"'
   kontrol '[ -z "$(git status --porcelain)" ]'
+}
+
+c_ortam_yalitim() { # dış koşunun MDK_METRIK/MDK_DURUM/MDK_PLAN_DOKUNMA'sı kapıya (ve içindeki testlere) sızmaz
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt && [ -z "$MDK_METRIK$MDK_DURUM$MDK_PLAN_DOKUNMA$MDK_KILIT" ]`')" 'davran(){ echo x > cikti.txt; }'; commit0
+  kos MDK_METRIK=$T/dis.jsonl MDK_DURUM=$T/dis.json MDK_PLAN_DOKUNMA=1 MDK_KILIT=$T/k
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ -f $T/dis.jsonl ] && grep -q "\"gecti\":true" $T/dis.jsonl'   # dış koşu yine ana dosyaya yazar
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
