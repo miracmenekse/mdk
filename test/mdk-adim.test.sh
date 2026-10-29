@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -265,6 +265,36 @@ c_v2_kota_metin() {   # araç çıktısında geçen "Free usage limit" metni (ö
   kos
   kontrol '[ "$KOD" = 0 ]'
   kontrol '[ "$(neden_listesi)" = - ]'
+}
+
+# adım 82: görev türüne göre model zinciri
+gplan() { printf 'Yürütücü: opencode\nModeller: m/genel\nGörev kod: m/kod1, m/kod2\nGörev kapi: m/kapi1\n\n## K\n- [ ] 1. İş\n%s\n' "$1"; }
+c_gorev() {
+  setup "$(gplan '  - Görev: kapi
+  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(cat $T/modeller.log)" = m/kapi1 ]'
+  kontrol '[ "$(metrik "r[0].gorev")" = kapi ]'
+}
+c_gorev_adim() { # adımdaki Modeller satırı görev satırını geçer
+  setup "$(gplan '  - Görev: kapi
+  - Modeller: m/ozel
+  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(cat $T/modeller.log)" = m/ozel ]'
+}
+c_gorev_yok() { # tanımsız tür: çıkış 4, geçerli türler listelenir, model çağrılmaz
+  setup "$(gplan '  - Görev: uydurma
+  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
+  kontrol '[ "$KOD" = 4 ]'
+  kontrol 'grep -q uydurma $T/cikti.txt && grep -q kod $T/cikti.txt && grep -q kapi $T/cikti.txt'
+  kontrol '[ ! -f $T/modeller.log ]'
+}
+c_gorev_varsayilan() { # Görev alanı yoksa kod; ilk model kalırsa ikinciye geçer
+  setup "$(gplan '  - Kapı: `test -f cikti.txt`')" 'davran(){ [ "$1" = m/kod2 ] && echo x > cikti.txt; true; }'; commit0; DENEME=1 kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(paste -sd, $T/modeller.log)" = m/kod1,m/kod2 ]'
+  kontrol '[ "$(metrik "r.map(x=>x.gorev).join()")" = kod,kod ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
