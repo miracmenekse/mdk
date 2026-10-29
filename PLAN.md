@@ -769,7 +769,7 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: `panel/durum.mjs` model istatistiği: `neden: 'kota'` satırı da `yanit_yok` gibi yalnız `sessiz` sayılır; deneme, geçen, ilk deneme oranı, token ve süreye girmez. Başka dosyaya dokunma.
   - Kapı: `node panel/kota-model.test.mjs`
 
-- [ ] 90. Adım geçmişi: kota ayrı gösterilir
+- [x] 90. Adım geçmişi: kota ayrı gösterilir
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/ciz.mjs`: `kota` denemesi `sessizMi` gibi gerçek deneme sayılmaz (sorunlu sayılmaz). Özet satırında ayrı sayılır: `N kota` (sessizden ayrı); yalnız kota varsa `kota doldu (N)`. Ayrıntıda kota satırı `<no>. <model> ○ kota doldu`. `yanit_yok` metinleri değişmez. Başka dosyaya dokunma.
