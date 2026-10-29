@@ -29,7 +29,9 @@ ORTAK="$(blok Ortak "Çıktı biçimi" 1)
 $(blok Ortak "Ayırt edicilik şartı" 1)"
 
 if [ -n "${PERSONA_MODELLER:-}" ]; then IFS=, read -ra MODELLER <<<"${PERSONA_MODELLER// /}"
-else IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" 2>/dev/null | tr -d ' ')"; fi
+else M=$(grep -m1 -oP '^Görev persona: \K.*' "$PLAN" 2>/dev/null)
+  [ -n "$M" ] || M=$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" 2>/dev/null)
+  IFS=, read -ra MODELLER <<<"${M// /}"; fi
 # cursor/* OpenCode'da koşamaz (mdk-adim.sh cursor-agent ile koşturur); persona turunda atlanır
 for x in "${!MODELLER[@]}"; do [[ ${MODELLER[$x]} == cursor/* ]] && unset 'MODELLER[x]'; done; MODELLER=("${MODELLER[@]}")
 [ ${#MODELLER[@]} -gt 0 ] || { echo "model yok: PLAN'da Modeller satırı ya da PERSONA_MODELLER gerekli" >&2; exit 2; }

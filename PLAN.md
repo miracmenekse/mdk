@@ -731,7 +731,7 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: `mdk-adim.sh`. Adım bloğunda `- Görev: <tür>` (yoksa `kod`). Model listesi önceliği: adımda `- Modeller:` > dosyada `Görev <tür>:` > `Modeller:`. Tür için satır yoksa ve tür `kod` değilse çıkış 4, mesajda PLAN'daki türler. Metrik satırına `"gorev":"<tür>"`. `ONCE` aynen çalışır. Cursor ve OpenRouter'a özgü dallar silinmez (ölü ama zararsız).
   - Kapı: `bash test/mdk-adim.test.sh gorev` (Claude yazar: tür satırı seçilir; adım `Modeller:`'i öne geçer; tanımsız tür çıkış 4 + liste; tür yoksa kod; metrikte gorev)
 
-- [ ] 83. persona-tur: varsayılan model `Görev persona:`
+- [x] 83. persona-tur: varsayılan model `Görev persona:`
   - Yürütücü: kodcu
   - Ne: `persona-tur.sh`: `PERSONA_MODELLER` yoksa PLAN'daki `Görev persona:` satırı, o da yoksa `Modeller:`.
   - Kapı: `bash test/persona-gorev.test.sh` (Claude yazar; persona-tur.test.sh vaka süzmediği için ayrı dosya)
