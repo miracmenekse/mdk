@@ -113,7 +113,7 @@ $ipucu"
     while kill -0 "$pid" 2>/dev/null; do
       sleep "$POLL"
       el=$(( $(date +%s) - t0 ))
-      if grep -q "Free usage limit" "$log.err" "$log" 2>/dev/null; then neden=kota   # kota dolu: stderr'deki log ya da v2'nin stdout error olayı; ILK'yı bekleme
+      if grep -q "Free usage limit" "$log.err" 2>/dev/null || grep -q '"type":"error".*Free usage limit' "$log" 2>/dev/null; then neden=kota   # kota dolu: stderr'deki log ya da v2'nin stdout error olayı (yalnız error olayı: araç çıktısında geçen metin sayılmaz); ILK'yı bekleme
       elif [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli

@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -259,6 +259,12 @@ c_cursor_kota() {   # Cursor plan kotası dolunca: kota, model atlanır, sağlay
   chmod +x "$T/bin/cursor-agent"; DENEME=2 kos
   kontrol '[ "$KOD" = 6 ]'
   kontrol '[ "$(neden_listesi)" = kota ]'
+}
+c_v2_kota_metin() {   # araç çıktısında geçen "Free usage limit" metni (ör. model mdk-adim.sh'i okudu) kota sayılmaz
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; echo "{\"type\":\"tool_use\",\"part\":{\"state\":{\"output\":\"grep -q Free usage limit\"}}}"; sleep 2; }'; commit0
+  kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(neden_listesi)" = - ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
