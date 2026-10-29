@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Kullanım (proje kökünde): mdk-adim.sh <adım-no> [plan-dosyası]
 # PLAN.md adımını ücretsiz modellerden başlayarak OpenCode'a yaptırır, "Kapı" komutuyla doğrular.
-# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor
+# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor | 8 modeller kilitli (tavan doldu)
 set -uo pipefail
 # donmuş kopya: bir adım mdk-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
 if [ -z "${MDK_DONMUS:-}" ]; then
@@ -99,7 +99,16 @@ cursor_izin() { mkdir -p .cursor; printf '%s\n' "$CURSOR_IZIN" >.cursor/cli.json
   grep -qxF .cursor/cli.json "$(git rev-parse --git-path info/exclude)" 2>/dev/null || echo .cursor/cli.json >>"$(git rev-parse --git-path info/exclude)"; }
 
 ipucu=""; SAGLAYICI=1; durdu=""; kota_goruldu=0; harcanan=0; sorun_icerik=""
-for m in "${MODELLER[@]}"; do
+# model kilidi (adım 84): paralel koşularda aynı model aynı anda denenmesin; süreç ölünce fd kapanır, kilit düşer
+KILIT_DIR=${MDK_KILIT:-$HOME/.cache/mdk/kilit}; mkdir -p "$KILIT_DIR"
+KILIT_BEKLE=${MDK_KILIT_BEKLE:-30}; KILIT_TAVAN=${MDK_KILIT_TAVAN:-600}; beklenen=0
+kilit_al() { exec {KFD}>"$KILIT_DIR/${1//\//_}" && flock -n "$KFD" || { exec {KFD}>&-; return 1; }; }
+kilit_birak() { exec {KFD}>&-; }
+aday=("${MODELLER[@]}")
+while [ ${#aday[@]} -gt 0 ]; do
+bekleyen=(); denendi=0
+for m in "${aday[@]}"; do
+  kilit_al "$m" || { bekleyen+=("$m"); continue; }; denendi=1   # kilitli model bu turda atlanır, deneme sayılmaz
   harcanan=0   # bütçe model başına: aşan model bırakılır, sıradaki kendi bütçesiyle başlar
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
@@ -158,7 +167,7 @@ $ipucu"
     nedenj=null; [ -z "$neden" ] || nedenj="\"$neden\""
     yaz_metrik "{\"ts\":$(date +%s),\"adim\":$N,\"yurutucu\":\"$yurm\",\"model\":\"$m\",\"gorev\":\"$gorev\",\"deneme\":$d,\"gecti\":$([ -z "$neden" ] && echo true || echo false),\"sure_sn\":$(( $(date +%s)-t0 )),\"token\":$tok,\"etkin\":$etkin,\"istek\":$istek,\"deney\":$deneyj,\"sade\":${MDK_SADE:-0},\"maliyet\":$mal,\"eklenen\":$ek,\"silinen\":$sil,\"dosya\":$dos,\"neden\":$nedenj}"
     if [ -z "$neden" ]; then
-      sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
+      [ "${MDK_PLAN_DOKUNMA:-0}" = 1 ] || sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
       echo "adım $N geçti ($m, deneme $d)"; exit 0
     fi
@@ -176,6 +185,14 @@ $sorun_icerik" ;;
     [ "$neden" = butce ] && { durdu=butce; break; }   # bu modelin bütçesi bitti: sıradaki modele geç
     case $neden in yanit_yok|kota) break ;; esac   # sessiz/kotalı modeli yeniden denemek boşuna: sıradaki modele geç
   done
+  kilit_birak
+done
+[ ${#bekleyen[@]} -gt 0 ] || break
+aday=("${bekleyen[@]}")
+if [ $denendi = 0 ]; then   # tüm kalan modeller kilitli: bekle, tavan dolunca çık (model çağrılmadan)
+  [ $((beklenen + KILIT_BEKLE)) -gt "$KILIT_TAVAN" ] && { yaz_durum "" 0 kilit; echo "adım $N: modeller $KILIT_TAVAN sn kilitli kaldı"; exit 8; }
+  sleep "$KILIT_BEKLE"; beklenen=$((beklenen + KILIT_BEKLE))
+fi
 done
 if [ "$durdu" = butce ]; then
   yaz_durum "" 0 eskale; echo "adım $N eskale: modeller tükendi, en az biri token bütçesini ($butce/model) aştı"; exit 2
