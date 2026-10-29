@@ -79,22 +79,25 @@ export function suAnHtml(simdi, simdiMs) {
 export const SORUNLU_INCELEMELER = ['kismen', 'uyumsuz'];
 const INCELEME_ETIKET = { uyumlu: 'uyumlu', kismen: 'kısmen', uyumsuz: 'uyumsuz' };
 
-// kota sessizliği (sağlayıcı yanıt vermedi) gerçek deneme değildir
+// kota sessizliği (sağlayıcı yanıt vermedi) gerçek deneme değildir;
+// kota dolumu da gerçek deneme değildir ama geçmişte ayrı sayılır
 const sessizMi = (d) => d.neden === 'yanit_yok';
+const kotaMi = (d) => d.neden === 'kota';
+const denemeDegilMi = (d) => sessizMi(d) || kotaMi(d);
 
 // işi gerçekte yapan: geçen ilk denemenin yürütücüsü; plandakinden farklıysa açıkça yaz
 function yurutucuEtiket(a, g) {
   const plan = a.yurutucu || null;
-  const gecen = g && g.denemeler ? g.denemeler.find((x) => x.gecti === true && !sessizMi(x)) : null;
+  const gecen = g && g.denemeler ? g.denemeler.find((x) => x.gecti === true && !denemeDegilMi(x)) : null;
   const gercek = gecen && gecen.yurutucu ? gecen.yurutucu : null;
   if (gercek && plan && gercek !== plan) return `${gercek} (plan: ${plan})`;
   return gercek || plan || null;
 }
 
 // ilk geçen deneme 1 değilse, hiç geçmediyse ya da inceleme sorunluysa true
-// sessiz denemeler yok sayılır (yalnız sessizlik sorun sayılmaz)
+// sessiz ve kota denemeleri yok sayılır (yalnız sessizlik ya da kota sorun sayılmaz)
 export function sorunluMu(gecmisAdim, inceleme) {
-  const d = (gecmisAdim.denemeler || []).filter((x) => !sessizMi(x));
+  const d = (gecmisAdim.denemeler || []).filter((x) => !denemeDegilMi(x));
   const ilk = d.find((x) => x.gecti === true);
   if (d.length > 0 && (!ilk || ilk.deneme > 1)) return true;
   return !!inceleme && SORUNLU_INCELEMELER.includes(inceleme.inceleme);
@@ -106,15 +109,19 @@ function incelemeOf(no, g, incelemeler) {
 
 function ozetHtml(g, inceleme) {
   const tum = g.denemeler || [];
-  const gercek = tum.filter((x) => !sessizMi(x));
-  const sessizSayi = tum.length - gercek.length;
+  const gercek = tum.filter((x) => !denemeDegilMi(x));
+  const sessizSayi = tum.filter((x) => sessizMi(x)).length;
+  const kotaSayi = tum.filter((x) => kotaMi(x)).length;
   const ilk = gercek.find((x) => x.gecti === true);
   const parcalar = [];
   if (gercek.length > 0) {
     parcalar.push(ilk ? `${ilk.deneme}. denemede geçti` : `geçmedi (${gercek.length} deneme)`);
     if (sessizSayi > 0) parcalar.push(`${sessizSayi} sessiz`);
+    if (kotaSayi > 0) parcalar.push(`${kotaSayi} kota`);
   } else if (sessizSayi > 0) {
     parcalar.push(`sağlayıcı sessiz (${sessizSayi})`);
+  } else if (kotaSayi > 0) {
+    parcalar.push(`kota doldu (${kotaSayi})`);
   }
   const etiket = inceleme ? INCELEME_ETIKET[inceleme.inceleme] || 'incelenmedi' : 'incelenmedi';
   const sinif = inceleme && INCELEME_ETIKET[inceleme.inceleme] ? inceleme.inceleme : 'incelenmedi';
@@ -132,6 +139,10 @@ function ayrintiHtml(g, inceleme, acikMi, no) {
   for (const d of g.denemeler) {
     if (sessizMi(d)) {
       icerik += `<div class="deneme sessiz">${esc(d.deneme)}. ${esc(d.model)} ○ sağlayıcı yanıt vermedi</div>`;
+      continue;
+    }
+    if (kotaMi(d)) {
+      icerik += `<div class="deneme sessiz">${esc(d.deneme)}. ${esc(d.model)} ○ kota doldu</div>`;
       continue;
     }
     const sure = d.sure_sn == null ? '—' : d.sure_sn;
@@ -261,8 +272,8 @@ const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">
 export function kpiHtml(snap) {
   const adimlar = (snap?.plan?.kategoriler || []).flatMap((k) => k.adimlar || []);
   const biten = snap?.plan ? `${adimlar.filter((a) => a.bitti).length} / ${adimlar.length}` : '—';
-  // yalnız gerçek (sessiz olmayan) denemesi olan adımlar sayılır
-  const gercekler = (snap?.gecmis || []).map((g) => (g.denemeler || []).filter((x) => !sessizMi(x))).filter((d) => d.length);
+  // yalnız gerçek (sessiz ya da kota olmayan) denemesi olan adımlar sayılır
+  const gercekler = (snap?.gecmis || []).map((g) => (g.denemeler || []).filter((x) => !denemeDegilMi(x))).filter((d) => d.length);
   const ilk = gercekler.length
     ? `%${Math.round((gercekler.filter((d) => d.find((x) => x.gecti === true)?.deneme === 1).length / gercekler.length) * 100)}`
     : '—';
