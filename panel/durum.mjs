@@ -70,8 +70,8 @@ export function snapshot(dir) {
       gecenAdimlar: new Set(),
     };
     harita.set(anahtar, m);
-    // sağlayıcı sessizliği (kota) model denemesi değildir; yalnız ayrı sayılır
-    if (s.neden === 'yanit_yok') {
+    // sağlayıcı sessizliği (yanit_yok ve kota) model denemesi değildir; yalnız ayrı sayılır
+    if (s.neden === 'yanit_yok' || s.neden === 'kota') {
       m.sessiz += 1;
       continue;
     }
