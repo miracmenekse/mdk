@@ -753,7 +753,7 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: Yeni `mdk-incele.sh <no>`: adım metni + o adımın commit diff'i (mdk-adim commit konusu `adım <no>: …`; `git log --grep "^adım <no>:"` bulamazsa çıkış 4, HEAD'e düşmez) `Görev inceleme:` modeline plan ajanıyla (salt okunur) verilir; istenen çıktı ilk satırda `UYUM: <0-100>` + en çok 5 madde (model çağrısı `opencode run --format json -m <model> --agent plan <istem>`, yanıt v2 `text` olaylarından). Sonuç `node mdk-kayit.mjs <no> --inceleme uyumlu|kismen|uyumsuz --not "UYUM <n>: <maddeler>"` ile yazılır (≥80 uyumlu, 50-79 kismen, <50 uyumsuz); `UYUM: <n>` satırı stdout'a da basılır; çıktı biçimi bozuksa yedek model, o da bozuksa çıkış 2. Claude yalnız uyum < 80 ise diff'i kendisi okur.
   - Kapı: `bash test/mdk-incele.test.sh`
 
-- [ ] 87. Kurallar ve belgeler
+- [x] 87. Kurallar ve belgeler
   - Yürütücü: claude
   - Ne: `CLAUDE.md` (mdk) ve global `~/.claude/CLAUDE.md` "Görev dağıtımı": OpenCode Go, `- Görev:` alanı, `mdk-paralel.sh`, `mdk-incele.sh`; `claude-*` türler (görsel doğrulama, belge, log özeti) Claude alt ajanında; derin araştırma Gemini Deep Research (kullanıcı elle). `ba-pm-bakis` SKILL.md: persona OpenCode'da `Görev persona:` modeliyle ("ücretsiz model" ifadesi düzeltilir).
   - Kapı: `grep -q 'Görev persona' ~/.claude/skills/ba-pm-bakis/SKILL.md && grep -q 'mdk-paralel' CLAUDE.md && ! grep -q 'ücretsiz modelle' ~/.claude/skills/ba-pm-bakis/SKILL.md`

@@ -1,11 +1,14 @@
 # MDK (MM Development Kit)
 
-Claude planlar, OpenCode (ücretsiz modellerle) geliştirir, kalite kapıdan geçerek garanti edilir. Bu proje hem bu sürecin aracı hem de kendi canlı paneli.
+Claude planlar, OpenCode (OpenCode Go modelleriyle, `opencode-go/*`) geliştirir, kalite kapıdan geçerek garanti edilir. Bu proje hem bu sürecin aracı hem de kendi canlı paneli.
 
 ## Süreç (global kural: ~/.claude/CLAUDE.md)
 - Plan yazarken `ba-pm-bakis` becerisini yükle (hipotez, iş değeri, akış, UI kararında personalardan farklı seçenekler, en fazla 3 soru).
 - Yeni adımları `PLAN.md`'ye **son adım numarasından devam ederek** ekle; her adımda çalıştırılabilir `- Kapı:`. Kapı test dosyalarını (`*.test.mjs`) sen (Claude) yaz, OpenCode'a değiştirtme.
 - Çalıştırma: `./mdk-adim.sh <no>` (temiz git ağacı şart; önce planı ve kapıları commit et). Çıkış 2 = eskale → adımı `kodcu`ya ver. Sonunda diff'i plana karşı gözden geçir.
+- Görev türü (2026-10-29, Faz 11): adıma `- Görev: <tür>` yaz (yoksa `kod`); `mdk-adim.sh` PLAN başındaki `Görev <tür>:` satırının modellerini dener (adımda `- Modeller:` önce gelir). Türler: kod, tasarim, persona, kapi, inceleme, eskale, mekanik, arastirma. `claude-*` türler (görsel doğrulama, belge, log özeti) Claude alt ajanında (haiku); derin araştırma Gemini Deep Research (kullanıcı elle).
+- Paralel: ayrı dosyalara dokunan adımlar `./mdk-paralel.sh <no> <no>...` (worktree başına bir koşu, model başına kilit, geçenler sırayla cherry-pick). Çıkış 9 = çakışma.
+- İnceleme: adım geçince `./mdk-incele.sh <no>` (`Görev inceleme:` modeli diff'i plana karşı puanlar, `UYUM: <n>`). Claude diff'i yalnız uyum < 80 ise kendisi okur.
 - İzleme: `node izle.mjs` (terminal), `bash mdk-panel.sh start . 4747` (panel; kullanıcı VS Code Ports sekmesinden 4747'yi yönlendirir).
 
 ## Durum (2026-10-17, gün sonu)
