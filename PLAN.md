@@ -763,6 +763,18 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: Claude, ayrı dosyalara dokunan iki küçük Go adımı tam yazar (Ne + Kapı; 73-80 tek satırlık taslak, 74 ve 75 çalıştırıcıya dokunduğu için kodcu'nun, uygun değil) ve `mdk-paralel.sh` ile koşar; her birini `mdk-incele.sh` ile incele. 85 ve 86'nın kendi metrikleri de (a) ölçütüne girer. Başarı ölçütünü (a-c) metriklerden hesapla, karar notunun altına yaz; görev tablosunda ölçülen satırları "ölçüldü" diye işaretle.
   - Kapı: `grep -q 'Faz 11 ölçümü' PLAN.md`
 
+- [ ] 89. Model tablosu: kota deneme sayılmaz
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/durum.mjs` model istatistiği: `neden: 'kota'` satırı da `yanit_yok` gibi yalnız `sessiz` sayılır; deneme, geçen, ilk deneme oranı, token ve süreye girmez. Başka dosyaya dokunma.
+  - Kapı: `node panel/kota-model.test.mjs`
+
+- [ ] 90. Adım geçmişi: kota ayrı gösterilir
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/ciz.mjs`: `kota` denemesi `sessizMi` gibi gerçek deneme sayılmaz (sorunlu sayılmaz). Özet satırında ayrı sayılır: `N kota` (sessizden ayrı); yalnız kota varsa `kota doldu (N)`. Ayrıntıda kota satırı `<no>. <model> ○ kota doldu`. `yanit_yok` metinleri değişmez. Başka dosyaya dokunma.
+  - Kapı: `node panel/kota-gecmis.test.mjs`
+
 Sonraya bırakılan: panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir; veri 5+ adıma ulaşınca etki taslağıyla açılır).
 
 ## Sonraki iyileştirmeler
