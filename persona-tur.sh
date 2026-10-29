@@ -30,6 +30,8 @@ $(blok Ortak "Ayırt edicilik şartı" 1)"
 
 if [ -n "${PERSONA_MODELLER:-}" ]; then IFS=, read -ra MODELLER <<<"${PERSONA_MODELLER// /}"
 else IFS=, read -ra MODELLER <<<"$(grep -m1 -oP '^Modeller: \K.*' "$PLAN" 2>/dev/null | tr -d ' ')"; fi
+# cursor/* OpenCode'da koşamaz (mdk-adim.sh cursor-agent ile koşturur); persona turunda atlanır
+for x in "${!MODELLER[@]}"; do [[ ${MODELLER[$x]} == cursor/* ]] && unset 'MODELLER[x]'; done; MODELLER=("${MODELLER[@]}")
 [ ${#MODELLER[@]} -gt 0 ] || { echo "model yok: PLAN'da Modeller satırı ya da PERSONA_MODELLER gerekli" >&2; exit 2; }
 
 # çıktı dizini: aynı saniyede ikinci tur -2, -3… alır (mkdir atomik)
@@ -38,11 +40,16 @@ until mkdir "$D" 2>/dev/null; do D=$BAS-$s; s=$((s+1)); done
 
 # dosya adı: küçük harf, harf/rakam dışı her dizi tek tire, baş/son tire yok
 ad() { node -e 'process.stdout.write(process.argv[1].toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu,"-").replace(/^-|-$/g,""))' "$1"; }
-# ilk satır token toplamı (step_finish), kalanı text olaylarının metni
+# ilk satır token toplamı, kalanı text olaylarının metni. v2 son adımda step_finish yazmaz (tek adımlık yanıtta hiç):
+# token oturum kimliğiyle opencode.db'den (session_message) okunur; kayıt yoksa step_finish toplamı
 ayikla() { node -e '
-  let t=0,m=""; for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
-    try { const x=JSON.parse(l); if (x.type==="text") m+=x.part.text; if (x.type==="step_finish") t+=x.part.tokens?.total||0 } catch {} }
-  process.stdout.write(t+"\n"+m)' "$1"; }
+  const top=(k)=>k.total ?? ((k.input||0)+(k.output||0)+(k.reasoning||0)+(k.cache?.read||0)+(k.cache?.write||0));
+  let t=0,m="",d=0; const ids=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
+    try { const x=JSON.parse(l); if (x.sessionID) ids.add(x.sessionID); if (x.type==="text") m+=x.part.text; if (x.type==="step_finish") t+=top(x.part.tokens||{}) } catch {} }
+  try { const db=new (require("node:sqlite").DatabaseSync)(process.env.OPENCODE_DB||require("os").homedir()+"/.local/share/opencode/opencode.db",{readOnly:true});
+    const q=db.prepare("select data from session_message where session_id=? and type=?");
+    for (const id of ids) for (const r of q.all(id,"assistant")) { const k=JSON.parse(r.data).tokens; if (k) d+=top(k) } } catch {}
+  process.stdout.write((d||t)+"\n"+m)' "$1" 2>/dev/null; }
 
 kart_kos() {  # $1 kart sırası (0'dan)
   local i=$1 kart=${KARTLAR[$1]} n=${#MODELLER[@]} f m pid t0 durum tok metin
@@ -59,7 +66,8 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
   for j in 0 1; do   # geçersiz yanıtta sıradaki modelle bir kez daha
     m=${MODELLER[$(( (i+j) % n ))]}; durum=""
     # setsid: süreç kendi grubunun lideri; süre aşılınca grup topluca öldürülür
-    setsid opencode run --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>&1 &
+    # v2 (adım 72): --standalone kendi sunucusu, grup öldürülünce biter; stderr ayrı: log satırı "sessiz" denetimini bozmasın
+    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>>"$f.err" &
     pid=$!; t0=$SECONDS
     while kill -0 "$pid" 2>/dev/null; do
       sleep 1

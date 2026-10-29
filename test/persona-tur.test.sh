@@ -8,12 +8,12 @@ setup() { # $1: davran() gövdesi; argümanlar: $M model, $ISTEM istem
   T=$(mktemp -d); mkdir -p "$T/bin" "$T/p"; export STUB_DIR=$T
   cat >"$T/bin/opencode" <<'STUB'
 #!/usr/bin/env bash
-ARGS="$*"
+ARGS="$*"; printf '%s\n' "$@" >"$STUB_DIR/argv"; printf '%s\n' "$OPENCODE_LOG_LEVEL" >"$STUB_DIR/loglevel"
 while [ $# -gt 0 ]; do case $1 in -m) M=$2; shift;; --agent) A=$2; shift;; run|--format|json) ;; *) ISTEM=$1;; esac; shift; done
 echo "$M|$A" >>"$STUB_DIR/cagri.log"
 printf '%s' "$ISTEM" >"$STUB_DIR/istem-$(echo "$ISTEM" | grep -m1 -oP 'SORU-\K[A-Z]+').txt"
 source "$STUB_DIR/davran.sh"; davran
-echo '{"type":"step_finish","part":{"tokens":{"total":250},"cost":0}}'
+echo '{"type":"step_finish","part":{"tokens":{"input":200,"output":30,"reasoning":20,"cache":{"read":0,"write":0}},"cost":0}}'   # v2: total yok
 STUB
   chmod +x "$T/bin/opencode"; printf 'yanit() { printf "{\\"type\\":\\"text\\",\\"part\\":{\\"type\\":\\"text\\",\\"text\\":\\"%%s\\"}}\\n" "$1"; }\ndavran() { %s\n}\n' "$1" >"$T/davran.sh"
   cd "$T/p"
@@ -48,7 +48,7 @@ Durum: denenmemiş
 P
   echo "Problem: PROBLEM-METNI" >soru.md
 }
-kos() { ( cd "$T/p"; env PATH="$T/bin:$PATH" PERSONA_SURE="${SURE:-20}" "$@" ) >"$T/cikti.txt" 2>&1; KOD=$?; }
+kos() { ( cd "$T/p"; env PATH="$T/bin:$PATH" MDK_OPENCODE=opencode OPENCODE_DB="${OPENCODE_DB:-$T/yok.db}" PERSONA_SURE="${SURE:-20}" "$@" ) >"$T/cikti.txt" 2>&1; KOD=$?; }
 DIZ() { ls -d "$T"/p/persona-tur/*/ 2>/dev/null | head -1; }
 
 CASE=gecerli
@@ -126,6 +126,23 @@ kos bash "$RUNNER" dev soru.md "Yok Kart"; kontrol '[ $KOD = 2 ] && [ ! -e perso
 kos bash "$RUNNER" dev soru.md "Yabancı"; kontrol '[ $KOD = 2 ] && [ ! -e persona-tur ]'  # başka alanın kartı
 kos bash "$RUNNER" dev yok.md "Kart Bir"; kontrol '[ $KOD = 2 ] && [ ! -e persona-tur ]'
 kontrol '[ ! -s $T/cagri.log ]'
+
+CASE=v2   # OpenCode v2 çağrısı; cursor/* modeller OpenCode'da koşamaz, atlanır
+setup 'if [ "$M" = cursor/auto ]; then yanit "Seçenek A"; else yanit "yok"; fi'
+PERSONA_MODELLER=m/bir,cursor/auto kos bash "$RUNNER" dev soru.md "Kart Bir"
+kontrol '[ $KOD = 1 ] && ! grep -q cursor $T/cagri.log && [ "$(wc -l <$T/cagri.log)" = 2 ]'
+kontrol 'grep -qx -- --standalone $T/argv && grep -qix error $T/loglevel'
+setup 'yanit "Seçenek A"'; PERSONA_MODELLER=cursor/auto kos bash "$RUNNER" dev soru.md "Kart Bir"
+kontrol '[ $KOD = 2 ] && [ ! -e persona-tur ]'   # yalnız cursor modeli: kullanım hatası, tur açılmaz
+
+CASE=v2_token   # v2 token'ı opencode.db'den (oturum kimliğiyle); akışta step_finish olmasa da
+setup 'echo "{\"type\":\"step_start\",\"sessionID\":\"ses_X\"}"; yanit "Seçenek A"'
+node -e 'const db=new (require("node:sqlite").DatabaseSync)(process.argv[1]); db.exec("create table session_message (id text, session_id text, type text, seq integer, data text)");
+  const e=db.prepare("insert into session_message values (?,?,?,?,?)");
+  e.run("a","ses_X","assistant",1,JSON.stringify({tokens:{input:1000,output:300,reasoning:200,cache:{read:8000,write:0}}}));
+  e.run("b","ses_X","user",2,JSON.stringify({tokens:{input:99999}})); e.run("c","ses_Y","assistant",1,JSON.stringify({tokens:{input:77777}}))' "$T/oc.db" 2>/dev/null
+OPENCODE_DB=$T/oc.db kos bash "$RUNNER" dev soru.md "Kart Bir"
+D=$(DIZ); kontrol '[ $KOD = 0 ] && grep -q "^Token: 9500$" "$D/1-kart-bir.md"'   # yalnız ses_X'in assistant mesajı
 
 CASE=gitignore; kontrol 'grep -qx "persona-tur/" "$(dirname "$RUNNER")/.gitignore"'
 
