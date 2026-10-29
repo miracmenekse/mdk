@@ -18,7 +18,7 @@ STUB
   chmod +x "$T/bin/opencode"
   cd "$R" && git init -q -b main && git config user.name t && git config user.email t@t
   printf 'durum.json\nmetrikler.jsonl\n.mdk-log/\n' >.gitignore
-  printf 'Yürütücü: opencode\nModeller: m/a, m/b\n\n## K\n- [ ] 1. Bir\n  - Ne: YAZ:%s\n  - Kapı: `test -f a.txt`\n\n- [ ] 2. İki\n  - Ne: YAZ:%s\n  - Kapı: `test -f %s`\n' "$1" "$2" "${3:-b.txt}" >PLAN.md
+  printf 'Yürütücü: opencode\nModeller: m/a, m/b\n\n## K\n- [ ] 1. Bir\n  - Ne: YAZ:%s\n  - Kapı: `test -f %s`\n\n- [ ] 2. İki\n  - Ne: YAZ:%s\n  - Kapı: `test -f %s`\n' "$1" "${1%%=*}" "$2" "${3:-b.txt}" >PLAN.md
   git add -A; git commit -qm c0
 }
 kos() { local t0=$(date +%s)
