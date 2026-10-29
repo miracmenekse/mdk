@@ -678,7 +678,7 @@ Sonraki adımlar (kapıları sırası gelince yazılır; ölçüm sırası L1 ö
 - 75. Süre tavanı: olay gelmezse ve opencode'un çocuk süreci (derleme/test) yoksa 120 sn'de kes; toplam tavan 15 dk, dolarken çocuk süreç çalışıyorsa bitmesini bekle (en çok +5 dk); panelde geri sayım.
 - 76. L3 sessiz kapı + L4 sade agent (özel agent, kısa istem, yalnız read/edit/bash/grep); taban ile karşılaştırma.
 - 77. L1 editör modu: araçsız tek istek, ara/değiştir blokları, betik uygular, kapı; kalırsa kapı özetiyle bir tekrar.
-- 78. Model havuzu: model başına kilit (aynı model iki süreçte değil), OpenRouter günlük istek sayacı (50/gün ortak), boş model yoksa çıkış 8 → Claude kullanıcıdan haiku onayı ister.
+- 78. Model havuzu: model başına kilit (aynı model iki süreçte değil), boş model yoksa çıkış 8 → Claude kullanıcıdan haiku onayı ister. (2026-10-29: OpenRouter kalktı, sayaç düştü; kilit 84'te.)
 - 79. Push öncesi regresyon: `mdk-push.sh` tüm kapıları (dbeaver-mm'de `kapi/hepsi.sh` + değişen plugin testleri) koşar, özet dosyası yazar; Claude okur: yeşil → push; kırmızı → düşen kapı çıktısıyla geliştiren modele düzeltme adımı.
 - 80. Plan alanı `- Değişen davranış:`: emekliye ayrılan kapılar burada; yazılmayan her eski kapı geçmek zorunda.
 
@@ -706,6 +706,56 @@ Kaynak: OpenRouter `GET /api/v1/benchmarks` (as_of 2026-10-29): AA intelligence/
 - Google AI Pro OpenCode'a bağlanamaz (Haziran 2026'dan beri kişisel hesap OAuth'u kapalı, 3. taraf kullanım kural dışı); yalnız Gemini uygulaması/NotebookLM'de elle. Derin araştırmada Claude soruyu hazırlar, kullanıcı Deep Research'te koşar, raporu verir; Claude özeti `arastirma/arastirma.json`'a işler. Kısa araştırma (tek soru, birkaç kaynak) Go modeliyle.
 - Bunlar benchmark puanı, bizim işte ölçülmedi: 73 (deney koşturucu) ile her görevde 1. model yedeğe karşı denenir. Gemini-4-argon görev başına pahalı (tau 0,50$): Go limitini hızlı yerse yedeğe geç. Gemini-4-argon'un kod endeksi yok (kapı puanı yalnız GPQA+zekâ). mimo-v2.6-flash'ın mekanik puanı yalnız tau-bench'e dayanır.
 - Yoklama (2026-10-29, `opencode-go/<model>` tek istek): listedeki tüm modeller yanıt verdi. Elenen: `muse-spark-*-contributor` (istek verisiyle eğitir; workspace Privacy'de izin ister, özel kod için açılmaz), `mimo-v2.5-pro` (kullanımdan kalktı → mimo-v2.6-pro). Kapı ve inceleme yedeği, kodu yazan glm'den bağımsız olsun diye gpt-5.6-luna.
+
+### Faz 11: görev türüne göre model ve paralel oturum (2026-10-29)
+Problem ve hipotez: tek `Modeller:` zinciri her işe aynı modelleri sırayla deniyor; kapıyı ve incelemeyi kodu yazanla aynı model ailesi yapabiliyor, işler sırayla koştuğu için bekleme uzun. Hipotez: görev türüne göre model (karar notu "görev türüne göre model") ve bağımsız adımların paralel koşması, ilk denemede geçme oranını düşürmeden adım başına süreyi ve Claude token'ını azaltır.
+Başarı ölçütü: Faz 11 sonrası 5 adımlık bir dilimde (a) ilk denemede geçme ≥ Faz 9-10 ortalaması, (b) iki bağımsız adım paralel koşunca toplam süre sıralıdan ≥%30 kısa, (c) her adımın metriğinde `gorev` alanı dolu.
+Akış: Claude adıma `- Görev: <tür>` yazar (yoksa `kod`); `./mdk-adim.sh <no>` o türün modellerini dener. Paralel: `./mdk-paralel.sh <no> <no>...`. Hata/boş durum: tanımsız tür → çıkış 4 ve geçerli türlerin listesi; kilitli model → sıradaki.
+Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebilir; 74'teki `kota` sınıflaması burada da geçerli). gemini-4-argon pahalı; kapı/incelemede yedeğe düşme oranı izlenmeli. Çalıştırıcıya dokunan adımlar `kodcu`nun (beceri kuralı).
+
+- [ ] 81. Görev satırları ve Modeller temizliği
+  - Yürütücü: claude
+  - Ne: PLAN.md başında `Modeller:` → `opencode-go/glm-5.3-flash, opencode-go/glm-5.3` (eski free/OpenRouter/cursor adları çıkar). Altına her tür için bir satır, karar notundaki tablodan (yalnız Go modelleri; `claude-*` satırı yazılmaz, o türler Claude alt ajanında): `Görev kod: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash` (deepseek: Faz 6'da 9/9 ilk denemede, ölçülmüş yedek), `Görev tasarim: …`, `Görev persona: opencode-go/gpt-6-luna, opencode-go/beam-free`, `Görev kapi: opencode-go/gemini-4-argon, opencode-go/gpt-5.6-luna`, `Görev inceleme: …`, `Görev eskale: opencode-go/qwen3.8-max, opencode-go/glm-5.3`, `Görev mekanik: opencode-go/mimo-v2.6-flash`, `Görev arastirma: opencode-go/glm-5.3-flash`. demo-akis/PLAN.md ve dbeaver-mm `Modeller:` satırları aynı biçime (dbeaver-mm kendi commit akışıyla: doğrudan main). Sonra `test/hepsi.sh` yeşil olmalı (mdk-adim HEAD'de yeşil ister). `opencode-go/` önekiyle bir gerçek `mdk-adim` duman koşusu: önek `yurm`/kota sınıflamasını bozmuyor mu.
+  - Kapı: `! grep -nE '^Modeller:.*(openrouter|-free|cursor/)' PLAN.md && grep -cE '^Görev [a-z]+: opencode-go/' PLAN.md | grep -qx 8`
+
+- [ ] 82. mdk-adim: adımın görev türüne göre model zinciri
+  - Yürütücü: kodcu
+  - Ne: `mdk-adim.sh`. Adım bloğunda `- Görev: <tür>` (yoksa `kod`). Model listesi önceliği: adımda `- Modeller:` > dosyada `Görev <tür>:` > `Modeller:`. Tür için satır yoksa ve tür `kod` değilse çıkış 4, mesajda PLAN'daki türler. Metrik satırına `"gorev":"<tür>"`. `ONCE` aynen çalışır. Cursor ve OpenRouter'a özgü dallar silinmez (ölü ama zararsız).
+  - Kapı: `bash test/mdk-adim.test.sh gorev` (Claude yazar: tür satırı seçilir; adım `Modeller:`'i öne geçer; tanımsız tür çıkış 4 + liste; tür yoksa kod; metrikte gorev)
+
+- [ ] 83. persona-tur: varsayılan model `Görev persona:`
+  - Yürütücü: kodcu
+  - Ne: `persona-tur.sh`: `PERSONA_MODELLER` yoksa PLAN'daki `Görev persona:` satırı, o da yoksa `Modeller:`.
+  - Kapı: `bash test/persona-gorev.test.sh` (Claude yazar; persona-tur.test.sh vaka süzmediği için ayrı dosya)
+
+- [ ] 84. Model kilidi
+  - Yürütücü: kodcu
+  - Ne: `mdk-adim.sh`: bir modeli denemeden önce `~/.cache/mdk/kilit/<model>` üzerinde `flock -n`; kilitliyse `neden: kilitli` ile sıradakine (deneme sayılmaz, metriğe yazılmaz). Tüm modeller kilitliyse 30 sn bekle, en çok 10 dk, sonra çıkış 8. Kilit süreç ölünce kendiliğinden bırakılır (flock fd); dosya adında `/` → `_`. Ayrıca `MDK_PLAN_DOKUNMA=1` ise geçen adımda PLAN.md'deki `[x]` işaretlenmez (paralel koşuda bitişik satır çakışmasın; işaretlemeyi 85 ana dalda yapar).
+  - Kapı: `bash test/mdk-adim.test.sh kilit plan_dokunma` (iki koşu aynı tek modelle: ikincisi bekler; iki modelle: ikinci koşu ikinci modeli alır)
+
+- [ ] 85. Paralel koşturucu
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: Yeni `mdk-paralel.sh <no> <no>...`: her adım için `git worktree add ../.mdk-wt/<proje>-<no> -b mdk/<no>`; içinde `MDK_PLAN_DOKUNMA=1 mdk-adim.sh <no>` (`MDK_METRIK`/`MDK_DURUM` ana depoya; `durum.json`'da son yazan kazanır, panelde adımlar arasında gidip gelebilir, kabul); hepsi bitince geçenleri numara sırasıyla ana dala `git cherry-pick`, ardından ana dalda `[x]` işaretle ve commit; çakışmada durur, `--abort`, o adımı ve dalı raporlar (çıkış 9), diğerleri işlenmiş kalır. Biten worktree silinir, dal kalır. Özet tablo: adım, model, sonuç, süre.
+  - Kapı: `bash test/mdk-paralel.test.sh` (sahte opencode: iki ayrı dosya → ikisi de ana dalda; aynı satır → ikincisi çıkış 9, ilki işlenmiş)
+
+- [ ] 86. Go modeliyle inceleme
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: Yeni `mdk-incele.sh <no>`: adım metni + o adımın commit diff'i (mdk-adim commit konusu `adım <no>: …`; `git log --grep "^adım <no>:"` bulamazsa çıkış 4, HEAD'e düşmez) `Görev inceleme:` modeline plan ajanıyla (salt okunur) verilir; istenen çıktı ilk satırda `UYUM: <0-100>` + en çok 5 madde. Sonuç `mdk-kayit.mjs <no> --inceleme --uyum <n> --not <dosya>` ile yazılır; çıktı biçimi bozuksa yedek model, o da bozuksa çıkış 2. Claude yalnız uyum < 80 ise diff'i kendisi okur.
+  - Kapı: `bash test/mdk-incele.test.sh`
+
+- [ ] 87. Kurallar ve belgeler
+  - Yürütücü: claude
+  - Ne: `CLAUDE.md` (mdk) ve global `~/.claude/CLAUDE.md` "Görev dağıtımı": OpenCode Go, `- Görev:` alanı, `mdk-paralel.sh`, `mdk-incele.sh`; `claude-*` türler (görsel doğrulama, belge, log özeti) Claude alt ajanında; derin araştırma Gemini Deep Research (kullanıcı elle). `ba-pm-bakis` SKILL.md: persona OpenCode'da `Görev persona:` modeliyle ("ücretsiz model" ifadesi düzeltilir).
+  - Kapı: `grep -q 'Görev persona' ~/.claude/skills/ba-pm-bakis/SKILL.md && grep -q 'mdk-paralel' CLAUDE.md && ! grep -q 'ücretsiz modelle' ~/.claude/skills/ba-pm-bakis/SKILL.md`
+
+- [ ] 88. Gerçek deneme ve ölçüm
+  - Yürütücü: claude
+  - Ne: Claude, ayrı dosyalara dokunan iki küçük Go adımı tam yazar (Ne + Kapı; 73-80 tek satırlık taslak, 74 ve 75 çalıştırıcıya dokunduğu için kodcu'nun, uygun değil) ve `mdk-paralel.sh` ile koşar; her birini `mdk-incele.sh` ile incele. 85 ve 86'nın kendi metrikleri de (a) ölçütüne girer. Başarı ölçütünü (a-c) metriklerden hesapla, karar notunun altına yaz; görev tablosunda ölçülen satırları "ölçüldü" diye işaretle.
+  - Kapı: `grep -q 'Faz 11 ölçümü' PLAN.md`
+
+Sonraya bırakılan: panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir; veri 5+ adıma ulaşınca etki taslağıyla açılır).
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
