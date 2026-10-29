@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -295,6 +295,48 @@ c_gorev_varsayilan() { # Görev alanı yoksa kod; ilk model kalırsa ikinciye ge
   kontrol '[ "$KOD" = 0 ]'
   kontrol '[ "$(paste -sd, $T/modeller.log)" = m/kod1,m/kod2 ]'
   kontrol '[ "$(metrik "r.map(x=>x.gorev).join()")" = kod,kod ]'
+}
+
+# adım 84: model kilidi ve MDK_PLAN_DOKUNMA
+iki_depo() { # $1 model listesi, $2 A'nın davran'ı, $3 B'nin davran'ı; TA/RA, TB/RB
+  setup "$(plan "$1" '  - Kapı: `test -f cikti.txt`')" "$2"; commit0; TA=$T; RA=$R
+  setup "$(plan "$1" '  - Kapı: `test -f cikti.txt`')" "$3"; commit0; TB=$T; RB=$R
+  K=$(mktemp -d)
+}
+kos_ab() { # A arka planda, 1 sn sonra B önde; B'nin KOD/SN'si; ek ortam argüman
+  ( cd "$RA"; env STUB_DIR=$TA PATH="$TA/bin:$PATH" MDK_OPENCODE=opencode POLL=1 DENEME=1 SURE=30 MDK_KILIT=$K MDK_KILIT_BEKLE=1 "$@" bash "$RUNNER" 1 ) >"$TA/cikti.txt" 2>&1 &
+  APID=$!; sleep 1; local t0=$(date +%s)
+  ( cd "$RB"; env STUB_DIR=$TB PATH="$TB/bin:$PATH" MDK_OPENCODE=opencode POLL=1 DENEME=1 SURE=30 MDK_KILIT=$K MDK_KILIT_BEKLE=1 "$@" bash "$RUNNER" 1 ) >"$TB/cikti.txt" 2>&1
+  KOD=$?; SN=$(( $(date +%s)-t0 )); wait $APID; AKOD=$?; T=$TB; R=$RB
+}
+c_kilit_bekle() { # tek model kilitli: B bekler, A bitince alır; bekleme deneme sayılmaz
+  iki_depo m/a 'davran(){ sleep 4; echo x > cikti.txt; }' 'davran(){ echo x > cikti.txt; }'
+  kos_ab
+  kontrol '[ "$AKOD" = 0 ] && [ "$KOD" = 0 ]'
+  kontrol '[ "$SN" -ge 2 ]'
+  kontrol '[ "$(cd $RB && metrik "r.length")" = 1 ]'
+  kontrol '! grep -q kilitli $RB/metrikler.jsonl'
+  kontrol '[ -z "$(ls $K | grep /)" ] && ls $K | grep -q "m_a"'
+}
+c_kilit_ikinci() { # iki model: B kilitli m/a'yı atlar, beklemeden m/b'yi alır
+  iki_depo 'm/a, m/b' 'davran(){ sleep 4; echo x > cikti.txt; }' 'davran(){ echo x > cikti.txt; }'
+  kos_ab
+  kontrol '[ "$KOD" = 0 ] && [ "$SN" -lt 3 ]'
+  kontrol '[ "$(cat $TB/modeller.log)" = m/b ]'
+  kontrol '[ "$(cat $TA/modeller.log)" = m/a ]'
+}
+c_kilit_tavan() { # tüm modeller kilitli ve tavan dolar: çıkış 8, model çağrılmaz
+  iki_depo m/a 'davran(){ sleep 8; echo x > cikti.txt; }' 'davran(){ echo x > cikti.txt; }'
+  kos_ab MDK_KILIT_TAVAN=2
+  kontrol '[ "$KOD" = 8 ] && [ "$SN" -lt 6 ]'
+  kontrol '[ ! -f $TB/modeller.log ]'
+}
+c_plan_dokunma() { # geçen adım commit edilir ama PLAN.md'de [x] işaretlenmez
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos MDK_PLAN_DOKUNMA=1
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol 'grep -q "^- \[ \] 1\." PLAN.md'
+  kontrol 'git log -1 --format=%s | grep -q "^adım 1:"'
+  kontrol '[ -z "$(git status --porcelain)" ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}

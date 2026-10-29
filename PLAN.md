@@ -738,8 +738,8 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
 
 - [ ] 84. Model kilidi
   - Yürütücü: kodcu
-  - Ne: `mdk-adim.sh`: bir modeli denemeden önce `~/.cache/mdk/kilit/<model>` üzerinde `flock -n`; kilitliyse `neden: kilitli` ile sıradakine (deneme sayılmaz, metriğe yazılmaz). Tüm modeller kilitliyse 30 sn bekle, en çok 10 dk, sonra çıkış 8. Kilit süreç ölünce kendiliğinden bırakılır (flock fd); dosya adında `/` → `_`. Ayrıca `MDK_PLAN_DOKUNMA=1` ise geçen adımda PLAN.md'deki `[x]` işaretlenmez (paralel koşuda bitişik satır çakışmasın; işaretlemeyi 85 ana dalda yapar).
-  - Kapı: `bash test/mdk-adim.test.sh kilit plan_dokunma` (iki koşu aynı tek modelle: ikincisi bekler; iki modelle: ikinci koşu ikinci modeli alır)
+  - Ne: `mdk-adim.sh`: bir modeli denemeden önce `~/.cache/mdk/kilit/<model>` üzerinde `flock -n`; kilitliyse `neden: kilitli` ile sıradakine (deneme sayılmaz, metriğe yazılmaz). Tüm modeller kilitliyse 30 sn bekle, en çok 10 dk, sonra çıkış 8. Kilit süreç ölünce kendiliğinden bırakılır (flock fd); dosya adında `/` → `_`. Test için ortam: `MDK_KILIT` (kilit dizini, varsayılan `~/.cache/mdk/kilit`), `MDK_KILIT_BEKLE` (sn, varsayılan 30), `MDK_KILIT_TAVAN` (sn, varsayılan 600). Ayrıca `MDK_PLAN_DOKUNMA=1` ise geçen adımda PLAN.md'deki `[x]` işaretlenmez (paralel koşuda bitişik satır çakışmasın; işaretlemeyi 85 ana dalda yapar).
+  - Kapı: `bash test/mdk-adim.test.sh kilit_bekle kilit_ikinci kilit_tavan plan_dokunma` (iki koşu aynı tek modelle: ikincisi bekler; iki modelle: ikinci koşu ikinci modeli alır)
 
 - [ ] 85. Paralel koşturucu
   - Yürütücü: opencode
