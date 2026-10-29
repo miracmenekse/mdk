@@ -744,13 +744,13 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
 - [ ] 85. Paralel koşturucu
   - Yürütücü: opencode
   - Görev: kod
-  - Ne: Yeni `mdk-paralel.sh <no> <no>...`: her adım için `git worktree add ../.mdk-wt/<proje>-<no> -b mdk/<no>`; içinde `MDK_PLAN_DOKUNMA=1 mdk-adim.sh <no>` (`MDK_METRIK`/`MDK_DURUM` ana depoya; `durum.json`'da son yazan kazanır, panelde adımlar arasında gidip gelebilir, kabul); hepsi bitince geçenleri numara sırasıyla ana dala `git cherry-pick`, ardından ana dalda `[x]` işaretle ve commit; çakışmada durur, `--abort`, o adımı ve dalı raporlar (çıkış 9), diğerleri işlenmiş kalır. Biten worktree silinir, dal kalır. Özet tablo: adım, model, sonuç, süre.
-  - Kapı: `bash test/mdk-paralel.test.sh` (sahte opencode: iki ayrı dosya → ikisi de ana dalda; aynı satır → ikincisi çıkış 9, ilki işlenmiş)
+  - Ne: Yeni `mdk-paralel.sh <no> <no>...`: her adım için `git worktree add ../.mdk-wt/<proje>-<no> -b mdk/<no>`; içinde `MDK_PLAN_DOKUNMA=1 mdk-adim.sh <no>` (`MDK_METRIK`/`MDK_DURUM` ana depoya; `durum.json`'da son yazan kazanır, panelde adımlar arasında gidip gelebilir, kabul); hepsi bitince geçenleri numara sırasıyla ana dala `git cherry-pick`, ardından ana dalda `[x]` işaretle ve commit; çakışmada durur, `--abort`, o adımı ve dalı raporlar (çıkış 9), diğerleri işlenmiş kalır. Biten worktree silinir, dal kalır. Özet tablo (her adım bir satır, `| <no> | <model> | <sonuç> | <sn> |`). `mdk-adim.sh` bu betiğin kendi dizininden çağrılır (worktree'deki kopyadan değil). Çıkış: 0 hepsi işlendi | 2 en az bir adım geçmedi (geçenler yine işlenir) | 9 çakışma | 4 argüman yok ya da ağaç kirli. Ortam (`MDK_KILIT*`, `POLL`, `DENEME`, `SURE`, `PATH`) alt koşulara aynen geçer.
+  - Kapı: `bash test/mdk-paralel.test.sh`
 
 - [ ] 86. Go modeliyle inceleme
   - Yürütücü: opencode
   - Görev: kod
-  - Ne: Yeni `mdk-incele.sh <no>`: adım metni + o adımın commit diff'i (mdk-adim commit konusu `adım <no>: …`; `git log --grep "^adım <no>:"` bulamazsa çıkış 4, HEAD'e düşmez) `Görev inceleme:` modeline plan ajanıyla (salt okunur) verilir; istenen çıktı ilk satırda `UYUM: <0-100>` + en çok 5 madde. Sonuç `mdk-kayit.mjs <no> --inceleme --uyum <n> --not <dosya>` ile yazılır; çıktı biçimi bozuksa yedek model, o da bozuksa çıkış 2. Claude yalnız uyum < 80 ise diff'i kendisi okur.
+  - Ne: Yeni `mdk-incele.sh <no>`: adım metni + o adımın commit diff'i (mdk-adim commit konusu `adım <no>: …`; `git log --grep "^adım <no>:"` bulamazsa çıkış 4, HEAD'e düşmez) `Görev inceleme:` modeline plan ajanıyla (salt okunur) verilir; istenen çıktı ilk satırda `UYUM: <0-100>` + en çok 5 madde (model çağrısı `opencode run --format json -m <model> --agent plan <istem>`, yanıt v2 `text` olaylarından). Sonuç `node mdk-kayit.mjs <no> --inceleme uyumlu|kismen|uyumsuz --not "UYUM <n>: <maddeler>"` ile yazılır (≥80 uyumlu, 50-79 kismen, <50 uyumsuz); `UYUM: <n>` satırı stdout'a da basılır; çıktı biçimi bozuksa yedek model, o da bozuksa çıkış 2. Claude yalnız uyum < 80 ise diff'i kendisi okur.
   - Kapı: `bash test/mdk-incele.test.sh`
 
 - [ ] 87. Kurallar ve belgeler
