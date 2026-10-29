@@ -682,6 +682,31 @@ Sonraki adımlar (kapıları sırası gelince yazılır; ölçüm sırası L1 ö
 - 79. Push öncesi regresyon: `mdk-push.sh` tüm kapıları (dbeaver-mm'de `kapi/hepsi.sh` + değişen plugin testleri) koşar, özet dosyası yazar; Claude okur: yeşil → push; kırmızı → düşen kapı çıktısıyla geliştiren modele düzeltme adımı.
 - 80. Plan alanı `- Değişen davranış:`: emekliye ayrılan kapılar burada; yazılmayan her eski kapı geçmek zorunda.
 
+## Karar notu: görev türüne göre model (2026-10-29)
+Kullanıcı kararı: OpenCode Go alındı; yalnız OpenCode (`opencode-go/*`) kullanılır. OpenRouter kaldırıldı (78'deki OpenRouter sayacı düşer), GitHub şimdilik kapalı. Paralel yapılabilen işler ayrı oturumlarda koşar.
+Kaynak: OpenRouter `GET /api/v1/benchmarks` (as_of 2026-10-29): AA intelligence/coding/agentic, GPQA, tau-bench airline, Design Arena Elo (website+uicomponent+dataviz). Maliyet: OpenRouter $/1M (3 girdi : 1 çıktı). `iceman-contributor-free` veride yok.
+Ölçüt: ağırlıklı fayda (0-1, ağırlığın yarısından azına verisi olan elenir). Zor: fayda − 0,05·log2(fiyat/medyan 0,9$). Orta: aynı, ceza 0,15. Kolay: faydası ≥0,5 olan en ucuz.
+
+| Görev | Zorluk | 1. model | Yedek |
+|---|---|---|---|
+| Kod yazma | orta | glm-5.3-flash | glm-5.3 |
+| Tasarım (UI, kroki) | orta | glm-5.3-flash | mimo-v2.6-pro |
+| Persona | kolay | gpt-6-luna (ölçüldü: adım 36 sorusu 3/3 geçerli, ~9k token/kart, 14 sn) | beam-free |
+| Kapı (test) yazma | zor | gemini-4-argon | gpt-5.6-luna |
+| Kod inceleme | zor | gemini-4-argon | gpt-5.6-luna |
+| Eskale / zor hata | zor | qwen3.8-max | glm-5.3 |
+| Mekanik küçük iş | kolay | mimo-v2.6-flash | claude-haiku-5-5 |
+| Görsel doğrulama (görüntü girdisi şart) | orta | claude-haiku-5-5 | glm-5.3-flash |
+| Kısa araştırma | orta | glm-5.3-flash | claude-haiku-5-5 |
+| Derin araştırma | zor | Gemini Deep Research (kullanıcı elle, Google AI Pro) | gemini-4-argon |
+| Belge yazımı | orta | claude-haiku-5-5 | qwen3.7-plus |
+| Log/metrik özeti | kolay | claude-haiku-5-5 | minimax-m3 |
+
+- Çalıştırma yeri (kullanıcı kararı): `claude-*` modeller OpenCode'dan değil Claude hesabından (Claude Code alt ajanı, ör. `kodcu` = haiku) çalışır; diğerleri `opencode-go/*`. Haiku satırları (persona, görsel doğrulama, belge, log özeti) böylece Go limitini yemez, Claude hesabının limitini yer. Persona için eski kural ("Claude alt ajanı kullanılmaz", 2026-10-27) bu kararla değişir.
+- Google AI Pro OpenCode'a bağlanamaz (Haziran 2026'dan beri kişisel hesap OAuth'u kapalı, 3. taraf kullanım kural dışı); yalnız Gemini uygulaması/NotebookLM'de elle. Derin araştırmada Claude soruyu hazırlar, kullanıcı Deep Research'te koşar, raporu verir; Claude özeti `arastirma/arastirma.json`'a işler. Kısa araştırma (tek soru, birkaç kaynak) Go modeliyle.
+- Bunlar benchmark puanı, bizim işte ölçülmedi: 73 (deney koşturucu) ile her görevde 1. model yedeğe karşı denenir. Gemini-4-argon görev başına pahalı (tau 0,50$): Go limitini hızlı yerse yedeğe geç. Gemini-4-argon'un kod endeksi yok (kapı puanı yalnız GPQA+zekâ). mimo-v2.6-flash'ın mekanik puanı yalnız tau-bench'e dayanır.
+- Yoklama (2026-10-29, `opencode-go/<model>` tek istek): listedeki tüm modeller yanıt verdi. Elenen: `muse-spark-*-contributor` (istek verisiyle eğitir; workspace Privacy'de izin ister, özel kod için açılmaz), `mimo-v2.5-pro` (kullanımdan kalktı → mimo-v2.6-pro). Kapı ve inceleme yedeği, kodu yazan glm'den bağımsız olsun diye gpt-5.6-luna.
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
