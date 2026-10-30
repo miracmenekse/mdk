@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma ortam_yalitim"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma ortam_yalitim onkontrol_durum onkontrol_kirmizi onkontrol_onay"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -362,6 +362,15 @@ c_onkontrol_kirmizi() { # adım 91: ön regresyon kırmızı: çıkış 4, model
   kontrol '[ ! -f $T/modeller.log ]'
   kontrol 'grep -q "\"durum\":\"regresyon_kirmizi\"" durum.json'
   kontrol 'grep -q "panel/x.test.mjs" $T/cikti.txt'
+}
+c_onkontrol_onay() { # onaysız adımda ön regresyon koşmaz, durum.json "regresyon"da takılı kalmaz
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`
+  - Etki: etki/a.html')" 'davran(){ echo x > cikti.txt; }'
+  mkdir -p test; printf '%s\n' 'touch "$STUB_DIR/onk.txt"; exit 0' >test/hepsi.sh; commit0
+  kos
+  kontrol '[ "$KOD" = 5 ]'
+  kontrol '[ ! -f $T/onk.txt ]'
+  kontrol '! grep -q regresyon durum.json 2>/dev/null'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
