@@ -345,6 +345,24 @@ c_ortam_yalitim() { # dış koşunun MDK_METRIK/MDK_DURUM/MDK_PLAN_DOKUNMA'sı k
   kontrol '[ "$KOD" = 0 ]'
   kontrol '[ -f $T/dis.jsonl ] && grep -q "\"gecti\":true" $T/dis.jsonl'   # dış koşu yine ana dosyaya yazar
 }
+c_onkontrol_durum() { # adım 91: ön regresyon hızlı kipte koşar, sürerken durum.json "regresyon"
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'
+  mkdir -p test; printf '%s\n' 'echo "hizli=${HEPSI_HIZLI:-} durum=$(cat durum.json 2>/dev/null)" >"$STUB_DIR/onk.txt"; exit 0' >test/hepsi.sh; commit0
+  kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol 'grep -q "^hizli=1 " $T/onk.txt'
+  kontrol 'grep -q "\"durum\":\"regresyon\"" $T/onk.txt'
+  kontrol 'grep -q "\"durum\":\"gecti\"" durum.json'
+}
+c_onkontrol_kirmizi() { # adım 91: ön regresyon kırmızı: çıkış 4, model çağrılmaz, durum.json "regresyon_kirmizi"
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'
+  mkdir -p test; printf '%s\n' 'echo "BAŞARISIZ: panel/x.test.mjs"; exit 1' >test/hepsi.sh; commit0
+  kos
+  kontrol '[ "$KOD" = 4 ]'
+  kontrol '[ ! -f $T/modeller.log ]'
+  kontrol 'grep -q "\"durum\":\"regresyon_kirmizi\"" durum.json'
+  kontrol 'grep -q "panel/x.test.mjs" $T/cikti.txt'
+}
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}
 for CASE in $SECILEN; do

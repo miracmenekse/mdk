@@ -783,6 +783,17 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: `panel/ciz.mjs`: `kota` denemesi `sessizMi` gibi gerçek deneme sayılmaz (sorunlu sayılmaz). Özet satırında ayrı sayılır: `N kota` (sessizden ayrı); yalnız kota varsa `kota doldu (N)`. Ayrıntıda kota satırı `<no>. <model> ○ kota doldu`. `yanit_yok` metinleri değişmez. Başka dosyaya dokunma.
   - Kapı: `node panel/kota-gecmis.test.mjs`
 
+- [ ] 91. Hızlı ön kontrol ve regresyon durumu
+  - Yürütücü: kodcu
+  - Ne: `test/hepsi.sh`: `HEPSI_HIZLI=1` iken `test/mdk-adim.test.sh` koşmaz, `atlandı (hızlı): test/mdk-adim.test.sh` basar. `mdk-adim.sh` ön kontrolü `HEPSI_HIZLI=1` ile koşar; koşudan önce durum.json'a `regresyon`, kırmızıysa `regresyon_kirmizi` yazar (`yaz_durum` tanımı ön kontrolden önceye alınır). `MDK_ONKONTROL_YOK` aynen çalışır. Push öncesi tam `test/hepsi.sh` kuralı değişmez; `CLAUDE.md`'ye bir satır not.
+  - Kapı: `bash test/mdk-adim.test.sh onkontrol_durum onkontrol_kirmizi && bash test/hepsi-hizli.test.sh`
+
+- [ ] 92. Panelde ön regresyon durumu
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/ciz.mjs`: `regresyon` etiketi `ön regresyon koşuyor`, `regresyon_kirmizi` etiketi `ön regresyon kırmızı`. `regresyon` sürerken sayaç görünür ve plan satırı `calisiyor` olur; `regresyon_kirmizi`de sayaç durur, satır `bekliyor` olur. Başka dosyaya dokunma.
+  - Kapı: `node panel/regresyon.test.mjs`
+
 Sonraya bırakılan: panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir; veri 5+ adıma ulaşınca etki taslağıyla açılır).
 
 ## Sonraki iyileştirmeler
