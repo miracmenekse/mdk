@@ -2,7 +2,7 @@
 // Tüm kullanıcı metni esc ile kaçışlanır.
 
 const ROZETLER = { bitti: 'bitti', calisiyor: 'çalışıyor', bekliyor: 'bekliyor', eskale: 'eskale' };
-const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor' };
+const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor', regresyon: 'ön regresyon koşuyor', regresyon_kirmizi: 'ön regresyon kırmızı' };
 const GUVEN = { dusuk: 'düşük', orta: 'orta', yuksek: 'yüksek' };
 // model tablosu veri güveni: [simge + metin, açıklama]
 const VERI = {
@@ -43,7 +43,9 @@ function adimDurumu(a, simdi) {
   if (a.bitti) return 'bitti';
   if (simdi && simdi.adim === a.no) {
     if (simdi.durum === 'eskale') return 'eskale';
-    if ((simdi.durum || 'calisiyor') === 'calisiyor') return 'calisiyor';
+    const d = simdi.durum || 'calisiyor';
+    // ön regresyon koşarken adım çalışıyor sayılır; kırmızı regresyon beklemeye döner
+    if (d === 'calisiyor' || d === 'regresyon') return 'calisiyor';
   }
   return 'bekliyor';
 }
@@ -63,8 +65,8 @@ function yildizlar(deger) {
 export function suAnHtml(simdi, simdiMs) {
   if (!simdi) return '<span class="bos">boşta</span>';
   const durum = simdi.durum || 'calisiyor';
-  // sayaç yalnızca çalışırken; bitince bitiş saati
-  const son = durum === 'calisiyor'
+  // sayaç yalnızca çalışırken (ön regresyon dahil); bitince bitiş saati
+  const son = durum === 'calisiyor' || durum === 'regresyon'
     ? `<div class="alan"><span class="etiket">geçen süre</span><b id="sure">${esc(gecenSure(simdi.ts, simdiMs))}</b></div>`
     : `<div class="alan"><span class="etiket">bitiş</span><b>${simdi.ts ? saat(simdi.ts) : '—'}</b></div>`;
   return '<div class="ana">' +

@@ -788,7 +788,7 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
   - Ne: `test/hepsi.sh`: `HEPSI_HIZLI=1` iken `test/mdk-adim.test.sh` koşmaz, `atlandı (hızlı): test/mdk-adim.test.sh` basar. `mdk-adim.sh` ön kontrolü `HEPSI_HIZLI=1` ile koşar; koşudan önce durum.json'a `regresyon`, kırmızıysa `regresyon_kirmizi` yazar (`yaz_durum` tanımı ön kontrolden önceye alınır). `MDK_ONKONTROL_YOK` aynen çalışır. Push öncesi tam `test/hepsi.sh` kuralı değişmez; `CLAUDE.md`'ye bir satır not.
   - Kapı: `bash test/mdk-adim.test.sh onkontrol_durum onkontrol_kirmizi && bash test/hepsi-hizli.test.sh`
 
-- [ ] 92. Panelde ön regresyon durumu
+- [x] 92. Panelde ön regresyon durumu
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/ciz.mjs`: `regresyon` etiketi `ön regresyon koşuyor`, `regresyon_kirmizi` etiketi `ön regresyon kırmızı`. `regresyon` sürerken sayaç görünür ve plan satırı `calisiyor` olur; `regresyon_kirmizi`de sayaç durur, satır `bekliyor` olur. Başka dosyaya dokunma.
