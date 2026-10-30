@@ -460,12 +460,12 @@ etkiEl.addEventListener('submit', async (e) => {
   }
 });
 
-// sayaç yalnızca durum 'calisiyor' iken akar
+// sayaç yalnızca durum 'calisiyor' ya da 'regresyon' iken akar
 function suAnCiz() {
   clearInterval(zamanlayici);
   zamanlayici = null;
   simdiEl.innerHTML = suAnHtml(sonSimdi, Date.now());
-  if (sonSimdi && (sonSimdi.durum || 'calisiyor') === 'calisiyor') {
+  if (sonSimdi && ['calisiyor', 'regresyon'].includes(sonSimdi.durum || 'calisiyor')) {
     zamanlayici = setInterval(() => {
       simdiEl.innerHTML = suAnHtml(sonSimdi, Date.now());
     }, 1000);

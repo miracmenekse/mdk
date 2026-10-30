@@ -1,5 +1,6 @@
 // Kapı (adım 92): ön regresyon durumları "şu an" kartında ve plan satırında görünür. Kullanım: node panel/regresyon.test.mjs
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { suAnHtml, planHtml } from './ciz.mjs';
 
 const duz = (h) => h.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
@@ -20,4 +21,7 @@ assert.match(satir(h1, 'Yedinci'), /class="calisiyor"/, 'regresyondaki adım ça
 assert.match(satir(h1, 'Sekizinci'), /class="bekliyor"/);
 const h2 = planHtml(plan, { adim: 7, durum: 'regresyon_kirmizi', ts }, [], {});
 assert.match(satir(h2, 'Yedinci'), /class="bekliyor"/, 'kırmızı regresyonda adım beklemeye döner');
+// tarayıcı sayacı regresyonda da akar
+const sayfa = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+assert.match(sayfa, /\['calisiyor', 'regresyon'\]\.includes\(sonSimdi\.durum/);
 console.log('regresyon.test ok');
