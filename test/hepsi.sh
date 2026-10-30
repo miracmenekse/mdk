@@ -18,8 +18,10 @@ for t in panel/*.test.mjs etki/*.test.mjs test/*.test.mjs; do
   atla "$t" && { echo "atlandı (bekleyen adımın kapısı): $t"; continue; }
   out=$(node "$t" 2>&1) || { echo "BAŞARISIZ: $t"; echo "$out" | tail -5; FAIL=1; }
 done
+# HEPSI_HIZLI=1 (adım 91): ön kontrol kipi; mdk-adim.test.sh yavaştır, onu atlar
 for t in test/mdk-adim.test.sh test/mdk-panel.test.sh; do
   [ -f "$t" ] || continue
+  [ "${HEPSI_HIZLI:-}" = 1 ] && [ "$t" = test/mdk-adim.test.sh ] && { echo "atlandı (hızlı): $t"; continue; }
   atla "$t" && { echo "atlandı (bekleyen adımın kapısı): $t"; continue; }
   out=$(bash "$t" 2>&1) || { echo "BAŞARISIZ: $t"; echo "$out" | tail -8; FAIL=1; }
 done

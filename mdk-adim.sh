@@ -56,19 +56,20 @@ git rev-parse --git-dir >/dev/null 2>&1 || { echo "git deposu değil"; exit 4; }
 git check-ignore -q .mdk-log || { echo ".gitignore'a .mdk-log/, durum.json, metrikler.jsonl ekle"; exit 4; }
 [ -z "$(git status --porcelain)" ] || { echo "çalışma ağacı kirli; önce commit et"; exit 4; }
 CP=$(git rev-parse HEAD)
+# küçük JSON yardımcıları (jq yok); ön kontrol de durum yazdığı için yukarıda tanımlı
+yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM=$3 D_DOSYA=$DURUM node -e '
+  const e=process.env; require("fs").writeFileSync(e.D_DOSYA, JSON.stringify({adim:+e.D_ADIM,baslik:e.D_BASLIK,
+  model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,deney:e.MDK_DENEY||null,ts:Date.now()}))'; }
 # ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (adım 70: 7 deneme boşa gitti)
+# hızlı kip (HEPSI_HIZLI=1): mdk-adim.test.sh atlanır; kırmızıda durum.json "regresyon_kirmizi", kırmızı satırları çıktıda
 if [ -f test/hepsi.sh ] && [ -z "${MDK_ONKONTROL_YOK:-}" ]; then
-  ok=$(env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT bash test/hepsi.sh 2>&1) || { echo "adım $N başlamadı: test/hepsi.sh HEAD'de kırmızı (kapıyı düzelt):"; tail -5 <<<"$ok"; exit 4; }
+  yaz_durum "" 0 regresyon
+  ok=$(env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT HEPSI_HIZLI=1 bash test/hepsi.sh 2>&1) || { yaz_durum "" 0 regresyon_kirmizi; echo "adım $N başlamadı: test/hepsi.sh HEAD'de kırmızı (kapıyı düzelt):"; grep 'BAŞARISIZ' <<<"$ok"; tail -5 <<<"$ok"; exit 4; }
 fi
 # taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
 if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet\b' <<<"$blok"; then
   echo "adım $N taslak onayı bekliyor: PLAN.md'ye \"- Onay: evet\" ekle"; exit 5
 fi
-
-# küçük JSON yardımcıları (jq yok)
-yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM=$3 D_DOSYA=$DURUM node -e '
-  const e=process.env; require("fs").writeFileSync(e.D_DOSYA, JSON.stringify({adim:+e.D_ADIM,baslik:e.D_BASLIK,
-  model:e.D_MODEL,deneme:+e.D_DENEME,durum:e.D_DURUM,deney:e.MDK_DENEY||null,ts:Date.now()}))'; }
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
   let t=0,c=0,e=0,ss=0,sf=0,cur=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {

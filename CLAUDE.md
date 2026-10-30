@@ -45,6 +45,7 @@ Her model ayrı git worktree'de, `DENEME=1`, tek modelli plan kopyasıyla koşul
 - Doğrulanacak: deepseek ve space-bunny'nin kapı 2 geçişi, super-vl, big-pickle ve lightning'in zor adımdaki sonucu (kota açılınca, art arda).
 
 ## Tuzaklar
+- Ön kontrol (adım 91): `mdk-adim.sh` `HEPSI_HIZLI=1 test/hepsi.sh` koşar (mdk-adim.test.sh atlanır); kırmızıda durum.json `regresyon_kirmizi`, çıkış 4. Push öncesi tam `bash test/hepsi.sh` hâlâ şart.
 - `opencode run` stdin kapalı (`</dev/null`) çalışmalı; yoksa `timeout` altında takılır.
 - Süreç durdururken `pkill -f` kullanma (kendi kabuğunu da öldürür), PID ile öldür.
 - VM'deki snap Firefox ekran görüntüsünü gizli dizine yazamaz; `--screenshot ~/x.png` kullan, sonra sil.
