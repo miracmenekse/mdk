@@ -796,6 +796,57 @@ Riskler: Go kullanım sınırı yayımlanmamış (paralel koşu çabuk tüketebi
 
 Sonraya bırakılan: panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir; veri 5+ adıma ulaşınca etki taslağıyla açılır).
 
+## Faz 12 — Akış sekmesi yeniden tasarımı (kart=sekme + adım detay drawer)
+Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı onayladı, SVG dışa aktarıldı); karar `tasarim.md §7`.
+- **Problem / hipotez:** Panelde adım bilgisi (durum, persona tartışması, UI etkisi) üç ayrı yere dağılmış; Etki ayrı sekmede. Hipotez: adıma tıklayınca açılan tek bir drawer'da "ne oldu + personalar ne dedi + UI'a etkisi + karar" bir arada olursa kullanıcı adımı tek bakışta anlar ve kararı yerinde verir.
+- **İş değeri / ölçüt:** Etki sekmesi kalkar, kart sayısı 5→4; bir adımın tüm bağlamı tek tıkla görünür; "Panelden karar" akışı drawer'dan bozulmadan çalışır (uçtan uca Onayla/Reddet/Yorum → `kararlar.jsonl`).
+- **Akış:** 4 KPI kartı = sekme (tıkla→geç); Akış'ta ŞU AN ÇALIŞIYOR hero + düz ADIMLAR tablosu; satıra tıkla → overlay + yan drawer (ADIM no, durum/süre, PERSONA DÜŞÜNCELERİ balonları, ETKİ kartı+karar); ×/Esc/overlay kapatır.
+- **Karar (persona verisi):** Drawer'ın PERSONA DÜŞÜNCELERİ bölümü, adımın `- Persona:` alanıyla bağlı `persona-tur/<zaman>/ozet.md`'yi **balonlara** eşler (her persona bloğu bir balon; rol→avatar+renk). Adıma özel ileri-geri diyalog MDK'da üretilmiyor; bu faz var olan persona turu çıktısını balon düzeninde gösterir, turu olmayan adımda boş durum ("bu adım için persona turu yok"). Adım-bazlı diyalog üreten yeni tur ayrı iş (Faz 13+).
+- **Riskler:** (1) Etki sekmesini kaldırmak `karar-ui`, `karar-ciz`, `etki-goster`, `etki-gecmis`, `arayuz`, `sekme`, `kroki-buyut`, `modeller-ui`, `claude`, `ciz` testlerini kırar → karar akışı önce drawer'a taşınır, sonra sekme kaldırılır, testler Claude'ca güncellenir. (2) `persona-tur/` git-ignore → bu Mac'te veri yok; geliştirme örnek `ozet.md` ile, gerçek doğrulama VM'de. (3) Yol `- Persona:` metin alanından gelir → sunucu `<kök>/persona-tur/` dışını reddeder.
+
+- [ ] 93. Ayrıştırıcı: `- Persona:` alanı
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/plan.mjs`: satır ayrıştırıcıdaki alan listesine `Persona`yı kat; `- Persona: <yol>` satırı VARSA `adim.persona = <doğrulanmış yol>` ata (yalnız satır varken ata; nesne literaline `persona` ekleme — böylece mevcut `plan.test.mjs` bozulmaz). Değer `persona-tur/` ile başlamıyor ya da `..` içeriyorsa `adim.persona = null`. Başka davranış değişmesin.
+  - Kapı: `node panel/plan-persona.test.mjs` (geçerli yol → `adim.persona` = yol; `../x`/kök dışı → `null`; Persona satırı olmayan adımda `persona` anahtarı yok)
+- [ ] 94. Sunucu: `GET /api/persona?adim=<no>`
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/sunucu.mjs`: `pathname === '/api/persona'` → `adim` sorgu parametresiyle planı bul, adımın `persona` yolundaki `persona-tur/<zaman>/ozet.md`'yi oku, `{ adim, ozet }` JSON döndür. Yol `<kök>/persona-tur/` dışındaysa (kroki servisindeki `realpath` kısıt mantığı) 400; `persona` yoksa/dosya yoksa `{ adim, ozet: null }`. Diğer uç noktalara dokunma.
+  - Kapı: `node panel/persona-api.test.mjs` (geçerli yol → ozet metni; kök dışı yol → 400; persona'sız adım → `ozet:null`)
+- [ ] 95. ciz.mjs: `personaBalonlarHtml(ozet)`
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/ciz.mjs`: yeni saf `personaBalonlarHtml(ozet)` export; `ozet.md` metnini persona balonlarına çevirir (her `## <kart>` bloğu bir balon: rol adı + baş harf avatar + sıraya göre renk sınıfı `persona-a/b/c`, varsa saat). `ozet` boş/null → `<p class="bos">bu adım için persona turu yok</p>`. HTML kaçışı uygula.
+  - Kapı: `node panel/persona-ciz.test.mjs` (3 kartlı ozet → 3 balon, doğru rol/avatar/renk sırası; boş → boş durum; `<script>` kaçışlanır)
+- [ ] 96. ciz.mjs: `drawerHtml(adim, etkiKarti)`
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/ciz.mjs`: yeni saf `drawerHtml(adim, etkiKarti)` export; başlık (`ADIM <no>` + ad + kapat düğmesi), durum satırı (rozet + model · deneme · saat · geçen süre), ilerleme çubuğu, `PERSONA DÜŞÜNCELERİ` bölüm başlığı + boş kap (`#drawer-persona`, lazy dolacak), `ETKİ` bölümü = `etkiKarti` (var olan `etkiKart` + karar formu yeniden kullanılır); etkisiz adımda `etki yok`. `suAnHtml`/`etkiKart` yardımcılarını tekrar kullan, kopyalama.
+  - Kapı: `node panel/drawer-ciz.test.mjs` (başlıkta no+ad; etkili adım → etki kartı + `form.karar`; etkisiz → "etki yok"; persona kabı boş render)
+- [ ] 97. index.html + CSS: drawer kabuğu ve aç/kapat
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/index.html`: ADIMLAR satırları tıklanabilir (`data-adim=<no>`); tıkla → overlay + sağ drawer (`drawerHtml`), `GET /api/persona?adim` ile `#drawer-persona`'yı doldur; `×`/`Esc`/overlay tıklaması kapatır. CSS: 720px düzene uygun yan panel + saydam overlay; açık tema, mavi vurgu. Yalnız `index.html` (ve gerekirse gömülü stil).
+  - Kapı: `node panel/drawer-ui.test.mjs` (satır tıklaması drawer açar; kapatma 3 yolla çalışır; persona fetch çağrılır) + Firefox ekran görüntüsü (geciktirici sarmalayıcı)
+- [ ] 98. KPI kartları = sekme (4 kart, Etki yok)
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/ciz.mjs` `kpiHtml`: 4 tıklanabilir kart (Depo/Akış/Modeller/Araştırma), her kart `role="tab"` + `data-sekme`, seçili vurgulu, rozet=yeni-öğe (0 gizli); Etki kartı yok. `index.html`: ayrı `.sekmeler` tablist'i kaldır/gizle, sekme geçişini kartlara bağla, `SEKMELER`'den `etki` çıkar.
+  - Kapı: `node panel/kpi-sekme.test.mjs` (4 kart, Etki yok, kart `data-sekme` taşır, seçili işaretlenir) + ekran görüntüsü
+- [ ] 99. Karar + kroki mantığını drawer'a taşı
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/index.html` JS: karar formu submit, not/odak saklama, kroki büyütme ve `gecmisAcik` toggle dinleyicileri `etkiEl` yerine drawer köküne bağlanır; `/api/karar` POST aynen. Karar her zaman açık drawer'daki adım için. `etkiEl`'e bağlı kod kalmasın.
+  - Kapı: `node panel/karar-ui.test.mjs` (drawer içindeki `form.karar` submit `/api/karar`'a no+tur+metin yollar; hata/odak-saklama korunur)
+- [ ] 100. Etki sekmesini kaldır + testleri yeşile al
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/index.html`: `sekme-etki` paneli ve (kalan) Etki sekme düğmesi kaldırılır; `#etki` artık yalnız drawer'da çizilir. Etkilenen testler (`karar-ciz`, `etki-goster`, `etki-gecmis`, `arayuz`, `sekme`, `kroki-buyut`, `modeller-ui`, `claude`, `ciz`) yeni yapıya göre Claude'ca düzeltilir; kapılar kırmızı doğrulanıp güncellenir.
+  - Kapı: `bash test/hepsi.sh` yeşil + Firefox ekran görüntüsüyle uçtan uca karar (Onayla→`kararlar.jsonl`)
+
+Sonraya bırakılan (Faz 13): Modeller sayfası grafik yeniden tasarımı (degrade halka gauge + yığılmış çubuk, açık tema — `tasarim.md §8`); panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir).
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
