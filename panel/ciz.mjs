@@ -304,7 +304,7 @@ export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
   }
   return (
     '<table class="akis-tablo"><thead><tr><th class="ad">Adım</th><th class="ilerleme">İlerleme</th><th class="durum">Durum</th></tr></thead>' +
-    `<tbody>${satirlar.join('')}</tbody></table>`
+    `<tbody>${satirlar.reverse().join('')}</tbody></table>`
   );
 }
 
