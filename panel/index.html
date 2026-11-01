@@ -129,16 +129,14 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .kpi-kart .kpi-rozet { background: var(--maliyet); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
 .kpi-kart .deger { font-size: 20px; font-variant-numeric: tabular-nums; }
 .kpi-kart .alt { color: var(--soluk); font-size: 12px; }
-.sekmeler { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--cizgi); }
-.sekmeler button { font: inherit; font-size: 14px; padding: 6px 12px; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--soluk); cursor: pointer; }
-.sekmeler button[aria-selected="true"] { color: var(--vurgu-metin); border-bottom-color: var(--vurgu); font-weight: 600; }
 @media (max-width: 520px) {
-  .kpi { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .kpi { gap: 6px; }
   .kpi-kutu { padding: 6px 8px; }
   .kpi-kutu b { font-size: 15px; }
   .kpi-kutu .etiket { font-size: 11px; }
-  .sekmeler { flex-wrap: nowrap; overflow-x: auto; }
-  .sekmeler button { white-space: nowrap; flex: none; }
+  .kpi-kart { padding: 8px; }
+  .kpi-kart .deger { font-size: 17px; }
+  #drawer { width: 100vw; }
 }
 .denge { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
 .denge-sutun h3 { font-size: 14px; margin: 0 0 6px; }
@@ -377,13 +375,12 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
 const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
-const etkiEl = document.getElementById('etki');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
 const claudeEl = document.getElementById('claude');
@@ -414,8 +411,6 @@ let sonSimdi = null;
 let sonD = null;   // son SSE verisi; araştırma gelince KPI kartlarını yeniden çizmek için
 let sonPlan = null;
 let zamanlayici = null;
-// etki sekmesinde biten adımların taslakları açık mı; her çizimde etkiHtml'e verilir
-let gecmisAcik = false;
 
 // --- adım detay drawer (v3: satıra tıkla → yan panel) ---
 const drawerEl = document.getElementById('drawer');
@@ -458,7 +453,8 @@ function drawerSureGuncelle() {
 async function drawerAc(no) {
   drawerAdim = no;
   const aObj = drawerAdimNesnesi(no);
-  drawerEl.innerHTML = drawerHtml(aObj, null);
+  const etkiE = (sonD?.etki || []).find((x) => x.no === no);
+  drawerEl.innerHTML = drawerHtml(aObj, etkiE ? etkiKartiHtml(etkiE, sonD?.kararIzleyici) : null);
   drawerEl.hidden = false;
   drawerOverlayEl.hidden = false;
   document.body.classList.add('drawer-acik');
@@ -497,17 +493,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !drawerEl.hidden) drawerKapat();
 });
 
-// etki geçmişi katlaması da kabarcıklanmaz: yakalama aşamasında dinlenir
-etkiEl.addEventListener('toggle', (e) => {
-  if (e.target && e.target.matches && e.target.matches('details.etki-gecmis')) {
-    gecmisAcik = e.target.open;
-  }
-}, true);
-
-// kroki büyütme: saydam düğme kendi iframe'inin adresini büyük pencerede açar
+// kroki büyütme: saydam düğme kendi iframe'inin adresini büyük pencerede açar (drawer içindeki etki kartı)
 const buyukEl = document.getElementById('buyuk');
 const buyukIframe = buyukEl.querySelector('iframe');
-etkiEl.addEventListener('click', (e) => {
+drawerEl.addEventListener('click', (e) => {
   const b = e.target.closest('.buyut');
   if (!b) return;
   buyukIframe.src = b.dataset.src;
@@ -521,8 +510,8 @@ buyukEl.addEventListener('close', () => {
   buyukIframe.src = '';
 });
 
-// karar formu: gönderim JSON ile; hata olursa not silinmez
-etkiEl.addEventListener('submit', async (e) => {
+// karar formu: gönderim JSON ile; hata olursa not silinmez (drawer içindeki etki kartından)
+drawerEl.addEventListener('submit', async (e) => {
   const form = e.target.closest('form.karar');
   if (!form) return;
   e.preventDefault();
@@ -534,8 +523,8 @@ etkiEl.addEventListener('submit', async (e) => {
   dugmeler.forEach((b) => { b.disabled = true; });
   durum.textContent = 'gönderiliyor…';
   durum.classList.remove('hata');
-  // yanıt gelmeden SSE ile yeniden çizim olabilir: form o an sayfada değilse canlı olanı bul
-  const canli = () => etkiEl.querySelector(`form.karar[data-no="${no}"]`) || form;
+  // form drawer kapanınca kaybolabilir: o an açık olanı bul
+  const canli = () => drawerEl.querySelector(`form.karar[data-no="${no}"]`) || form;
   try {
     const yanit = await fetch('/api/karar', {
       method: 'POST',
@@ -600,21 +589,7 @@ function ciz(d) {
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
   matrisEl.innerHTML = matrisHtml(d.matris);
   claudeEl.innerHTML = claudeHtml(d.claude);
-  // yazılan not yeniden çizimde silinmesin: değerler ve odak saklanır, çizimden sonra geri verilir
-  const notlar = {};
-  etkiEl.querySelectorAll('form.karar').forEach((f) => { notlar[f.dataset.no] = f.querySelector('textarea').value; });
-  const odak = document.activeElement;
-  const odakNo = odak && odak.matches && odak.matches('form.karar textarea') ? odak.closest('form.karar').dataset.no : null;
-  const secim = odakNo !== null ? [odak.selectionStart, odak.selectionEnd] : null;
-  etkiEl.innerHTML = etkiHtml(d.etki, { gecmisAcik, izleyici: d.kararIzleyici });
-  etkiEl.querySelectorAll('form.karar').forEach((f) => {
-    const t = f.querySelector('textarea');
-    if (notlar[f.dataset.no] !== undefined) t.value = notlar[f.dataset.no];
-  });
-  if (odakNo !== null) {
-    const t = etkiEl.querySelector(`form.karar[data-no="${odakNo}"] textarea`);
-    if (t) { t.focus(); t.setSelectionRange(secim[0], secim[1]); }
-  }
+  // etki artık sekme değil: açık drawer'daki adımın kartında gösterilir (drawerAc)
 }
 
 function baglantiYok() {

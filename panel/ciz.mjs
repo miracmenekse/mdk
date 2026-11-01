@@ -630,6 +630,12 @@ export function etkiHtml(etki, { gecmisAcik = false, izleyici = false } = {}) {
     '</details>';
 }
 
+// tek adımın etki kartı (drawer ETKİ bölümü için); etki yoksa boş durum. izleyici = karar iletim hâli.
+export function etkiKartiHtml(e, izleyici = false) {
+  if (!e) return '<p class="bos">etki yok</p>';
+  return etkiKart(e, e.tahmin?.token || 0, izleyici);
+}
+
 const ROLLER = { altlik: 'altlık', ornek: 'örnek', 'yan-yana': 'yan yana', izle: 'izle', kullanma: 'kullanma' };
 // null/undefined → "—"; "null" yazılmaz
 const yaz = (v) => esc(v ?? '—');

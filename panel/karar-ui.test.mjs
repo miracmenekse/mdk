@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 const h = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const js = h.slice(h.indexOf('<script type="module">'));
 
-// gönderim: submit olayı etkiEl'de, tür düğmeden (submitter), JSON gövde, POST
-assert.match(js, /etkiEl\.addEventListener\('submit'/, 'submit dinleyicisi etkiEl üzerinde olmalı');
+// gönderim: submit olayı drawerEl'de (karar artık drawer içindeki etki kartında), tür düğmeden (submitter), JSON gövde, POST
+assert.match(js, /drawerEl\.addEventListener\('submit'/, 'submit dinleyicisi drawerEl üzerinde olmalı');
 assert.match(js, /preventDefault\(\)/);
 assert.match(js, /\.submitter/, 'tür basılan düğmeden (e.submitter.value) alınmalı');
 assert.match(js, /fetch\('\/api\/karar'/);
@@ -22,10 +22,9 @@ assert.match(js, /catch/);
 assert.match(js, /disabled = true/);
 assert.match(js, /disabled = false/);
 
-// yeniden çizim (SSE) notu silmemeli: çizimden önce metin alanları saklanır, sonra geri yazılır
-const ciz = js.slice(js.indexOf('etkiEl.innerHTML = etkiHtml(') - 600, js.indexOf('etkiEl.innerHTML = etkiHtml(') + 600);
-assert.match(ciz, /textarea/, 'etkiHtml çiziminin çevresinde textarea değerleri saklanıp geri yüklenmeli');
-assert.match(js, /etkiHtml\(d\.etki, \{[^}]*izleyici: d\.kararIzleyici/, 'izleyici durumu etkiHtml\'e verilmeli');
+// etki kartı (karar formuyla) açık drawer'daki adım için çizilir; izleyici durumu kartla verilir
+assert.match(js, /etkiKartiHtml\(etkiE, sonD\?\.kararIzleyici\)/, 'drawer adımın etki kartını izleyici durumuyla çizmeli');
+assert.match(js, /drawerHtml\(aObj,/, 'etki kartı drawerHtml\'e verilmeli');
 
 // stil: form ve durum satırı için kurallar
 assert.match(h, /form\.karar\s*\{/);

@@ -35,8 +35,6 @@ assert.ok(h.indexOf('İş 7') < h.indexOf('etki-gecmis'), 'açık adım önce');
 assert.ok(h.includes('<details class="etki-gecmis" open>'), 'gecmisAcik → open');
 assert.ok(!h.split('etki-gecmis')[0].includes('İş 1'), 'biten adım açıkların arasında değil');
 
-// sayfa: toggle durumu tutulur ve çizime verilir
-const sayfa = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-assert.match(sayfa, /etkiHtml\(d\.etki, \{ gecmisAcik[,} ]/);
-assert.ok(/etki-gecmis/.test(sayfa.split('<script')[1] || ''), 'toggle dinleyicisi details.etki-gecmis için');
+// NOT: Faz 12 adım 100'de etki ayrı sekme olmaktan çıktı; drawer'da adım başına etki kartı
+// (etkiKartiHtml) gösterilir. etkiHtml'in "biten taslaklar" katlaması saf fonksiyon olarak yukarıda test edilir.
 console.log('etki-gecmis.test ok');

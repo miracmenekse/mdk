@@ -840,7 +840,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/ciz.mjs` `kpiHtml`: 4 tıklanabilir kart (Depo/Akış/Modeller/Araştırma), her kart `role="tab"` + `data-sekme`, seçili vurgulu, rozet=yeni-öğe (0 gizli); Etki kartı yok. `index.html`: ayrı `.sekmeler` tablist'i kaldır/gizle, sekme geçişini kartlara bağla, `SEKMELER`'den `etki` çıkar.
   - Kapı: `node panel/kpi-sekme.test.mjs` (4 kart, Etki yok, kart `data-sekme` taşır, seçili işaretlenir) + ekran görüntüsü
-- [ ] 100. Karar + kroki mantığını drawer'a taşı
+- [x] 100. Karar + kroki mantığını drawer'a taşı
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html` JS: karar formu submit, not/odak saklama, kroki büyütme ve `gecmisAcik` toggle dinleyicileri `etkiEl` yerine drawer köküne bağlanır; `/api/karar` POST aynen. Karar her zaman açık drawer'daki adım için. `etkiEl`'e bağlı kod kalmasın.
