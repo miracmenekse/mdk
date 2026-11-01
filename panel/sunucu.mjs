@@ -1,6 +1,7 @@
 // Canlı sunucu: REST + SSE ile panel verisini 127.0.0.1'de sunar.
 
 import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
 import { watch, existsSync, readFileSync, realpathSync, mkdirSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -182,11 +183,46 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/test: kök dizinde bash test/hepsi.sh koşar, sonucu döndürür
+  const testAl = (yanit) => {
+    const cocuk = spawn('bash', ['test/hepsi.sh'], { cwd: kok });
+    let cikti = '';
+    const ekle = (parca) => {
+      cikti += parca;
+      if (cikti.length > 8000) cikti = cikti.slice(-8000);
+    };
+    cocuk.stdout.on('data', ekle);
+    cocuk.stderr.on('data', ekle);
+    const saat = setTimeout(() => {
+      cocuk.kill('SIGKILL');
+      cikti += '\n(süre doldu)';
+    }, 180000);
+    saat.unref();
+    let bitti = false;
+    const bitir = (gecti) => {
+      if (bitti) return;
+      bitti = true;
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ gecti, cikti: cikti.slice(-8000) }));
+    };
+    cocuk.on('error', () => bitir(false));
+    cocuk.on('close', (kod) => bitir((kod | 0) === 0));
+  };
+
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
 
     if (istek.method === 'POST' && pathname === '/api/karar') {
       kararAl(istek, yanit);
+      return;
+    }
+
+    if (pathname === '/api/test') {
+      if (istek.method !== 'POST') {
+        yanit.writeHead(405).end();
+        return;
+      }
+      testAl(yanit);
       return;
     }
 
