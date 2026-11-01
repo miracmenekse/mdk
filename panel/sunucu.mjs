@@ -284,6 +284,15 @@ export async function baslat(dir, port, { calistir } = {}) {
         yanit.writeHead(405).end();
         return;
       }
+      const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+      if (!izin.izin || izin.kaynak !== 'yerel') {
+        yanit.writeHead(403, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({
+          gecti: false,
+          cikti: "Testler yalnız Mac'ten çalıştırılır",
+        }));
+        return;
+      }
       testAl(yanit);
       return;
     }

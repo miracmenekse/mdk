@@ -942,7 +942,7 @@ Kaynaklar: [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve
   - Ne: `panel/sunucu.mjs` `kararAl` (106-122) ve `personaTakimAl` (~228-240) içindeki kopya Host/Origin denetimini kaldır; yerine `const izin = yazmaIzni(istek.headers, uzakAyar(kok)); if (!izin.izin) { hata(yanit, 403, izin.neden); return; }`. Ayar her istekte okunur, yeniden başlatma gerekmez. Başka davranış değişmez.
   - Kapı: `node panel/uzak-sunucu.test.mjs && node panel/karar-sunucu.test.mjs`
 
-- [ ] 113. Testleri çalıştır yalnız Mac'ten
+- [x] 113. Testleri çalıştır yalnız Mac'ten
   - Görev: kod
   - Ne: `panel/sunucu.mjs` `/api/test` POST dalında (`testAl`'dan önce) `yazmaIzni` kaynak `yerel` değilse ya da izin yoksa 403 ve JSON `{gecti:false,cikti:"Testler yalnız Mac'ten çalıştırılır"}` döner, betik koşmaz. index.html değişmez (düğme bu JSON'u zaten gösterir).
   - Kapı: `node panel/uzak-test-engel.test.mjs && node panel/test-api.test.mjs`
