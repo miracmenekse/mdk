@@ -116,10 +116,19 @@ table td { white-space: nowrap; }
 table td.model, table th.model { white-space: normal; min-width: 14ch; }
 td.sayi { font-variant-numeric: tabular-nums; }
 /* KPI şeridi: geniş ekranda beş kutu, dar ekranda üç sıkı sütun */
-.kpi { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 10px 0 4px; }
+.kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 10px 0 4px; }
 .kpi-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; min-width: 0; }
 .kpi-kutu .etiket { display: block; color: var(--soluk); font-size: 12px; overflow-wrap: anywhere; }
 .kpi-kutu b { font-size: 20px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* KPI kartı = sekme düğmesi */
+.kpi-kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 10px 12px; min-width: 0; text-align: left; font: inherit; color: var(--metin); cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.kpi-kart:hover { border-color: var(--vurgu); }
+.kpi-kart[aria-selected="true"] { border-color: var(--vurgu); box-shadow: inset 0 0 0 1px var(--vurgu); background: var(--rozet-calisiyor-z); }
+.kpi-kart .kart-bas { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 18px; }
+.kpi-kart .ad { color: var(--soluk); font-size: 12px; font-weight: 600; }
+.kpi-kart .kpi-rozet { background: var(--maliyet); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
+.kpi-kart .deger { font-size: 20px; font-variant-numeric: tabular-nums; }
+.kpi-kart .alt { color: var(--soluk); font-size: 12px; }
 .sekmeler { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; border-bottom: 1px solid var(--cizgi); }
 .sekmeler button { font: inherit; font-size: 14px; padding: 6px 12px; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--soluk); cursor: pointer; }
 .sekmeler button[aria-selected="true"] { color: var(--vurgu-metin); border-bottom-color: var(--vurgu); font-weight: 600; }
@@ -316,13 +325,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <section id="depo-serit"></section>
   <section id="kpi"></section>
 
-  <div class="sekmeler" role="tablist">
-    <button type="button" role="tab" data-sekme="depo" aria-selected="false" aria-controls="sekme-depo" hidden>Depo</button>
-    <button type="button" role="tab" data-sekme="akis" aria-selected="true" aria-controls="sekme-akis">Akış</button>
-    <button type="button" role="tab" data-sekme="modeller" aria-selected="false" aria-controls="sekme-modeller">Modeller</button>
-    <button type="button" role="tab" data-sekme="etki" aria-selected="false" aria-controls="sekme-etki">Etki</button>
-    <button type="button" role="tab" data-sekme="arastirma" aria-selected="false" aria-controls="sekme-arastirma">Araştırma</button>
-  </div>
+  <!-- sekmeler artık #kpi kartlarıdır (kpiHtml, role=tablist); ayrı sekme çubuğu yok -->
 
   <div role="tabpanel" id="sekme-depo" hidden>
   <section id="depo"></section>
@@ -388,11 +391,10 @@ const dengeEl = document.getElementById('denge');
 const kpiEl = document.getElementById('kpi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
-const depoDugme = document.querySelector('[data-sekme="depo"]');
 
-// sekmeler: seçili sekme adreste (location.hash) saklanır; geçersizse açılış sekmesi
+// sekmeler: KPI kartları (role=tab, #kpi içinde). Seçili sekme adreste (location.hash) saklanır
 // açılış sekmesi ilk veri gelince bir kez seçilir: git deposu varsa Depo, yoksa Akış
-const SEKMELER = ['depo', 'akis', 'modeller', 'etki', 'arastirma'];
+const SEKMELER = ['depo', 'akis', 'modeller', 'arastirma'];
 let acilisSekmesi = null;
 function sekmeSec() {
   const ad = location.hash.slice(1);
@@ -400,7 +402,8 @@ function sekmeSec() {
   document.querySelectorAll('[role="tab"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.sekme === secili)));
   for (const k of SEKMELER) document.getElementById('sekme-' + k).hidden = k !== secili;
 }
-document.querySelector('[role="tablist"]').addEventListener('click', (e) => {
+// kart tıklaması sekmeyi değiştirir (kpiEl kalıcı; kartlar her çizimde yenilenir → delegasyon)
+kpiEl.addEventListener('click', (e) => {
   const b = e.target.closest('[role="tab"]');
   if (b) location.hash = b.dataset.sekme;
 });
@@ -408,6 +411,7 @@ window.addEventListener('hashchange', sekmeSec);
 sekmeSec();
 
 let sonSimdi = null;
+let sonD = null;   // son SSE verisi; araştırma gelince KPI kartlarını yeniden çizmek için
 let sonPlan = null;
 let zamanlayici = null;
 // etki sekmesinde biten adımların taslakları açık mı; her çizimde etkiHtml'e verilir
@@ -579,12 +583,14 @@ function ciz(d) {
   if (d.ad) { document.querySelector('h1').textContent = d.ad; document.title = d.ad + ' paneli'; }
   depoSeritEl.innerHTML = depoSeritHtml(d.depo);
   depoEl.innerHTML = depoHtml(d.depo);
-  depoDugme.hidden = !d.depo?.var;
+  sonD = d;
   if (acilisSekmesi === null) {
     acilisSekmesi = d.depo?.var ? 'depo' : 'akis';
     sekmeSec();
   }
-  kpiEl.innerHTML = kpiHtml(d);
+  // KPI kartları = sekmeler; her çizimde yenilenir, sonra seçili sekme işaretlenir
+  kpiEl.innerHTML = kpiHtml(d, araVeri);
+  sekmeSec();
   sonSimdi = d.simdi || null;
   suAnCiz();
   sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
@@ -672,6 +678,8 @@ fetch('/api/arastirma')
       }
     }
     arastirmaCiz();
+    // araştırma verisi gelince Araştırma kartının sayısı güncellensin
+    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri); sekmeSec(); }
   })
   .catch(() => {
     arastirmaEl.innerHTML = arastirmaHtml(null);

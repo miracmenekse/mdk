@@ -393,35 +393,32 @@ const tam = (n) => Math.round(n).toLocaleString('tr-TR');
 const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">${esc(etiket)}</span><b id="${id}">${esc(deger)}</b></div>`;
 
 // üst şerit: dört sayı; bilinmeyen değer "—", eksik anlık görüntü çökmez
-export function kpiHtml(snap) {
+export function kpiHtml(snap, ara) {
   const adimlar = (snap?.plan?.kategoriler || []).flatMap((k) => k.adimlar || []);
   const biten = snap?.plan ? `${adimlar.filter((a) => a.bitti).length} / ${adimlar.length}` : '—';
-  // yalnız gerçek (sessiz ya da kota olmayan) denemesi olan adımlar sayılır
-  const gercekler = (snap?.gecmis || []).map((g) => (g.denemeler || []).filter((x) => !denemeDegilMi(x))).filter((d) => d.length);
-  const ilk = gercekler.length
-    ? `%${Math.round((gercekler.filter((d) => d.find((x) => x.gecti === true)?.deneme === 1).length / gercekler.length) * 100)}`
-    : '—';
-  const tel = snap?.telemetri?.var ? snap.telemetri : null;
   const modeller = snap?.modeller || [];
-  const olculen = modeller.filter((m) => typeof m.token === 'number' && Number.isFinite(m.token));
-  const token = tel ? tel.toplam?.toplam : olculen.length ? olculen.reduce((t, m) => t + m.token, 0) : null;
-  const odenen = tel ? tel.toplam?.maliyet : modeller.length ? modeller.reduce((t, m) => t + (Number(m.maliyet) || 0), 0) : null;
-  const cl = snap?.claude?.var ? snap.claude : null;
-  let claude = '—';
-  if (cl?.toplam) {
-    if (typeof cl.toplam.maliyet === 'number') {
-      claude = '~' + para(cl.toplam.maliyet) + ((cl.toplam.fiyatsiz || []).length ? ' en az' : '');
-    } else if (typeof cl.toplam.toplam === 'number') {
-      claude = kisa(cl.toplam.toplam);
-    }
-  }
-  return '<div class="kpi">' +
-    kutu('kpi-biten', 'biten adım', biten) +
-    kutu('kpi-ilk', 'ilk denemede geçme', ilk) +
-    kutu('kpi-token', tel ? 'gerçek token' : 'ölçülen token', typeof token === 'number' ? kisa(token) : '—') +
-    kutu('kpi-odenen', 'ödenen', typeof odenen === 'number' ? para(odenen) : '—') +
-    kutu('kpi-claude', 'Claude (tahmin)', claude) +
-    '</div>';
+  const depo = snap?.depo;
+  const ileri = depo?.yerel?.ileri;
+  const degisik = (depo?.yerel?.degisik || []).length;
+  // dikkat sayıları (rozet): Akış = sorunlu adım, Modeller = sorunlu model, Depo = değişen dosya, Araştırma = 0
+  const sorunluAdim = (snap?.gecmis || []).filter((g) => sorunluMu(g, incelemeOf(g.no, g, snap?.incelemeler))).length;
+  const sorunluModel = modeller.filter((m) => (m.uyum != null && m.uyum < 1) || m.sessiz > 0).length;
+  const adaylar = ara?.adaylar?.length;
+
+  // kart = aynı zamanda sekme düğmesi (role=tab + data-sekme); rozet dikkat sayısı, 0'da gizli
+  const kart = (sekme, ad, deger, alt, dikkat) => {
+    const r = dikkat > 0 ? `<span class="kpi-rozet">${esc(dikkat)}</span>` : '';
+    return `<button type="button" role="tab" data-sekme="${sekme}" aria-selected="false" aria-controls="sekme-${sekme}" class="kpi-kart">` +
+      `<span class="kart-bas"><span class="ad">${esc(ad)}</span>${r}</span>` +
+      `<b class="deger">${esc(deger)}</b>` +
+      `<span class="alt">${esc(alt)}</span></button>`;
+  };
+  let kartlar = '';
+  if (depo?.var) kartlar += kart('depo', 'Depo', ileri ?? '—', 'bekleyen commit', degisik);
+  kartlar += kart('akis', 'Akış', biten, 'biten adım', sorunluAdim);
+  kartlar += kart('modeller', 'Modeller', modeller.length || '—', 'etkin model', sorunluModel);
+  kartlar += kart('arastirma', 'Araştırma', adaylar ?? '—', 'araştırma notu', 0);
+  return '<div class="kpi" role="tablist">' + kartlar + '</div>';
 }
 
 // OpenCode veritabanından gerçek token; tasarruf kartı her zaman "tahmin" etiketli

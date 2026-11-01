@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { depo } from './depo.mjs';
-import { depoSeritHtml, depoHtml, telemetriHtml } from './ciz.mjs';
+import { depoSeritHtml, depoHtml, telemetriHtml, kpiHtml } from './ciz.mjs';
 import { telemetri } from './telemetri.mjs';
 import { baslat } from './sunucu.mjs';
 
@@ -154,12 +154,14 @@ await s.kapat();
 assert.equal(api.depo.surum, 'v0.3.6', 'ilk yanıtta depo hazır');
 assert.ok(Array.isArray(api.plan?.kategoriler), 'mevcut alanlar korunur');
 
-// sayfa: Depo sekmesi ilk sırada, şerit ve çizim bağlı
+// sayfa: Depo şeridi ve çizim bağlı; sekmeler artık KPI kartları (kpiHtml)
 assert.ok(sayfa.includes('depoSeritHtml') && sayfa.includes('depoHtml'));
 assert.ok(sayfa.includes('id="depo-serit"'));
-const sekmeSirasi = [...sayfa.matchAll(/data-sekme="(\w+)"/g)].map((m) => m[1]);
-assert.equal(sekmeSirasi[0], 'depo', 'Depo ilk sekme');
+// Depo kartı/sekmesi kpiHtml'de ilk sırada ve role=tab (git deposu varsa)
+const kpi = kpiHtml({ depo: { var: true, yerel: { ileri: 1, degisik: [] } }, plan: null, gecmis: [], modeller: [] });
+const sekmeSirasi = [...kpi.matchAll(/data-sekme="(\w+)"/g)].map((m) => m[1]);
+assert.equal(sekmeSirasi[0], 'depo', 'Depo ilk kart/sekme');
+assert.ok(/role="tab"[^>]*data-sekme="depo"|data-sekme="depo"[^>]*role="tab"/.test(kpi), 'Depo kartı role=tab');
 const i0 = sayfa.indexOf('id="sekme-depo"');
 assert.ok(i0 > 0 && sayfa.indexOf('id="depo"', i0) > i0, 'Depo paneli #depo içerir');
-assert.ok(/role="tab"[^>]*data-sekme="depo"|data-sekme="depo"[^>]*role="tab"/.test(sayfa));
 console.log('depo.test ok');

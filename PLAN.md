@@ -835,7 +835,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/index.html`: `#kategoriler` artık `akisTablosuHtml` ile çizilir (süzgeç/toggle dinleyicileri kalkar). Satıra (`data-adim`) tıkla → overlay + sağ drawer (`drawerHtml`), `GET /api/persona?adim` ile `#drawer-persona` doldurulur; `×`/`Esc`/overlay kapatır; çalışan adım açıkken geçen süre sayacı akar. CSS: 720px düzene uygun yan panel + saydam overlay, açık tema + mavi vurgu.
   - Kapı: `node panel/drawer-ui.test.mjs` (index.html: drawer+overlay iskeleti, `data-adim` tıklama→açma, 3 yolla kapatma, `/api/persona` çağrısı metinde var) + Firefox ekran görüntüsü (geciktirici sarmalayıcı)
-- [ ] 99. KPI kartları = sekme (4 kart, Etki yok)
+- [x] 99. KPI kartları = sekme (4 kart, Etki yok)
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/ciz.mjs` `kpiHtml`: 4 tıklanabilir kart (Depo/Akış/Modeller/Araştırma), her kart `role="tab"` + `data-sekme`, seçili vurgulu, rozet=yeni-öğe (0 gizli); Etki kartı yok. `index.html`: ayrı `.sekmeler` tablist'i kaldır/gizle, sekme geçişini kartlara bağla, `SEKMELER`'den `etki` çıkar.

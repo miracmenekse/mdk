@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, statSync } from 'n
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { claudeKullanim } from './claude.mjs';
-import { claudeHtml, kpiHtml } from './ciz.mjs';
+import { claudeHtml, dengeHtml } from './ciz.mjs';
 import { snapshot } from './durum.mjs';
 import { baslat } from './sunucu.mjs';
 
@@ -70,11 +70,10 @@ assert.ok(t.includes('abonelik') , 'abonelikteyse gerçek fatura farklı olabili
 assert.ok(!h.includes('undefined') && !h.includes('NaN') && !h.includes('null'));
 assert.ok(duz(claudeHtml(null)).includes('Claude oturum verisi bulunamadı'));
 assert.ok(!claudeHtml({ ...c, modeller: [{ ...s, model: '<b>x</b>' }] }).includes('<b>x</b>'));
-// KPI: beşinci kutu
-const k = kpiHtml({ plan: null, gecmis: [], modeller: [], telemetri: null, claude: c });
-assert.ok(k.includes('id="kpi-claude"') && /~\$\s?9[.,]\d+/.test(duz(k)) && duz(k).includes('en az'), duz(k));
-assert.ok(duz(kpiHtml({ plan: null, gecmis: [], modeller: [], telemetri: null, claude: null })).includes('—'));
-assert.ok(kpiHtml(null).includes('id="kpi-claude"'));
+// Claude maliyet tahmini artık üst şeritte (kpiHtml) değil, Denge kartında (dengeHtml) gösterilir
+const dk = duz(dengeHtml(null, c));
+assert.ok(/~\$\s?9[.,]\d+/.test(dk) && dk.includes('en az'), dk);
+assert.ok(duz(dengeHtml(null, null)) === '', 'veri yoksa Denge boş');
 
 // snapshot + sayfa
 const p = mkdtempSync(join(tmpdir(), 'claude-p-'));

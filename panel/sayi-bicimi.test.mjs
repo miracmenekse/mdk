@@ -1,9 +1,10 @@
 // Kapı (adım 50): para tr-TR ondalığıyla, hüküm "ölçülen adım" der. Kullanım: node panel/sayi-bicimi.test.mjs
 import assert from 'node:assert/strict';
-import { kpiHtml, planHtml, claudeHtml } from './ciz.mjs';
+import { planHtml, claudeHtml, dengeHtml } from './ciz.mjs';
 
 const duz = (h) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-const odenen = (m) => duz(kpiHtml({ telemetri: { var: true, toplam: { toplam: 1, maliyet: m } } })).match(/ödenen (\S+)/)[1];
+// para tr-TR biçimi: ödenen artık üst şeritte değil; Denge kartındaki "liste fiyatı" ile ölçülür
+const odenen = (m) => duz(dengeHtml({ var: true, toplam: { toplam: 1 }, tasarruf: { listeFiyati: m } }, null)).match(/~(\S+) \(kaçınılan/)[1];
 assert.equal(odenen(21.76), '$21,76');
 assert.equal(odenen(1234.5), '$1.234,50', 'binlik nokta, ondalık virgül');
 assert.equal(odenen(1), '$1,00');
