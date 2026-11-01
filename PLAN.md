@@ -912,6 +912,75 @@ Kullanıcı (2026-11-01): tüm testleri koşma işi artık elle tetiklenecek; De
   - Ne: `mdk-adim.sh:129`, `mdk-incele.sh:58`, `persona-tur.sh:72`'den `--standalone` çıkar (persona-tur'daki açıklama yorumunu da güncelle). Davranış değişmez: `run` kendi yerel sunucusunu açar, setsid süreç-grubu öldürme aynen çalışır. Kapılar `test/mdk-adim.test.sh` ve `test/persona-tur.test.sh` artık `--standalone`'u ARAMAZ; regresyon koruması olarak bayrağın GEÇİLMEDİĞİNİ doğrular.
   - Kapı: `bash test/mdk-adim.test.sh && bash test/persona-tur.test.sh` (argv'de `--standalone` yok, loglevel error)
 
+## Faz 16 — iPhone uygulaması (canlı paneli açan kabuk)
+Kullanıcı (2026-11-01): MDK için kişisel iPhone uygulaması; görünüm web panelinin aynısı.
+- **Problem ve hipotez:** Kullanıcı Mac başında değilken adımları izleyemiyor, onay bekleyen adım duruyor. Hipotez: panelin aynısı cepte olursa onay bekleme süresi kısalır; ayrı arayüz yazmadan bu sağlanır.
+- **İş değeri / başarı ölçütü:** Hücresel ağdan panel açılır, canlı güncellenir ve bir adım telefondan onaylanır; panel değişince uygulama yeniden kurulmadan değişir. Bir hafta gerçek kullanımda telefondan en az bir karar verilmesi hipotezi doğrular.
+- **Akış:** Simgeye dokun → panel (1 adım). İlk açılışta adres. Bağlantı yoksa "Mac'e ulaşılamıyor", 5 sn'de bir kendisi dener.
+- **Mimari:** SwiftUI + WKWebView, panel adresten yüklenir (HTML pakete gömülmez; `file://` göreli `/api` ve `/olay`'ı bozar). Sunucu `127.0.0.1`'de kalır; önüne Tailscale Serve (yalnız kişisel ağ, HTTPS). Uzak yazma izni `.mdk-uzak.json` (git-ignore) ile açılır, dosya yoksa kapalı.
+- **Riskler:** (1) Ücretsiz Apple hesabında imza 7 gün (profiller 07-20→07-27, ekip D3TZD57793): adım 118 tek komutla yeniden kurar. (2) Mac uyursa panel yok; hata ekranı bunu söyler. (3) Tailscale Serve'ün Host/kimlik başlıkları ve SSE akışı henüz gerçek kurulumda görülmedi; adım 119'da doğrulanır, Host farklı gelirse izin kapalı kalır (güvenli yönde bozulur).
+- **Kapsam dışı (ilk sürüm):** ekranları Swift ile yeniden yazmak, push bildirimi (ücretsiz hesapta yok), çevrimdışı önbellek, telefondan test çalıştırma, panelin kendiliğinden başlaması.
+- **Kararlar (kullanıcı, 2026-11-01):** canlı paneli açan uygulama; telefondan karar ve persona düzenleme açık, test kapalı; sunucu adımları opencode, Swift adımları kodcu.
+
+| Seçenek | Adım sayısı | Kullanıcıya değer | Uygulama maliyeti | Risk | Kaynak/Persona |
+|---|---|---|---|---|---|
+| **WKWebView kabuk (seçildi)** | Her gün 1 | Gerçek uygulama, birebir görünüm, bağlantı ekranı | Düşük (4 Swift adımı, kodcu) | 7 günlük imza | Kullanıcı isteği; Home Assistant Companion da adres alıp kendi sunucuna bağlanır |
+| Ana Ekrana ekleme (PWA) | Her gün 1 | Birebir görünüm, süre dolmaz, Xcode yok | En düşük | Hata ekranı yok; "uygulama" isteğini karşılamaz | 3 persona kartı; Open WebUI + Tailscale |
+| Tam yerel SwiftUI | Her gün 1 | En akıcı his | Çok yüksek, her panel değişikliği iki yerde | Görünüm zamanla ayrışır | Reddedildi |
+
+Kaynaklar: [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), [Home Assistant Companion](https://companion.home-assistant.io/docs/getting_started/index.html), [Open WebUI + Tailscale](https://docs.openwebui.com/ecosystem/computer/phone-and-remote/tailscale.md). Üçüncü benzer ürün doğrulanamadı.
+
+**Elle yapılacaklar (kullanıcı):** (a) Mac: `brew install --cask tailscale`, oturum aç. (b) iPhone: App Store'dan Tailscale, aynı hesap. (c) Mac: `tailscale serve --bg 4747`; çıkan adres ve hesap e-postasıyla `.mdk-uzak.json` = `{"host":"<ad>.<ağ>.ts.net","kullanici":"<e-posta>"}`. (d) iPhone'u kabloyla bağla, Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu aç; ilk kurulumdan sonra Ayarlar → Genel → VPN ve Aygıt Yönetimi → geliştiriciye güven.
+
+- [ ] 111. Yazma izni kararı (saf modül)
+  - Görev: kod
+  - Ne: Yeni `panel/uzak.mjs`: `uzakAyar(kok)` kökteki `.mdk-uzak.json`'dan `{host,kullanici}` döner (yok/bozuk/eksik: `null`). `yazmaIzni(basliklar, ayar)` `{izin:true,kaynak:'yerel'|'uzak'}` ya da `{izin:false,neden}`. Yerel: hostname 127.0.0.1/localhost ve `tailscale-user-login`/`x-forwarded-for` yok; origin varsa `http://<host>`. Uzak: hostname = ayar.host (harf duyarsız), kimlik başlığı = ayar.kullanici, origin varsa `https://<ayar.host>`. Neden metinleri sunucu.mjs:113/118 ile aynı.
+  - Kapı: `node panel/uzak.test.mjs`
+
+- [ ] 112. Karar ve persona uçları yazma iznini kullanır
+  - Görev: kod
+  - Ne: `panel/sunucu.mjs` `kararAl` (106-122) ve `personaTakimAl` (~228-240) içindeki kopya Host/Origin denetimini kaldır; yerine `const izin = yazmaIzni(istek.headers, uzakAyar(kok)); if (!izin.izin) { hata(yanit, 403, izin.neden); return; }`. Ayar her istekte okunur, yeniden başlatma gerekmez. Başka davranış değişmez.
+  - Kapı: `node panel/uzak-sunucu.test.mjs && node panel/karar-sunucu.test.mjs`
+
+- [ ] 113. Testleri çalıştır yalnız Mac'ten
+  - Görev: kod
+  - Ne: `panel/sunucu.mjs` `/api/test` POST dalında (`testAl`'dan önce) `yazmaIzni` kaynak `yerel` değilse ya da izin yoksa 403 ve JSON `{gecti:false,cikti:"Testler yalnız Mac'ten çalıştırılır"}` döner, betik koşmaz. index.html değişmez (düğme bu JSON'u zaten gösterir).
+  - Kapı: `node panel/uzak-test-engel.test.mjs && node panel/test-api.test.mjs`
+
+- [ ] 114. iOS kabuğu: paneli WKWebView'da açar
+  - Yürütücü: kodcu
+  - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
+  - Kapı: `bash test/ios-kabuk.test.sh`
+
+- [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
+  - Yürütücü: kodcu
+  - Etki: etki/ios-kabuk.html
+  - Değer: 4
+  - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler.
+  - Kapı: `bash test/ios-hata.test.sh`
+
+- [ ] 116. İlk açılış adres ekranı
+  - Yürütücü: kodcu
+  - Etki: etki/ios-kabuk.html
+  - Değer: 4
+  - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar.
+  - Kapı: `bash test/ios-adres.test.sh && bash test/ios-kabuk.test.sh`
+
+- [ ] 117. Öne dönünce bayat paneli yenile
+  - Yürütücü: kodcu
+  - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez.
+  - Kapı: `bash test/ios-yenile.test.sh && bash test/ios-kabuk.test.sh`
+
+- [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
+  - Yürütücü: kodcu
+  - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.
+  - Kapı: elle — iPhone bağlıyken `bash ios/kur.sh` uygulamayı kurup açar; bağlı değilken çıkış 1 ve açıklama.
+
+- [ ] 119. Uçtan uca doğrulama (hücresel ağ)
+  - Yürütücü: kodcu
+  - Ne: Elle yapılacaklar bitince: Serve'den gelen Host/Origin/kimlik başlıklarını gerçek istekle gör, SSE'nin tamponlanmadan aktığını ölç, telefondan bir yorum gönderip `etki/kararlar.jsonl`'de gör, Testleri çalıştır'ın reddedildiğini gör. Host beklenenden farklıysa `uzak.mjs` için yeni adım aç.
+  - Kapı: elle — Wi-Fi kapalı iPhone'da panel açılır, canlı güncellenir, yorum kaydedilir, test reddedilir.
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).

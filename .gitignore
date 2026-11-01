@@ -6,3 +6,6 @@ persona-tur/
 etki/kararlar.jsonl
 etki/.karar-okundu
 etki/.karar-izleyici
+.mdk-uzak.json
+ios/.derle/
+ios/MDK.xcodeproj/
