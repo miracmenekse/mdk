@@ -825,7 +825,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `drawerHtml(adim, etkiKarti)` export; başlık (`ADIM <no>` + ad + kapat düğmesi), durum satırı (rozet + model · deneme · saat · geçen süre), ilerleme çubuğu, `PERSONA DÜŞÜNCELERİ` bölüm başlığı + boş kap (`#drawer-persona`, lazy dolacak), `ETKİ` bölümü = `etkiKarti` (var olan `etkiKart` + karar formu yeniden kullanılır); etkisiz adımda `etki yok`. `suAnHtml`/`etkiKart` yardımcılarını tekrar kullan, kopyalama.
   - Kapı: `node panel/drawer-ciz.test.mjs` (başlıkta no+ad; etkili adım → etki kartı + `form.karar`; etkisiz → "etki yok"; persona kabı boş render)
-- [ ] 97. ciz.mjs: `akisTablosuHtml` (düz ADIMLAR tablosu)
+- [x] 97. ciz.mjs: `akisTablosuHtml` (düz ADIMLAR tablosu)
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `akisTablosuHtml(plan, simdi, gecmis, incelemeler)` export; v3 düz tablosu: üç sütun (Adım / İlerleme / Durum). Her satır `data-adim=<no>` (tıklanabilir): no + ad, altında meta satırı (model · deneme · saat → saat · token), ilerleme çubuğu + %, durum rozeti (bitti/çalışıyor/bekliyor/eskale). Gruplu kategori / `<details>` deneme-genişletme / "sadece sorunlu" süzgeci YOK (kullanıcı kararı: bu sekme akışlar için düz). Çalışan/seçili satır vurgusu sınıfı. `planHtml` korunur (dokunma), sadece artık kullanılmaz.

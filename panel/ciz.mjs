@@ -231,6 +231,53 @@ export function personaBalonlarHtml(ozet) {
     .join('');
 }
 
+// v3 Akış düz ADIMLAR tablosu: Adım / İlerleme / Durum. Her satır data-adim=<no> (tıklanabilir,
+// drawer'ı açar). Gruplu kategori / deneme-genişletme / "sadece sorunlu" süzgeci YOK (planHtml ayrı).
+export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
+  const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
+  const satirlar = [];
+  for (const k of (plan && plan.kategoriler) || []) {
+    for (const a of k.adimlar) {
+      const g = gecmisMap.get(a.no);
+      const durum = adimDurumu(a, simdi);
+      const calisiyorMu = durum === 'calisiyor';
+      const gercek = g ? (g.denemeler || []).filter((x) => !denemeDegilMi(x)) : [];
+      const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
+      const mp = [];
+      if (calisiyorMu && simdi) {
+        if (simdi.model) mp.push(esc(simdi.model));
+        if (simdi.deneme != null) mp.push(`${esc(simdi.deneme)}. deneme`);
+      } else if (rep) {
+        if (rep.model) mp.push(esc(rep.model));
+        if (gercek.length) mp.push(`${gercek.length} deneme`);
+        if (rep.token != null) mp.push(`${Math.round(rep.token).toLocaleString('tr-TR')} token`);
+      }
+      const meta = mp.length ? `<div class="meta">${mp.join(' · ')}</div>` : '';
+      const yuzde = durum === 'bitti' || durum === 'eskale'
+        ? 100
+        : calisiyorMu && simdi && Number.isFinite(simdi.yuzde)
+          ? simdi.yuzde
+          : calisiyorMu
+            ? null
+            : 0;
+      const w = yuzde == null ? 50 : yuzde;
+      const yuzdeMetin = yuzde == null ? '' : `%${yuzde}`;
+      const secili = calisiyorMu ? ' secili' : '';
+      satirlar.push(
+        `<tr class="adim-satir ${durum}${secili}" data-adim="${esc(a.no)}" tabindex="0">` +
+        `<td class="ad"><span class="no">${esc(a.no)}</span> ${esc(a.baslik)}${meta}</td>` +
+        `<td class="ilerleme"><div class="cubuk${yuzde == null ? ' belirsiz' : ''}"><span style="width:${w}%"></span></div><span class="yuzde">${yuzdeMetin}</span></td>` +
+        `<td class="durum">${rozet(durum)}</td>` +
+        '</tr>',
+      );
+    }
+  }
+  return (
+    '<table class="akis-tablo"><thead><tr><th class="ad">Adım</th><th class="ilerleme">İlerleme</th><th class="durum">Durum</th></tr></thead>' +
+    `<tbody>${satirlar.join('')}</tbody></table>`
+  );
+}
+
 // adım detay drawer'ı (kart=sekme tasarımı): başlık (ADIM no + ad + kapat), durum satırı,
 // ilerleme, PERSONA DÜŞÜNCELERİ (boş #drawer-persona kabı, JS lazy doldurur), ETKİ bölümü.
 // etkiKartiHtml: o adımın etki kartı HTML'i (karar formuyla) ya da null → "etki yok".
