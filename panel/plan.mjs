@@ -54,14 +54,18 @@ export function parse(text) {
       continue;
     }
 
-    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe):\s*(.*)$/);
+    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona):\s*(.*)$/);
     if (alan && adim) {
       const [, anahtar, deger] = alan;
       if (anahtar === 'Kapı') adim.kapilar.push(temizle(deger));
       else if (anahtar === 'Yürütücü') adim.yurutucu = deger.trim() || null;
       else if (anahtar === 'Etki') adim.etki = deger.trim() || null;
       else if (anahtar === 'Değer') adim.deger = sayiOku(deger);
-      else adim.butce = sayiOku(deger);
+      else if (anahtar === 'Persona') {
+        // yalnız satır varsa atanır (nesne literaline eklenmez); yol güvenliği: persona-tur/ altında, `..` yok
+        const y = deger.trim();
+        adim.persona = y.startsWith('persona-tur/') && !y.includes('..') ? y : null;
+      } else adim.butce = sayiOku(deger);
       continue;
     }
 
