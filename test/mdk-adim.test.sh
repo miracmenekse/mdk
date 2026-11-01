@@ -208,7 +208,7 @@ STUB
   kontrol '[ "$(metrik "r[0].token")" = 2239 ]'      # input+output+reasoning+cache.read+cache.write
   kontrol '[ "$(metrik "r[0].etkin")" = 139 ]'       # cache.read hariç
   kontrol '[ "$(metrik "r[0].istek")" = 3 ]'         # step_start sayısı (son adımda step_finish yok)
-  kontrol 'grep -qx -- --standalone "$T/argv"'       # her koşu kendi sunucusu: süreç grubu öldürülünce oturum da biter
+  kontrol '! grep -qx -- --standalone "$T/argv"'     # --standalone yayınlanmış build'de yok; run zaten kendi yerel sunucusunu açar
   kontrol '! grep -q -- --log-level "$T/argv"'       # v2'de bayrak süzmüyor; ortam değişkeni
   kontrol 'grep -qix error "$T/loglevel"'
   kontrol 'grep -q "\"external_directory\":\"deny\"" "$T/config"'   # v2'de varsayılan allow

@@ -126,7 +126,7 @@ $ipucu"
     else
       yurm=opencode
       # v2 (adım 72): v1 ücretsiz modellerde "Unexpected server error" veriyor
-      OPENCODE_LOG_LEVEL=error setsid "$OC" run --standalone -m "$m" --title "adim-$N" --format json --print-logs \
+      OPENCODE_LOG_LEVEL=error setsid "$OC" run -m "$m" --title "adim-$N" --format json --print-logs \
         "$istem" </dev/null >"$log" 2>"$log.err" &
     fi
     pid=$!

@@ -68,8 +68,8 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
   for j in 0 1; do   # geçersiz yanıtta sıradaki modelle bir kez daha
     m=${MODELLER[$(( (i+j) % n ))]}; durum=""
     # setsid: süreç kendi grubunun lideri; süre aşılınca grup topluca öldürülür
-    # v2 (adım 72): --standalone kendi sunucusu, grup öldürülünce biter; stderr ayrı: log satırı "sessiz" denetimini bozmasın
-    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --standalone --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>>"$f.err" &
+    # run kendi yerel sunucusunu açar (yayınlanmış build'de --standalone yok), grup öldürülünce biter; stderr ayrı: log satırı "sessiz" denetimini bozmasın
+    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>>"$f.err" &
     pid=$!; t0=$SECONDS
     while kill -0 "$pid" 2>/dev/null; do
       sleep 1

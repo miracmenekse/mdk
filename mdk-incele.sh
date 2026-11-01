@@ -55,7 +55,7 @@ sinif=""; uyum=""
 for m in "${MODELLER[@]}"; do
   log="$LOGD/incele$N-$(date +%s).jsonl"; neden=""
   # setsid: süreç kendi grubunun lideri; bekletince grup topluca öldürülür. stdin kapalı: tty okuması takılmasın
-  OPENCODE_LOG_LEVEL=error setsid "$OC" run --standalone --format json -m "$m" --agent plan "$istem" \
+  OPENCODE_LOG_LEVEL=error setsid "$OC" run --format json -m "$m" --agent plan "$istem" \
     </dev/null >"$log" 2>"$log.err" &
   pid=$!; t0=$SECONDS
   while kill -0 "$pid" 2>/dev/null; do

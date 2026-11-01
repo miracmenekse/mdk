@@ -853,6 +853,14 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
 
 Sonraya bırakılan (Faz 13): Modeller sayfası grafik yeniden tasarımı (degrade halka gauge + yığılmış çubuk, açık tema — `tasarim.md §8`); panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir).
 
+## Faz 12.1 — OpenCode `--standalone` uyumu
+- **Sorun/karar (SORUN.md, kullanıcı, 2026-11-01):** Bu Mac'teki yayınlanmış opencode dev build'i (`0.0.0-dev-202610280534`, npm `dev` dist-tag = en güncel) `--standalone` bayrağını TANIMIYOR → `opencode run --standalone` yardım basıp çıkıyor, model hiç çağrılmıyor (`token:0`, `neden=kapi`, adım eskale). `run` zaten varsayılan olarak kendi yerel sunucusunu açar (`--port` random; `--attach` = dış sunucu), yani `--standalone` gereksiz. Bayraksız teyit edildi (glm-5.3-flash "OK", 13k token, çıkış 0). VM'de bayrak farklı/özel bir build'den; `run` kendi sunucusunu açtığı için orada da gereksiz olmalı (kullanıcı teyit edecek).
+- [x] 102. `--standalone` bayrağını kaldır (3 çağrı + 2 kapı)
+  - Yürütücü: kodcu
+  - Görev: mekanik
+  - Ne: `mdk-adim.sh:129`, `mdk-incele.sh:58`, `persona-tur.sh:72`'den `--standalone` çıkar (persona-tur'daki açıklama yorumunu da güncelle). Davranış değişmez: `run` kendi yerel sunucusunu açar, setsid süreç-grubu öldürme aynen çalışır. Kapılar `test/mdk-adim.test.sh` ve `test/persona-tur.test.sh` artık `--standalone`'u ARAMAZ; regresyon koruması olarak bayrağın GEÇİLMEDİĞİNİ doğrular.
+  - Kapı: `bash test/mdk-adim.test.sh && bash test/persona-tur.test.sh` (argv'de `--standalone` yok, loglevel error)
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).

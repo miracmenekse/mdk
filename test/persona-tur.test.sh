@@ -131,7 +131,7 @@ CASE=v2   # OpenCode v2 çağrısı; cursor/* modeller OpenCode'da koşamaz, atl
 setup 'if [ "$M" = cursor/auto ]; then yanit "Seçenek A"; else yanit "yok"; fi'
 PERSONA_MODELLER=m/bir,cursor/auto kos bash "$RUNNER" dev soru.md "Kart Bir"
 kontrol '[ $KOD = 1 ] && ! grep -q cursor $T/cagri.log && [ "$(wc -l <$T/cagri.log)" = 2 ]'
-kontrol 'grep -qx -- --standalone $T/argv && grep -qix error $T/loglevel'
+kontrol '! grep -qx -- --standalone $T/argv && grep -qix error $T/loglevel'
 setup 'yanit "Seçenek A"'; PERSONA_MODELLER=cursor/auto kos bash "$RUNNER" dev soru.md "Kart Bir"
 kontrol '[ $KOD = 2 ] && [ ! -e persona-tur ]'   # yalnız cursor modeli: kullanım hatası, tur açılmaz
 
