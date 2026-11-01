@@ -99,7 +99,11 @@ for (const e of ['olculdu', 'veri-yok', 'kismi', 'tahmin']) assert.ok(html.inclu
 const kok = join(dirname(fileURLToPath(import.meta.url)), '..');
 if (existsSync(join(kok, 'metrikler.jsonl'))) {
   const gercek = snapshot(kok);
-  assert.ok(gercek.modeller.some((x) => x.sessiz > 0), 'gerçek metriklerde sessiz satırlar sayılmalı');
+  // sessiz sayımı yukarıda geçici veriyle test edilir; gerçek metrikte yalnız yanit_yok satırı VARSA doğrula
+  // (bu Mac ince/taze metrikle koşabilir; tarihsel VM verisinde yanit_yok satırları vardır)
+  if (readFileSync(join(kok, 'metrikler.jsonl'), 'utf8').includes('"yanit_yok"')) {
+    assert.ok(gercek.modeller.some((x) => x.sessiz > 0), 'gerçek metriklerde sessiz satırlar sayılmalı');
+  }
   assert.ok(gercek.modeller.every((x) => ['olculdu', 'kismi', 'tahmin', 'veri-yok'].includes(x.etiket)));
 }
 console.log('guven.test ok');
