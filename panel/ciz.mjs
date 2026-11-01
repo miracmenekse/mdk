@@ -250,6 +250,7 @@ export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
       } else if (rep) {
         if (rep.model) mp.push(esc(rep.model));
         if (gercek.length) mp.push(`${gercek.length} deneme`);
+        if (rep.sure_sn != null) mp.push(`${esc(rep.sure_sn)} sn`);
         if (rep.token != null) mp.push(`${Math.round(rep.token).toLocaleString('tr-TR')} token`);
       }
       const meta = mp.length ? `<div class="meta">${mp.join(' · ')}</div>` : '';

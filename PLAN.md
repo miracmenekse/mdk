@@ -860,7 +860,7 @@ Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Download
   - Yürütücü: kodcu
   - Görev: kod
   - Kapı: `node panel/modeller-grafik.test.mjs` + görsel doğrulama
-- [ ] 104. Akış tablosu meta satırına süre
+- [x] 104. Akış tablosu meta satırına süre
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/ciz.mjs` `akisTablosuHtml`: biten/temsil denemesi olan satırın meta satırına ortalama süreyi ekle — `rep.sure_sn` varsa `${rep.sure_sn} sn` olarak, sıra: model · N deneme · S sn · token. Başka davranış değişmesin, `planHtml`'e dokunma.
