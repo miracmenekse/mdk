@@ -129,6 +129,14 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .kpi-kart .kpi-rozet { background: var(--maliyet); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
 .kpi-kart .deger { font-size: 20px; font-variant-numeric: tabular-nums; }
 .kpi-kart .alt { color: var(--soluk); font-size: 12px; }
+/* Depo: elle test tetikleme */
+#test-panel { margin-top: 16px; }
+#test-calistir { font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; }
+#test-calistir:disabled { opacity: .5; cursor: default; }
+#test-sonuc { margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--zemin); border: 1px solid var(--cizgi); font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 440px; overflow-y: auto; }
+#test-sonuc.gecti { border-color: var(--rozet-bitti-m); }
+#test-sonuc.hata { border-color: var(--maliyet); }
+
 /* Modeller v2 grafikler */
 .grafik-izgara { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
 .tp-ust { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
@@ -356,6 +364,10 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
   <div role="tabpanel" id="sekme-depo" hidden>
   <section id="depo"></section>
+  <div id="test-panel">
+    <button type="button" id="test-calistir">Testleri çalıştır</button>
+    <pre id="test-sonuc" hidden></pre>
+  </div>
   </div>
 
   <div role="tabpanel" id="sekme-akis">
@@ -417,6 +429,26 @@ const modelCubukEl = document.getElementById('model-cubuk');
 const kpiEl = document.getElementById('kpi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
+
+// Depo sekmesi: testleri elle tetikle (POST /api/test), sonucu/hatayı göster
+const testBtn = document.getElementById('test-calistir');
+const testSonuc = document.getElementById('test-sonuc');
+testBtn.addEventListener('click', async () => {
+  testBtn.disabled = true;
+  testSonuc.hidden = false;
+  testSonuc.className = '';
+  testSonuc.textContent = 'testler çalışıyor…';
+  try {
+    const j = await (await fetch('/api/test', { method: 'POST' })).json();
+    testSonuc.className = j.gecti ? 'gecti' : 'hata';
+    testSonuc.textContent = (j.gecti ? '✓ geçti\n\n' : '✗ başarısız\n\n') + (j.cikti || '');
+  } catch {
+    testSonuc.className = 'hata';
+    testSonuc.textContent = 'panel sunucusuna ulaşılamadı';
+  } finally {
+    testBtn.disabled = false;
+  }
+});
 
 // sekmeler: KPI kartları (role=tab, #kpi içinde). Seçili sekme adreste (location.hash) saklanır
 // açılış sekmesi ilk veri gelince bir kez seçilir: git deposu varsa Depo, yoksa Akış

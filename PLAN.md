@@ -873,7 +873,7 @@ Kullanıcı (2026-11-01): tüm testleri koşma işi artık elle tetiklenecek; De
   - Görev: kod
   - Ne: `panel/sunucu.mjs`: `POST /api/test` → kök dizinde `bash test/hepsi.sh` çalıştır (`child_process.spawn('bash', ['test/hepsi.sh'], { cwd: kok })`), stdout+stderr'i topla, zaman aşımı ~180 sn (aşarsa süreci öldür, gecti false). Yanıt JSON `{ gecti: <çıkış 0 mı>, cikti: <çıktı, son ~8000 bayt> }`. Yalnız POST; başka method 405. Diğer uç noktalara dokunma.
   - Kapı: `node panel/test-api.test.mjs`
-- [ ] 106. Depo sekmesinde "Testleri çalıştır" butonu + sonuç
+- [x] 106. Depo sekmesinde "Testleri çalıştır" butonu + sonuç
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html` Depo sekmesine "Testleri çalıştır" butonu + sonuç alanı; tıkla → `POST /api/test`, "çalışıyor…" göster, dönünce geçti ✓ (yeşil) / ✗ + `cikti`yı `<pre>`de göster. CSS küçük. Yalnız index.html.
