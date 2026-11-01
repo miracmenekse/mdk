@@ -883,11 +883,13 @@ Kullanıcı (2026-11-01): her proje için bir persona takımı; panelde yeni "Pe
   - Görev: kod
   - Ne: `kpiHtml`'e 5. kart "Persona" (data-sekme=persona); `index.html` yeni `sekme-persona` paneli + `#persona-takim` (personaTakimHtml); persona ekle/sil/düzenle formu + persona başına yorum kutusu → `POST /api/persona-takim`. CSS küçük.
   - Kapı: `node panel/persona-ui.test.mjs` + görsel
-- [ ] 110. Özellik reasoning → drawer + backlog
+- [x] 110. Özellik reasoning → drawer
   - Yürütücü: kodcu
   - Görev: kod
-  - Ne: Takım kartlarından `persona-tur` koşup (yeni özellik sorusuyla) ozet üret, adımın `- Persona:` alanına bağla → drawer'da görünür (mevcut mekanizma). Yeni özellik için reasoning önce okunur, sonra backlog. (Bu adım ayrıca kırılırsa alt adımlara bölünür.)
-  - Kapı: `node panel/akis-sure.test.mjs` yer tutucu → gerçek kapı adım yazılırken netleşir
+  - Persona: persona-tur/20261101173915
+  - Ne: `persona-takim-tur.mjs`: `persona/takim.json` takımından her persona kendi merceğiyle (ad/optimize/körlük/soru) bir özellik sorusuna opencode'da görüş yazar → `persona-tur/<zaman>/ozet.md` (`## <ad>` blokları). Adımın `- Persona:` alanına bağlanınca drawer'da balon olarak görünür (mevcut mekanizma, adım 94-95). Bu adımın kendi `- Persona:` turu, persona takımı özelliği hakkında 3 personanın görüşüdür.
+  - Kapı: elle — `node persona-takim-tur.mjs <soru>` ozet üretir; drawer'da `/api/persona?adim=110` görüşleri gösterir (örnek koşuldu).
+  - NOT (personaların bu özellik için uyarısı): çift kaynak (takim.json vs personalar.md) senkron riski; persona çıktısını onaysız PLAN/backlog'a YAZMA (kapı/kurcalama tespitini boşa düşürür); backlog'u mevcut etki onay akışıyla (`etki/kararlar.jsonl`) birleştir, ikinci karar yolu açma. → backlog adımı ayrı faz.
 
 ## Faz 14 — Manuel test tetikleme (Depo sekmesinde buton)
 Kullanıcı (2026-11-01): tüm testleri koşma işi artık elle tetiklenecek; Depo sekmesinde bir butona basınca testler çalışıp hata panelde görünecek.
