@@ -845,7 +845,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/index.html` JS: karar formu submit, not/odak saklama, kroki büyütme ve `gecmisAcik` toggle dinleyicileri `etkiEl` yerine drawer köküne bağlanır; `/api/karar` POST aynen. Karar her zaman açık drawer'daki adım için. `etkiEl`'e bağlı kod kalmasın.
   - Kapı: `node panel/karar-ui.test.mjs` (drawer içindeki `form.karar` submit `/api/karar`'a no+tur+metin yollar; hata/odak-saklama korunur)
-- [ ] 101. Etki sekmesini kaldır + testleri yeşile al
+- [x] 101. Etki sekmesini kaldır + testleri yeşile al
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html`: `sekme-etki` paneli ve (kalan) Etki sekme düğmesi kaldırılır; `#etki` artık yalnız drawer'da çizilir. Etkilenen testler (`karar-ciz`, `etki-goster`, `etki-gecmis`, `arayuz`, `sekme`, `kroki-buyut`, `modeller-ui`, `claude`, `ciz`) yeni yapıya göre Claude'ca düzeltilir; kapılar kırmızı doğrulanıp güncellenir.

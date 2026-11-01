@@ -90,5 +90,5 @@ const sv = await baslat(p, 0);
 const sayfa = await (await fetch(`http://127.0.0.1:${sv.port}/`)).text();
 await sv.kapat();
 assert.ok(sayfa.includes('id="claude"') && sayfa.includes('claudeHtml'));
-assert.ok(/id="sekme-modeller"[\s\S]*id="claude"[\s\S]*id="sekme-etki"/.test(sayfa), 'Claude bölümü Modeller sekmesinde');
+assert.ok(/id="sekme-modeller"[\s\S]*id="claude"[\s\S]*id="sekme-arastirma"/.test(sayfa), 'Claude bölümü Modeller sekmesinde');
 console.log('claude.test ok');
