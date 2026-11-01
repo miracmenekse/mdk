@@ -22,8 +22,6 @@ assert.ok(li(h, 'Sorunlu').includes('data-sorunsuz="0"'));
 assert.ok(li(h, 'Bekleyen').includes('data-sorunsuz="0"'), 'çalışmamış adım süzgeçle gizlenmemeli');
 // geriye uyum: geçmiş verilmezse hiçbir adım gizlenmez
 assert.ok(!planHtml(plan, null).includes('data-sorunsuz="1"'));
-// panel betiği yeni özniteliği kullanır, eskisini değil
-const html = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'index.html'), 'utf8');
-assert.ok(html.includes('dataset.sorunsuz'), 'index.html data-sorunsuz ile gizlemeli');
-assert.ok(!html.includes("dataset.sorunlu !== '1'"), 'eski süzgeç koşulu kalmamalı');
+// NOT: adım 98'de "sadece sorunlu" süzgeci index.html'den kalktı (düz tablo).
+// planHtml'in data-sorunsuz çıktısı yukarıda korunarak test edilir.
 console.log('suzgec.test ok');

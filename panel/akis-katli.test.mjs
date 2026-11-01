@@ -48,11 +48,6 @@ assert.equal(kat(planHtml(plan, null, gecmis, {}, { 'kat:Eski & bitmiş': false 
 // geçmiş yokken de çalışır
 assert.ok(kat(planHtml(plan, null), 'Temiz'));
 
-// sayfa
-const s = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-assert.ok(s.includes("details[data-kat]") && s.includes("'kat:'"), 'kat toggle tercihi acikTercih["kat:"+ad]');
-assert.match(s, /planHtml\([^)]*acikTercih, \{ sadeceSorunlu \}\)/, 'planHtml secenek ile çağrılır');
-const deg = s.slice(s.indexOf("e.target.id === 'sadece-sorunlu'"), s.indexOf("e.target.id === 'sadece-sorunlu'") + 200);
-assert.match(deg, /planCiz\(\)/, 'kutu değişince plan yeniden çizilir (planCiz)');
-assert.match(s, /function planCiz\(/);
+// NOT: adım 98'de Akış düz tabloya (akisTablosuHtml) geçti; kategori katlama/süzgeç index.html'den kalktı.
+// planHtml'in gruplu çıktısı (kategori katlama) saf fonksiyon olarak yukarıda test edilir.
 console.log('akis-katli.test ok');

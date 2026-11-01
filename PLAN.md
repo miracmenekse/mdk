@@ -830,7 +830,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `akisTablosuHtml(plan, simdi, gecmis, incelemeler)` export; v3 düz tablosu: üç sütun (Adım / İlerleme / Durum). Her satır `data-adim=<no>` (tıklanabilir): no + ad, altında meta satırı (model · deneme · saat → saat · token), ilerleme çubuğu + %, durum rozeti (bitti/çalışıyor/bekliyor/eskale). Gruplu kategori / `<details>` deneme-genişletme / "sadece sorunlu" süzgeci YOK (kullanıcı kararı: bu sekme akışlar için düz). Çalışan/seçili satır vurgusu sınıfı. `planHtml` korunur (dokunma), sadece artık kullanılmaz.
   - Kapı: `node panel/akis-tablo.test.mjs` (adımlar satır olur, `data-adim` taşır; durum/ilerleme/meta doğru; gruplu `<details data-kat>` yok)
-- [ ] 98. index.html + CSS: düz tabloya geç + drawer kabuğu/aç-kapat
+- [x] 98. index.html + CSS: düz tabloya geç + drawer kabuğu/aç-kapat
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html`: `#kategoriler` artık `akisTablosuHtml` ile çizilir (süzgeç/toggle dinleyicileri kalkar). Satıra (`data-adim`) tıkla → overlay + sağ drawer (`drawerHtml`), `GET /api/persona?adim` ile `#drawer-persona` doldurulur; `×`/`Esc`/overlay kapatır; çalışan adım açıkken geçen süre sayacı akar. CSS: 720px düzene uygun yan panel + saydam overlay, açık tema + mavi vurgu.

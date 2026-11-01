@@ -25,8 +25,6 @@ h = planHtml(plan, null, gecmis, {}, {});
 assert.ok(acikMi(satir(h, 'Sorunlu')), 'boş tercih nesnesi varsayılanı bozmamalı');
 assert.ok(satir(h, 'Sorunlu').includes('data-no="2"') || /<details[^>]*data-no="2"/.test(satir(h, 'Sorunlu')), '<details> adım numarasını data-no ile taşımalı');
 
-// index.html tercihleri toggle olayından toplayıp planHtml'e vermeli
-const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-assert.ok(/toggle/.test(html), 'index.html toggle olayını dinlemeli');
-assert.ok(/planHtml\([^)]*,[^)]*,[^)]*,[^)]*,[^)]+\)/.test(html), 'planHtml 5 argümanla çağrılmalı');
+// NOT: Faz 12 adım 98'de index.html gruplu listeden düz tabloya (akisTablosuHtml) geçti.
+// planHtml saf fonksiyonu (açık tercih/data-no) korunur ve yukarıda test edilir; index.html artık kullanmaz.
 console.log('acik.test ok');

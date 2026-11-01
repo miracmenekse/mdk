@@ -256,6 +256,56 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .suzgec { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
 .suzgec button { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
 .suzgec button[aria-pressed="true"] { background: var(--vurgu); border-color: var(--vurgu); color: var(--kart); }
+
+/* v3 Akış düz ADIMLAR tablosu */
+.akis-tablo { width: 100%; border-collapse: collapse; font-size: 14px; }
+.akis-tablo thead th { text-align: left; font-size: 12px; font-weight: 600; color: var(--soluk); padding: 6px 10px; border-bottom: 1px solid var(--cizgi); }
+.akis-tablo thead th.ilerleme, .akis-tablo thead th.durum { width: 150px; }
+.akis-tablo td { padding: 10px; border-bottom: 1px solid var(--cizgi); vertical-align: middle; }
+.adim-satir { cursor: pointer; }
+.adim-satir:hover { background: var(--zemin); }
+.adim-satir.secili { background: var(--rozet-calisiyor-z); }
+.adim-satir .no { color: var(--soluk); font-variant-numeric: tabular-nums; margin-right: 6px; }
+.adim-satir .meta { color: var(--soluk); font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; }
+.akis-tablo .cubuk { display: inline-block; width: 90px; height: 6px; border-radius: 999px; background: var(--cizgi); overflow: hidden; vertical-align: middle; }
+.akis-tablo .cubuk span { display: block; height: 100%; background: var(--vurgu); }
+.akis-tablo .cubuk.belirsiz span { opacity: .55; }
+.akis-tablo .yuzde { font-size: 12px; color: var(--soluk); margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+/* adım detay drawer + overlay */
+#drawer-overlay { position: fixed; inset: 0; background: rgba(17, 20, 24, .38); z-index: 40; }
+#drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 92vw); background: var(--kart); border-left: 1px solid var(--cizgi); box-shadow: -8px 0 28px rgba(0, 0, 0, .18); z-index: 41; overflow-y: auto; }
+.drawer-ic { padding: 18px 20px 40px; }
+.drawer-bas { display: flex; align-items: center; justify-content: space-between; }
+.drawer-bas .etiket { font-size: 12px; color: var(--soluk); letter-spacing: .04em; }
+.drawer-bas .etiket + b { font-size: 18px; margin-left: 4px; }
+#drawer-kapat { font-size: 22px; line-height: 1; border: none; background: none; color: var(--soluk); cursor: pointer; padding: 2px 8px; border-radius: 6px; }
+#drawer-kapat:hover { background: var(--zemin); color: var(--metin); }
+.drawer-baslik { font-size: 17px; margin: 8px 0 10px; text-transform: none; }
+.drawer-durum { font-size: 13px; color: var(--soluk); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.drawer-durum .model { font-family: ui-monospace, SFMono-Regular, monospace; color: var(--metin); }
+.drawer-durum .gecen { color: var(--vurgu-metin); }
+#drawer .ilerleme { height: 8px; border-radius: 999px; background: var(--cizgi); overflow: hidden; margin: 12px 0 2px; }
+#drawer .ilerleme span { display: block; height: 100%; background: var(--vurgu); }
+#drawer .yuzde { font-size: 12px; color: var(--soluk); }
+.drawer-bolum { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--soluk); margin: 20px 0 10px; text-transform: uppercase; }
+#drawer .bos { color: var(--bos); font-style: italic; font-size: 13px; }
+
+/* persona düşünceleri balonları */
+.persona-balon { display: flex; gap: 10px; margin-bottom: 12px; }
+.persona-balon .avatar { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+.persona-balon .icerik { flex: 1; min-width: 0; }
+.persona-balon .rol { font-size: 12px; font-weight: 600; color: var(--metin); }
+.persona-balon .metin { font-size: 13px; margin: 4px 0 0; padding: 8px 10px; border-radius: 10px; overflow-wrap: anywhere; }
+.persona-a .avatar { background: #7c3aed; } .persona-a .metin { background: #f3effe; color: #37245f; }
+.persona-b .avatar { background: #2563eb; } .persona-b .metin { background: #eaf1fe; color: #1a3a73; }
+.persona-c .avatar { background: #059669; } .persona-c .metin { background: #e8f7f0; color: #114f3a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .adim-satir.secili { background: rgba(37, 99, 235, .18); }
+  :root:not([data-theme="light"]) .persona-a .metin { background: #2a2140; color: #d9ccf5; }
+  :root:not([data-theme="light"]) .persona-b .metin { background: #182a4a; color: #cfe0fb; }
+  :root:not([data-theme="light"]) .persona-c .metin { background: #10342a; color: #c7ede0; }
+}
 </style>
 </head>
 <body>
@@ -315,13 +365,16 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   </div>
 </main>
 
+<div id="drawer-overlay" hidden></div>
+<aside id="drawer" hidden aria-label="adım detayı"></aside>
+
 <dialog id="buyuk">
   <button type="button" id="buyuk-kapat">kapat</button>
   <iframe title="büyük taslak"></iframe>
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -357,43 +410,88 @@ sekmeSec();
 let sonSimdi = null;
 let sonPlan = null;
 let zamanlayici = null;
-// süzgeç durumu: yeni veri gelince kutu ve satırlar bu değerden yeniden kurulur
-let sadeceSorunlu = false;
-// kullanıcının açıp kapattığı ayrıntılar: { [adımNo] | ['kat:' + ad]: true|false }, her çizimde planHtml'e verilir
-const acikTercih = {};
 // etki sekmesinde biten adımların taslakları açık mı; her çizimde etkiHtml'e verilir
 let gecmisAcik = false;
 
-function filtreUygula() {
-  const kutu = kategorilerEl.querySelector('#sadece-sorunlu');
-  if (kutu) kutu.checked = sadeceSorunlu;
-  kategorilerEl.querySelectorAll('li').forEach((li) => {
-    li.hidden = sadeceSorunlu && li.dataset.sorunsuz === '1';
-  });
+// --- adım detay drawer (v3: satıra tıkla → yan panel) ---
+const drawerEl = document.getElementById('drawer');
+const drawerOverlayEl = document.getElementById('drawer-overlay');
+let drawerAdim = null;   // açık drawer'ın adım no'su
+let drawerZaman = null;  // çalışan adımda geçen süre sayacı
+
+// plan + gecmis + simdi'den drawer için normalize adım nesnesi
+function drawerAdimNesnesi(no) {
+  let a = null;
+  for (const k of (sonPlan?.plan?.kategoriler || [])) for (const x of k.adimlar) if (x.no === no) a = x;
+  const g = (sonPlan?.gecmis || []).find((x) => x.no === no) || null;
+  const kosuyor = !!sonSimdi && sonSimdi.adim === no && ['calisiyor', 'regresyon'].includes(sonSimdi.durum || 'calisiyor');
+  const eskale = !!sonSimdi && sonSimdi.adim === no && sonSimdi.durum === 'eskale';
+  const durum = a?.bitti ? 'bitti' : kosuyor ? 'calisiyor' : eskale ? 'eskale' : 'bekliyor';
+  const gercek = g ? (g.denemeler || []).filter((x) => x.neden !== 'yanit_yok' && x.neden !== 'kota') : [];
+  const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
+  return {
+    no,
+    baslik: a?.baslik || (sonSimdi && sonSimdi.adim === no ? sonSimdi.baslik : '') || '—',
+    durum,
+    model: kosuyor ? sonSimdi.model : rep?.model || null,
+    deneme: kosuyor ? sonSimdi.deneme : (gercek.length || null),
+    ts: kosuyor ? sonSimdi.ts : null,
+    yuzde: a?.bitti || durum === 'eskale' ? 100 : kosuyor ? (Number.isFinite(sonSimdi.yuzde) ? sonSimdi.yuzde : null) : 0,
+    calisiyor: kosuyor,
+    simdiMs: Date.now(),
+  };
 }
 
-kategorilerEl.addEventListener('change', (e) => {
-  if (e.target && e.target.id === 'sadece-sorunlu') {
-    sadeceSorunlu = e.target.checked;
-    planCiz();
-  }
-});
+function drawerSureGuncelle() {
+  const el = document.getElementById('drawer-sure');
+  if (!el || drawerAdim == null || !sonSimdi || sonSimdi.adim !== drawerAdim || !sonSimdi.ts) return;
+  const msbas = sonSimdi.ts < 1e12 ? sonSimdi.ts * 1000 : sonSimdi.ts;
+  const sn = Math.max(0, Math.floor((Date.now() - msbas) / 1000));
+  const dk = Math.floor(sn / 60);
+  el.textContent = dk > 0 ? `${dk} dk ${sn % 60} sn` : `${sn % 60} sn`;
+}
 
-// toggle kabarcıklanmaz; yakalama aşamasında dinlenir
-kategorilerEl.addEventListener('toggle', (e) => {
-  if (e.target && e.target.matches && e.target.matches('details[data-kat]')) {
-    // varsayılan açıklıkla aynıysa tercih sayılmaz
-    const varsayilan = e.target.dataset.varsayilan === '1';
-    const anahtar = 'kat:' + e.target.dataset.kat;
-    if (e.target.open === varsayilan) delete acikTercih[anahtar];
-    else acikTercih[anahtar] = e.target.open;
-  } else if (e.target && e.target.matches && e.target.matches('details[data-no]')) {
-    // varsayılanla (sorunlu = açık) aynıysa tercih sayılmaz: innerHTML ile gelen açık öğe de toggle üretebiliyor
-    const varsayilan = e.target.closest('li')?.dataset.sorunlu === '1';
-    if (e.target.open === varsayilan) delete acikTercih[e.target.dataset.no];
-    else acikTercih[e.target.dataset.no] = e.target.open;
+async function drawerAc(no) {
+  drawerAdim = no;
+  const aObj = drawerAdimNesnesi(no);
+  drawerEl.innerHTML = drawerHtml(aObj, null);
+  drawerEl.hidden = false;
+  drawerOverlayEl.hidden = false;
+  document.body.classList.add('drawer-acik');
+  clearInterval(drawerZaman);
+  drawerZaman = aObj.calisiyor ? setInterval(drawerSureGuncelle, 1000) : null;
+  const kap = document.getElementById('drawer-persona');
+  if (kap) {
+    kap.innerHTML = '<p class="bos">yükleniyor…</p>';
+    try {
+      const j = await (await fetch('/api/persona?adim=' + encodeURIComponent(no))).json();
+      if (drawerAdim === no && kap.isConnected) kap.innerHTML = personaBalonlarHtml(j.ozet);
+    } catch {
+      if (drawerAdim === no && kap.isConnected) kap.innerHTML = '<p class="bos">persona turu yüklenemedi</p>';
+    }
   }
-}, true);
+}
+
+function drawerKapat() {
+  drawerEl.hidden = true;
+  drawerOverlayEl.hidden = true;
+  document.body.classList.remove('drawer-acik');
+  drawerAdim = null;
+  clearInterval(drawerZaman);
+  drawerZaman = null;
+}
+
+kategorilerEl.addEventListener('click', (e) => {
+  const satir = e.target.closest('[data-adim]');
+  if (satir) drawerAc(Number(satir.dataset.adim));
+});
+drawerEl.addEventListener('click', (e) => {
+  if (e.target.closest('#drawer-kapat')) drawerKapat();
+});
+drawerOverlayEl.addEventListener('click', drawerKapat);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !drawerEl.hidden) drawerKapat();
+});
 
 // etki geçmişi katlaması da kabarcıklanmaz: yakalama aşamasında dinlenir
 etkiEl.addEventListener('toggle', (e) => {
@@ -474,8 +572,7 @@ function suAnCiz() {
 
 function planCiz() {
   if (!sonPlan) return;
-  kategorilerEl.innerHTML = planHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler, acikTercih, { sadeceSorunlu });
-  filtreUygula();
+  kategorilerEl.innerHTML = akisTablosuHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler);
 }
 
 function ciz(d) {
