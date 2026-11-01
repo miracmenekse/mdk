@@ -860,6 +860,11 @@ Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Download
   - Yürütücü: kodcu
   - Görev: kod
   - Kapı: `node panel/modeller-grafik.test.mjs` + görsel doğrulama
+- [ ] 104. Akış tablosu meta satırına süre
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/ciz.mjs` `akisTablosuHtml`: biten/temsil denemesi olan satırın meta satırına ortalama süreyi ekle — `rep.sure_sn` varsa `${rep.sure_sn} sn` olarak, sıra: model · N deneme · S sn · token. Başka davranış değişmesin, `planHtml`'e dokunma.
+  - Kapı: `node panel/akis-sure.test.mjs`
 
 ## Faz 12.1 — OpenCode `--standalone` uyumu
 - **Sorun/karar (SORUN.md, kullanıcı, 2026-11-01):** Bu Mac'teki yayınlanmış opencode dev build'i (`0.0.0-dev-202610280534`, npm `dev` dist-tag = en güncel) `--standalone` bayrağını TANIMIYOR → `opencode run --standalone` yardım basıp çıkıyor, model hiç çağrılmıyor (`token:0`, `neden=kapi`, adım eskale). `run` zaten varsayılan olarak kendi yerel sunucusunu açar (`--port` random; `--attach` = dış sunucu), yani `--standalone` gereksiz. Bayraksız teyit edildi (glm-5.3-flash "OK", 13k token, çıkış 0). VM'de bayrak farklı/özel bir build'den; `run` kendi sunucusunu açtığı için orada da gereksiz olmalı (kullanıcı teyit edecek).
