@@ -810,7 +810,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/plan.mjs`: satır ayrıştırıcıdaki alan listesine `Persona`yı kat; `- Persona: <yol>` satırı VARSA `adim.persona = <doğrulanmış yol>` ata (yalnız satır varken ata; nesne literaline `persona` ekleme — böylece mevcut `plan.test.mjs` bozulmaz). Değer `persona-tur/` ile başlamıyor ya da `..` içeriyorsa `adim.persona = null`. Başka davranış değişmesin.
   - Kapı: `node panel/plan-persona.test.mjs` (geçerli yol → `adim.persona` = yol; `../x`/kök dışı → `null`; Persona satırı olmayan adımda `persona` anahtarı yok)
-- [ ] 94. Sunucu: `GET /api/persona?adim=<no>`
+- [x] 94. Sunucu: `GET /api/persona?adim=<no>`
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/sunucu.mjs`: `pathname === '/api/persona'` → `adim` sorgu parametresiyle planı bul, adımın `persona` yolundaki `persona-tur/<zaman>/ozet.md`'yi oku, `{ adim, ozet }` JSON döndür. Yol `<kök>/persona-tur/` dışındaysa (kroki servisindeki `realpath` kısıt mantığı) 400; `persona` yoksa/dosya yoksa `{ adim, ozet: null }`. Diğer uç noktalara dokunma.

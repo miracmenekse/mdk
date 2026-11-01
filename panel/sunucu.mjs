@@ -212,6 +212,41 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
+    if (pathname === '/api/persona') {
+      // ?adim=<no> : o adımın `- Persona:` yolundaki persona-tur/<zaman>/ozet.md
+      const no = Number(new URL(istek.url, 'http://x').searchParams.get('adim'));
+      let persona = null;
+      for (const k of snapshot(kok).plan.kategoriler) {
+        for (const a of k.adimlar) if (a.no === no) persona = a.persona || null;
+      }
+      if (!persona) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ adim: no, ozet: null }));
+        return;
+      }
+      // yol güvenliği (/dosya ile aynı): mutlak/".." yok, realpath kök içinde
+      if (isAbsolute(persona) || persona.split(/[\\/]/).includes('..')) {
+        yanit.writeHead(400).end('geçersiz yol');
+        return;
+      }
+      let tam;
+      try {
+        tam = realpathSync(join(kok, persona, 'ozet.md'));
+      } catch {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ adim: no, ozet: null }));
+        return;
+      }
+      const kokGercek = realpathSync(kok);
+      if (tam !== kokGercek && !tam.startsWith(kokGercek + sep)) {
+        yanit.writeHead(400).end('geçersiz yol');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ adim: no, ozet: readFileSync(tam, 'utf8') }));
+      return;
+    }
+
     if (pathname === '/olay') {
       yanit.writeHead(200, {
         'content-type': 'text/event-stream',
