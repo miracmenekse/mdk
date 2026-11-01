@@ -1,0 +1,23 @@
+{
+  "proje": "mdk",
+  "personalar": [
+    {
+      "ad": "Ürün Sahibi",
+      "optimize": "iş değeri; en az adımda gerçek kullanıcı sorununu çözme",
+      "korluk": "teknik borcu ve sağlamlığı küçümser",
+      "soru": "Bu özellik kimin hangi gerçek sorununu çözüyor ve en küçük değerli sürümü nedir?"
+    },
+    {
+      "ad": "Mühendis",
+      "optimize": "sadelik, test edilebilirlik ve bakım kolaylığı",
+      "korluk": "aciliyeti ve kullanıcı değerini ikinci plana atar",
+      "soru": "En küçük, test edilebilir ve kırılgan olmayan uygulama nedir; ne bozulabilir?"
+    },
+    {
+      "ad": "Eleştirmen",
+      "optimize": "riskleri ve daha basit ya da 'yapmama' alternatifini bulmak",
+      "korluk": "ilerlemeyi gereğinden fazla yavaşlatabilir",
+      "soru": "Bunu hiç yapmasak veya çok daha basit yapsak ne kaybederiz; ne ters gidebilir?"
+    }
+  ]
+}

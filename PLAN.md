@@ -866,6 +866,29 @@ Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Download
   - Ne: `panel/ciz.mjs` `akisTablosuHtml`: biten/temsil denemesi olan satırın meta satırına ortalama süreyi ekle — `rep.sure_sn` varsa `${rep.sure_sn} sn` olarak, sıra: model · N deneme · S sn · token. Başka davranış değişmesin, `planHtml`'e dokunma.
   - Kapı: `node panel/akis-sure.test.mjs`
 
+## Faz 15 — Persona takımı (panel sekmesi + reasoning)
+Kullanıcı (2026-11-01): her proje için bir persona takımı; panelde yeni "Persona" sekmesi. Şema (kullanıcı kararı): **Ad + Optimize eder + Körlük + Soru**. Takım `persona/takim.json`'da. Akış: proje ilk kez yapılırken personalar önerilir → kullanıcı sil/ekle/yorum; yeni özellikte personalar reasoning yapar (fikir) → kullanıcı okur → backlog → geliştirme müsaitse başlar; adımda çalışan personaların çıktısı adım detay drawer'ında görünür. Kapsam: hepsi bir arada.
+- [ ] 107. `ciz.mjs`: `personaTakimHtml(takim)` (persona kartları: Ad/Optimize/Körlük/Soru, avatar+renk)
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/ciz.mjs`: yeni saf `personaTakimHtml(takim)` export; `takim.personalar` her biri için kart: başlıkta ad + baş harf avatarı + sıraya göre `persona-a/b/c` renk; gövdede "optimize eder: …", "körlüğü: …", "sorusu: …". Boş/null → boş durum. HTML kaçışı (`esc`). Kart sınıfı `persona-kart`.
+  - Kapı: `node panel/persona-takim.test.mjs`
+- [ ] 108. Sunucu: persona takımı oku + kaydet
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/sunucu.mjs`: durum anlık görüntüsüne `personaTakim` ekle (`persona/takim.json` oku, yoksa `{personalar:[]}`); `POST /api/persona-takim` gövdedeki JSON'u `persona/takim.json`'a yaz (ekle/sil/düzenle/yorum tek gövdeyle; geçersiz JSON 400, 64KB sınır). Yol sabit (kullanıcı girdisiyle yol kurulmaz).
+  - Kapı: `node panel/persona-api2.test.mjs`
+- [ ] 109. index.html: Persona sekmesi (5. kart) + düzenle/sil/ekle/yorum
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `kpiHtml`'e 5. kart "Persona" (data-sekme=persona); `index.html` yeni `sekme-persona` paneli + `#persona-takim` (personaTakimHtml); persona ekle/sil/düzenle formu + persona başına yorum kutusu → `POST /api/persona-takim`. CSS küçük.
+  - Kapı: `node panel/persona-ui.test.mjs` + görsel
+- [ ] 110. Özellik reasoning → drawer + backlog
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: Takım kartlarından `persona-tur` koşup (yeni özellik sorusuyla) ozet üret, adımın `- Persona:` alanına bağla → drawer'da görünür (mevcut mekanizma). Yeni özellik için reasoning önce okunur, sonra backlog. (Bu adım ayrıca kırılırsa alt adımlara bölünür.)
+  - Kapı: `node panel/akis-sure.test.mjs` yer tutucu → gerçek kapı adım yazılırken netleşir
+
 ## Faz 14 — Manuel test tetikleme (Depo sekmesinde buton)
 Kullanıcı (2026-11-01): tüm testleri koşma işi artık elle tetiklenecek; Depo sekmesinde bir butona basınca testler çalışıp hata panelde görünecek.
 - [x] 105. Sunucu: `POST /api/test`
