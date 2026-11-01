@@ -9,6 +9,7 @@ import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
 import { parse } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
+import { yazmaIzni, uzakAyar } from './uzak.mjs';
 
 const IP = '127.0.0.1';
 
@@ -103,20 +104,9 @@ export async function baslat(dir, port, { calistir } = {}) {
   };
 
   const kararAl = (istek, yanit) => {
-    const host = String(istek.headers.host || '');
-    let ana;
-    try {
-      ana = new URL(`http://${host}`).hostname;
-    } catch {
-      ana = '';
-    }
-    if (ana !== '127.0.0.1' && ana !== 'localhost') {
-      hata(yanit, 403, 'istek yerel adresten gelmiyor');
-      return;
-    }
-    const origin = istek.headers.origin;
-    if (origin !== undefined && origin !== `http://${host}`) {
-      hata(yanit, 403, 'istek kaynağı bu sunucu değil');
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
       return;
     }
 
@@ -220,20 +210,9 @@ export async function baslat(dir, port, { calistir } = {}) {
   // POST /api/persona-takim: gövdeki takım JSON'u persona/takim.json'a yazılır
   // (ekle/sil/düzenle/yorum tek gövdeyle). Yol sabit; kullanıcı girdisiyle kurulmaz.
   const personaTakimAl = (istek, yanit) => {
-    const host = String(istek.headers.host || '');
-    let ana;
-    try {
-      ana = new URL(`http://${host}`).hostname;
-    } catch {
-      ana = '';
-    }
-    if (ana !== '127.0.0.1' && ana !== 'localhost') {
-      hata(yanit, 403, 'istek yerel adresten gelmiyor');
-      return;
-    }
-    const origin = istek.headers.origin;
-    if (origin !== undefined && origin !== `http://${host}`) {
-      hata(yanit, 403, 'istek kaynağı bu sunucu değil');
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
       return;
     }
     const tip = String(istek.headers['content-type'] || '');

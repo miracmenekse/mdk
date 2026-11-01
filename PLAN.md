@@ -937,7 +937,7 @@ Kaynaklar: [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve
   - Ne: Yeni `panel/uzak.mjs`: `uzakAyar(kok)` kökteki `.mdk-uzak.json`'dan `{host,kullanici}` döner (yok/bozuk/eksik: `null`). `yazmaIzni(basliklar, ayar)` `{izin:true,kaynak:'yerel'|'uzak'}` ya da `{izin:false,neden}`. Yerel: hostname 127.0.0.1/localhost ve `tailscale-user-login`/`x-forwarded-for` yok; origin varsa `http://<host>`. Uzak: hostname = ayar.host (harf duyarsız), kimlik başlığı = ayar.kullanici, origin varsa `https://<ayar.host>`. Neden metinleri sunucu.mjs:113/118 ile aynı.
   - Kapı: `node panel/uzak.test.mjs`
 
-- [ ] 112. Karar ve persona uçları yazma iznini kullanır
+- [x] 112. Karar ve persona uçları yazma iznini kullanır
   - Görev: kod
   - Ne: `panel/sunucu.mjs` `kararAl` (106-122) ve `personaTakimAl` (~228-240) içindeki kopya Host/Origin denetimini kaldır; yerine `const izin = yazmaIzni(istek.headers, uzakAyar(kok)); if (!izin.izin) { hata(yanit, 403, izin.neden); return; }`. Ayar her istekte okunur, yeniden başlatma gerekmez. Başka davranış değişmez.
   - Kapı: `node panel/uzak-sunucu.test.mjs && node panel/karar-sunucu.test.mjs`
