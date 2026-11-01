@@ -231,6 +231,45 @@ export function personaBalonlarHtml(ozet) {
     .join('');
 }
 
+// adım detay drawer'ı (kart=sekme tasarımı): başlık (ADIM no + ad + kapat), durum satırı,
+// ilerleme, PERSONA DÜŞÜNCELERİ (boş #drawer-persona kabı, JS lazy doldurur), ETKİ bölümü.
+// etkiKartiHtml: o adımın etki kartı HTML'i (karar formuyla) ya da null → "etki yok".
+export function drawerHtml(adim, etkiKartiHtml) {
+  const a = adim || {};
+  const durum = a.durum || 'bekliyor';
+  const sinif = ROZETLER[durum]
+    ? durum
+    : durum === 'regresyon'
+      ? 'calisiyor'
+      : 'bekliyor';
+  const parcalar = [];
+  if (a.model) parcalar.push(`<span class="model">${esc(a.model)}</span>`);
+  if (a.deneme != null) parcalar.push(`${esc(a.deneme)}. deneme`);
+  if (a.ts) parcalar.push(saat(a.ts));
+  const meta = parcalar.join(' · ');
+  const gecen = a.calisiyor && a.ts
+    ? ` · <b class="gecen" id="drawer-sure">${esc(gecenSure(a.ts, a.simdiMs ?? Date.now()))}</b>`
+    : '';
+  const ilerleme = a.yuzde != null
+    ? `<div class="ilerleme"><span style="width:${Math.max(0, Math.min(100, Number(a.yuzde) || 0))}%"></span></div><span class="yuzde">%${esc(a.yuzde)}</span>`
+    : '';
+  return (
+    '<div class="drawer-ic">' +
+    '<div class="drawer-bas">' +
+    `<div><span class="etiket">ADIM</span> <b>${esc(a.no ?? '—')}</b></div>` +
+    '<button type="button" id="drawer-kapat" aria-label="kapat">×</button>' +
+    '</div>' +
+    `<h2 class="drawer-baslik">${esc(a.baslik || '—')}</h2>` +
+    `<div class="drawer-durum">${rozet(sinif)} ${meta}${gecen}</div>` +
+    ilerleme +
+    '<h3 class="drawer-bolum">PERSONA DÜŞÜNCELERİ</h3>' +
+    '<div id="drawer-persona"></div>' +
+    '<h3 class="drawer-bolum">ETKİ</h3>' +
+    (etkiKartiHtml || '<p class="bos">etki yok</p>') +
+    '</div>'
+  );
+}
+
 export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {}) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));

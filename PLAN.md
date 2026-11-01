@@ -820,7 +820,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `personaBalonlarHtml(ozet)` export; `ozet.md` metnini persona balonlarına çevirir (her `## <kart>` bloğu bir balon: rol adı + baş harf avatar + sıraya göre renk sınıfı `persona-a/b/c`, varsa saat). `ozet` boş/null → `<p class="bos">bu adım için persona turu yok</p>`. HTML kaçışı uygula.
   - Kapı: `node panel/persona-ciz.test.mjs` (3 kartlı ozet → 3 balon, doğru rol/avatar/renk sırası; boş → boş durum; `<script>` kaçışlanır)
-- [ ] 96. ciz.mjs: `drawerHtml(adim, etkiKarti)`
+- [x] 96. ciz.mjs: `drawerHtml(adim, etkiKarti)`
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `drawerHtml(adim, etkiKarti)` export; başlık (`ADIM <no>` + ad + kapat düğmesi), durum satırı (rozet + model · deneme · saat · geçen süre), ilerleme çubuğu, `PERSONA DÜŞÜNCELERİ` bölüm başlığı + boş kap (`#drawer-persona`, lazy dolacak), `ETKİ` bölümü = `etkiKarti` (var olan `etkiKart` + karar formu yeniden kullanılır); etkisiz adımda `etki yok`. `suAnHtml`/`etkiKart` yardımcılarını tekrar kullan, kopyalama.
