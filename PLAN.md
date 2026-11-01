@@ -825,22 +825,27 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `drawerHtml(adim, etkiKarti)` export; başlık (`ADIM <no>` + ad + kapat düğmesi), durum satırı (rozet + model · deneme · saat · geçen süre), ilerleme çubuğu, `PERSONA DÜŞÜNCELERİ` bölüm başlığı + boş kap (`#drawer-persona`, lazy dolacak), `ETKİ` bölümü = `etkiKarti` (var olan `etkiKart` + karar formu yeniden kullanılır); etkisiz adımda `etki yok`. `suAnHtml`/`etkiKart` yardımcılarını tekrar kullan, kopyalama.
   - Kapı: `node panel/drawer-ciz.test.mjs` (başlıkta no+ad; etkili adım → etki kartı + `form.karar`; etkisiz → "etki yok"; persona kabı boş render)
-- [ ] 97. index.html + CSS: drawer kabuğu ve aç/kapat
+- [ ] 97. ciz.mjs: `akisTablosuHtml` (düz ADIMLAR tablosu)
   - Yürütücü: kodcu
   - Görev: kod
-  - Ne: `panel/index.html`: ADIMLAR satırları tıklanabilir (`data-adim=<no>`); tıkla → overlay + sağ drawer (`drawerHtml`), `GET /api/persona?adim` ile `#drawer-persona`'yı doldur; `×`/`Esc`/overlay tıklaması kapatır. CSS: 720px düzene uygun yan panel + saydam overlay; açık tema, mavi vurgu. Yalnız `index.html` (ve gerekirse gömülü stil).
-  - Kapı: `node panel/drawer-ui.test.mjs` (satır tıklaması drawer açar; kapatma 3 yolla çalışır; persona fetch çağrılır) + Firefox ekran görüntüsü (geciktirici sarmalayıcı)
-- [ ] 98. KPI kartları = sekme (4 kart, Etki yok)
+  - Ne: `panel/ciz.mjs`: yeni saf `akisTablosuHtml(plan, simdi, gecmis, incelemeler)` export; v3 düz tablosu: üç sütun (Adım / İlerleme / Durum). Her satır `data-adim=<no>` (tıklanabilir): no + ad, altında meta satırı (model · deneme · saat → saat · token), ilerleme çubuğu + %, durum rozeti (bitti/çalışıyor/bekliyor/eskale). Gruplu kategori / `<details>` deneme-genişletme / "sadece sorunlu" süzgeci YOK (kullanıcı kararı: bu sekme akışlar için düz). Çalışan/seçili satır vurgusu sınıfı. `planHtml` korunur (dokunma), sadece artık kullanılmaz.
+  - Kapı: `node panel/akis-tablo.test.mjs` (adımlar satır olur, `data-adim` taşır; durum/ilerleme/meta doğru; gruplu `<details data-kat>` yok)
+- [ ] 98. index.html + CSS: düz tabloya geç + drawer kabuğu/aç-kapat
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/index.html`: `#kategoriler` artık `akisTablosuHtml` ile çizilir (süzgeç/toggle dinleyicileri kalkar). Satıra (`data-adim`) tıkla → overlay + sağ drawer (`drawerHtml`), `GET /api/persona?adim` ile `#drawer-persona` doldurulur; `×`/`Esc`/overlay kapatır; çalışan adım açıkken geçen süre sayacı akar. CSS: 720px düzene uygun yan panel + saydam overlay, açık tema + mavi vurgu.
+  - Kapı: `node panel/drawer-ui.test.mjs` (index.html: drawer+overlay iskeleti, `data-adim` tıklama→açma, 3 yolla kapatma, `/api/persona` çağrısı metinde var) + Firefox ekran görüntüsü (geciktirici sarmalayıcı)
+- [ ] 99. KPI kartları = sekme (4 kart, Etki yok)
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/ciz.mjs` `kpiHtml`: 4 tıklanabilir kart (Depo/Akış/Modeller/Araştırma), her kart `role="tab"` + `data-sekme`, seçili vurgulu, rozet=yeni-öğe (0 gizli); Etki kartı yok. `index.html`: ayrı `.sekmeler` tablist'i kaldır/gizle, sekme geçişini kartlara bağla, `SEKMELER`'den `etki` çıkar.
   - Kapı: `node panel/kpi-sekme.test.mjs` (4 kart, Etki yok, kart `data-sekme` taşır, seçili işaretlenir) + ekran görüntüsü
-- [ ] 99. Karar + kroki mantığını drawer'a taşı
+- [ ] 100. Karar + kroki mantığını drawer'a taşı
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html` JS: karar formu submit, not/odak saklama, kroki büyütme ve `gecmisAcik` toggle dinleyicileri `etkiEl` yerine drawer köküne bağlanır; `/api/karar` POST aynen. Karar her zaman açık drawer'daki adım için. `etkiEl`'e bağlı kod kalmasın.
   - Kapı: `node panel/karar-ui.test.mjs` (drawer içindeki `form.karar` submit `/api/karar`'a no+tur+metin yollar; hata/odak-saklama korunur)
-- [ ] 100. Etki sekmesini kaldır + testleri yeşile al
+- [ ] 101. Etki sekmesini kaldır + testleri yeşile al
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `panel/index.html`: `sekme-etki` paneli ve (kalan) Etki sekme düğmesi kaldırılır; `#etki` artık yalnız drawer'da çizilir. Etkilenen testler (`karar-ciz`, `etki-goster`, `etki-gecmis`, `arayuz`, `sekme`, `kroki-buyut`, `modeller-ui`, `claude`, `ciz`) yeni yapıya göre Claude'ca düzeltilir; kapılar kırmızı doğrulanıp güncellenir.
