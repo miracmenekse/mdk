@@ -873,7 +873,7 @@ Kullanıcı (2026-11-01): her proje için bir persona takımı; panelde yeni "Pe
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `personaTakimHtml(takim)` export; `takim.personalar` her biri için kart: başlıkta ad + baş harf avatarı + sıraya göre `persona-a/b/c` renk; gövdede "optimize eder: …", "körlüğü: …", "sorusu: …". Boş/null → boş durum. HTML kaçışı (`esc`). Kart sınıfı `persona-kart`.
   - Kapı: `node panel/persona-takim.test.mjs`
-- [ ] 108. Sunucu: persona takımı oku + kaydet
+- [x] 108. Sunucu: persona takımı oku + kaydet
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/sunucu.mjs`: durum anlık görüntüsüne `personaTakim` ekle (`persona/takim.json` oku, yoksa `{personalar:[]}`); `POST /api/persona-takim` gövdedeki JSON'u `persona/takim.json`'a yaz (ekle/sil/düzenle/yorum tek gövdeyle; geçersiz JSON 400, 64KB sınır). Yol sabit (kullanıcı girdisiyle yol kurulmaz).

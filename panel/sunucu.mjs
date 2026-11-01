@@ -2,7 +2,7 @@
 
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
-import { watch, existsSync, readFileSync, realpathSync, mkdirSync } from 'node:fs';
+import { watch, existsSync, readFileSync, writeFileSync, realpathSync, mkdirSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
@@ -22,7 +22,15 @@ export async function baslat(dir, port, { calistir } = {}) {
   // depo durumu git/gh çağırır (yavaş, ağlı): snapshot() senkron kalır, depo ayrı tazelenir
   const cal = calistir ?? varsayilanCalistir(kok);
   let sonDepo = await depo(kok, { calistir: cal }); // ilk /api/durum dolu gelsin
-  const durum = () => ({ ...snapshot(kok), depo: sonDepo, ad: basename(kok) }); // ad: başlıkta proje adı
+  // persona takımı: dosya yoksa ya da bozuksa boş şema; sunucu düşmez
+  const personaTakim = () => {
+    try {
+      return JSON.parse(readFileSync(join(kok, 'persona', 'takim.json'), 'utf8'));
+    } catch {
+      return { personalar: [] };
+    }
+  };
+  const durum = () => ({ ...snapshot(kok), depo: sonDepo, ad: basename(kok), personaTakim: personaTakim() }); // ad: başlıkta proje adı
 
   const gonder = (res) => {
     res.write(`data: ${JSON.stringify(durum())}\n\n`);
@@ -209,11 +217,86 @@ export async function baslat(dir, port, { calistir } = {}) {
     cocuk.on('close', (kod) => bitir((kod | 0) === 0));
   };
 
+  // POST /api/persona-takim: gövdeki takım JSON'u persona/takim.json'a yazılır
+  // (ekle/sil/düzenle/yorum tek gövdeyle). Yol sabit; kullanıcı girdisiyle kurulmaz.
+  const personaTakimAl = (istek, yanit) => {
+    const host = String(istek.headers.host || '');
+    let ana;
+    try {
+      ana = new URL(`http://${host}`).hostname;
+    } catch {
+      ana = '';
+    }
+    if (ana !== '127.0.0.1' && ana !== 'localhost') {
+      hata(yanit, 403, 'istek yerel adresten gelmiyor');
+      return;
+    }
+    const origin = istek.headers.origin;
+    if (origin !== undefined && origin !== `http://${host}`) {
+      hata(yanit, 403, 'istek kaynağı bu sunucu değil');
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 65536) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume(); // kalan gövdeyi boşalt, soketi kapatma
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      try {
+        mkdirSync(join(kok, 'persona'), { recursive: true });
+        writeFileSync(join(kok, 'persona', 'takim.json'), JSON.stringify(girdi, null, 2) + '\n');
+      } catch {
+        hata(yanit, 500, 'takım kaydedilemedi');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true }));
+      planla();
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
 
     if (istek.method === 'POST' && pathname === '/api/karar') {
       kararAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/persona-takim') {
+      personaTakimAl(istek, yanit);
       return;
     }
 
