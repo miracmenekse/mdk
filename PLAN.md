@@ -878,7 +878,7 @@ Kullanıcı (2026-11-01): her proje için bir persona takımı; panelde yeni "Pe
   - Görev: kod
   - Ne: `panel/sunucu.mjs`: durum anlık görüntüsüne `personaTakim` ekle (`persona/takim.json` oku, yoksa `{personalar:[]}`); `POST /api/persona-takim` gövdedeki JSON'u `persona/takim.json`'a yaz (ekle/sil/düzenle/yorum tek gövdeyle; geçersiz JSON 400, 64KB sınır). Yol sabit (kullanıcı girdisiyle yol kurulmaz).
   - Kapı: `node panel/persona-api2.test.mjs`
-- [ ] 109. index.html: Persona sekmesi (5. kart) + düzenle/sil/ekle/yorum
+- [x] 109. index.html: Persona sekmesi (5. kart) + düzenle/sil/ekle/yorum
   - Yürütücü: kodcu
   - Görev: kod
   - Ne: `kpiHtml`'e 5. kart "Persona" (data-sekme=persona); `index.html` yeni `sekme-persona` paneli + `#persona-takim` (personaTakimHtml); persona ekle/sil/düzenle formu + persona başına yorum kutusu → `POST /api/persona-takim`. CSS küçük.

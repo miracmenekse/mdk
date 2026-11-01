@@ -239,19 +239,25 @@ export function personaTakimHtml(takim) {
   const liste = (takim && takim.personalar) || [];
   if (liste.length === 0) return '<span class="bos">persona takımı yok</span>';
   const renkler = ['persona-a', 'persona-b', 'persona-c'];
-  return liste.map((p, i) =>
-    `<div class="persona-kart ${renkler[i % renkler.length]}">` +
-    '<div class="persona-bas">' +
-    `<span class="avatar">${esc(basHarf(p.ad))}</span>` +
-    `<span class="ad">${esc(p.ad ?? '—')}</span>` +
-    '</div>' +
-    '<div class="persona-govde">' +
-    `<div class="ara-alan"><span>optimize eder</span> ${escMetin(p.optimize ?? '—')}</div>` +
-    `<div class="ara-alan"><span>körlüğü</span> ${escMetin(p.korluk ?? '—')}</div>` +
-    `<div class="ara-alan"><span>sorusu</span> ${escMetin(p.soru ?? '—')}</div>` +
-    '</div>' +
-    '</div>'
-  ).join('');
+  return liste.map((p, i) => {
+    const yorumlar = (p.yorumlar || [])
+      .map((y) => `<div class="persona-not">${escMetin(typeof y === 'string' ? y : y.metin || '')}</div>`)
+      .join('');
+    return `<div class="persona-kart ${renkler[i % renkler.length]}" data-index="${esc(i)}">` +
+      '<div class="persona-bas">' +
+      `<span class="avatar">${esc(basHarf(p.ad))}</span>` +
+      `<span class="ad">${esc(p.ad ?? '—')}</span>` +
+      `<button type="button" class="persona-sil" data-index="${esc(i)}" title="personayı sil">sil</button>` +
+      '</div>' +
+      '<div class="persona-govde">' +
+      `<div class="ara-alan"><span>optimize eder</span> ${escMetin(p.optimize ?? '—')}</div>` +
+      `<div class="ara-alan"><span>körlüğü</span> ${escMetin(p.korluk ?? '—')}</div>` +
+      `<div class="ara-alan"><span>sorusu</span> ${escMetin(p.soru ?? '—')}</div>` +
+      '</div>' +
+      (yorumlar ? `<div class="persona-notlar">${yorumlar}</div>` : '') +
+      `<form class="persona-yorum" data-index="${esc(i)}"><input type="text" maxlength="500" placeholder="yorum / geri bildirim"><button type="submit">gönder</button></form>` +
+      '</div>';
+  }).join('');
 }
 
 // v3 Akış düz ADIMLAR tablosu: Adım / İlerleme / Durum. Her satır data-adim=<no> (tıklanabilir,
@@ -442,6 +448,8 @@ export function kpiHtml(snap, ara) {
   kartlar += kart('akis', 'Akış', biten, 'biten adım', sorunluAdim);
   kartlar += kart('modeller', 'Modeller', modeller.length || '—', 'etkin model', sorunluModel);
   kartlar += kart('arastirma', 'Araştırma', adaylar ?? '—', 'araştırma notu', 0);
+  const pSay = (snap?.personaTakim?.personalar || []).length;
+  kartlar += kart('persona', 'Persona', pSay || '—', 'takım üyesi', 0);
   return '<div class="kpi" role="tablist">' + kartlar + '</div>';
 }
 

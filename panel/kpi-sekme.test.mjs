@@ -22,7 +22,8 @@ for (const s of ['depo', 'akis', 'modeller', 'arastirma']) {
   assert.ok(new RegExp(`data-sekme="${s}"`).test(h), `${s} kartı yok`);
 }
 assert.ok(!/data-sekme="etki"/.test(h), 'Etki kartı olmamalı');
-assert.equal((h.match(/role="tab"/g) || []).length, 4, '4 sekme kartı');
+assert.ok(/data-sekme="persona"/.test(h), 'Persona kartı (5.)');
+assert.equal((h.match(/role="tab"/g) || []).length, 5, '5 sekme kartı (depo/akış/modeller/araştırma/persona)');
 assert.ok(h.includes('role="tablist"'), 'tablist kapsayıcı');
 
 // değerler

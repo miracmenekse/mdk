@@ -129,6 +129,25 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .kpi-kart .kpi-rozet { background: var(--maliyet); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
 .kpi-kart .deger { font-size: 20px; font-variant-numeric: tabular-nums; }
 .kpi-kart .alt { color: var(--soluk); font-size: 12px; }
+/* Persona takımı sekmesi */
+.persona-aciklama { font-size: 13px; color: var(--soluk); margin: 0 0 14px; max-width: 760px; }
+#persona-takim { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.persona-kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; padding: 14px; }
+.persona-kart .persona-bas { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.persona-kart .persona-bas .ad { font-weight: 600; flex: 1; }
+.persona-sil { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--soluk); cursor: pointer; }
+.persona-sil:hover { border-color: var(--maliyet); color: var(--maliyet); }
+.persona-govde .ara-alan { font-size: 13px; margin: 6px 0; overflow-wrap: anywhere; }
+.persona-govde .ara-alan span { color: var(--soluk); font-size: 12px; }
+.persona-notlar { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.persona-not { font-size: 12px; background: var(--zemin); border-radius: 8px; padding: 6px 8px; overflow-wrap: anywhere; }
+.persona-yorum { display: flex; gap: 6px; margin-top: 10px; }
+.persona-yorum input, #persona-ekle input { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--cizgi); border-radius: 8px; background: var(--kart); color: var(--metin); min-width: 0; }
+.persona-yorum input { flex: 1; }
+.persona-yorum button, #persona-ekle button { font: inherit; font-size: 13px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; white-space: nowrap; }
+#persona-ekle { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#persona-ekle input { flex: 1; min-width: 160px; }
+
 /* Depo: elle test tetikleme */
 #test-panel { margin-top: 16px; }
 #test-calistir { font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; }
@@ -404,6 +423,19 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <div class="suzgec" id="ara-suzgec"></div>
   <section id="arastirma"><span class="bos">yükleniyor…</span></section>
   </div>
+
+  <div role="tabpanel" id="sekme-persona" hidden>
+  <h2>Persona takımı</h2>
+  <p class="persona-aciklama">Bu proje için fikir üreten takım. Yeni özellikte personalar reasoning yapar; çıktıları adım detayında görünür. Personayı sil, ekle ya da geri bildirim yaz.</p>
+  <section id="persona-takim"></section>
+  <form id="persona-ekle">
+    <input name="ad" type="text" maxlength="60" placeholder="rol adı (ör. Güvenlik)" required>
+    <input name="optimize" type="text" maxlength="200" placeholder="optimize eder…" required>
+    <input name="korluk" type="text" maxlength="200" placeholder="körlüğü…">
+    <input name="soru" type="text" maxlength="300" placeholder="sorusu…">
+    <button type="submit">Persona ekle</button>
+  </form>
+  </div>
 </main>
 
 <div id="drawer-overlay" hidden></div>
@@ -415,7 +447,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -452,7 +484,7 @@ testBtn.addEventListener('click', async () => {
 
 // sekmeler: KPI kartları (role=tab, #kpi içinde). Seçili sekme adreste (location.hash) saklanır
 // açılış sekmesi ilk veri gelince bir kez seçilir: git deposu varsa Depo, yoksa Akış
-const SEKMELER = ['depo', 'akis', 'modeller', 'arastirma'];
+const SEKMELER = ['depo', 'akis', 'modeller', 'arastirma', 'persona'];
 let acilisSekmesi = null;
 function sekmeSec() {
   const ad = location.hash.slice(1);
@@ -641,6 +673,12 @@ function ciz(d) {
   // KPI kartları = sekmeler; her çizimde yenilenir, sonra seçili sekme işaretlenir
   kpiEl.innerHTML = kpiHtml(d, araVeri);
   sekmeSec();
+  // persona takımı değiştiyse yeniden çiz (yazılan yorumu silmemek için değişmediyse dokunma)
+  const yeniTakim = d.personaTakim || { personalar: [] };
+  if (JSON.stringify(yeniTakim) !== JSON.stringify(sonPersonaTakim)) {
+    sonPersonaTakim = yeniTakim;
+    personaCiz();
+  }
   sonSimdi = d.simdi || null;
   suAnCiz();
   sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
@@ -683,6 +721,47 @@ dinle();
 
 // araştırma verisi canlı değil: açılışta bir kez çekilir, süzgeç yerelde çizer
 const arastirmaEl = document.getElementById('arastirma');
+
+// Persona takımı: sil / ekle / yorum → POST /api/persona-takim
+const personaTakimEl = document.getElementById('persona-takim');
+const personaEkleEl = document.getElementById('persona-ekle');
+let sonPersonaTakim = { personalar: [] };
+function personaCiz() { personaTakimEl.innerHTML = personaTakimHtml(sonPersonaTakim); }
+async function personaKaydet(yeni) {
+  sonPersonaTakim = yeni;
+  personaCiz();
+  try {
+    await fetch('/api/persona-takim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(yeni) });
+  } catch {}
+}
+personaTakimEl.addEventListener('click', (e) => {
+  const b = e.target.closest('.persona-sil');
+  if (!b) return;
+  const i = Number(b.dataset.index);
+  const liste = (sonPersonaTakim.personalar || []).slice();
+  liste.splice(i, 1);
+  personaKaydet({ ...sonPersonaTakim, personalar: liste });
+});
+personaTakimEl.addEventListener('submit', (e) => {
+  const f = e.target.closest('.persona-yorum');
+  if (!f) return;
+  e.preventDefault();
+  const i = Number(f.dataset.index);
+  const girdi = f.querySelector('input');
+  const metin = girdi.value.trim();
+  if (!metin) return;
+  const liste = (sonPersonaTakim.personalar || []).map((p, j) =>
+    j === i ? { ...p, yorumlar: [...(p.yorumlar || []), { metin, ts: Date.now() }] } : p);
+  personaKaydet({ ...sonPersonaTakim, personalar: liste });
+});
+personaEkleEl.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const g = (n) => personaEkleEl.querySelector(`[name="${n}"]`).value.trim();
+  const yeni = { ad: g('ad'), optimize: g('optimize'), korluk: g('korluk'), soru: g('soru') };
+  if (!yeni.ad) return;
+  personaKaydet({ ...sonPersonaTakim, personalar: [...(sonPersonaTakim.personalar || []), yeni] });
+  personaEkleEl.reset();
+});
 const suzgecEl = document.getElementById('ara-suzgec');
 let araVeri = null;
 let araKategori = '';
