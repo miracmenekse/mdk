@@ -195,6 +195,42 @@ function adimlarHtml(adimlar, simdi, acik) {
 
 // acik: { [adımNo]: true|false, ['kat:' + ad]: true|false } kullanıcı tercihi.
 // secenek.sadeceSorunlu: biten bölümlerde sorunlu adım varsa kat açık gelir.
+// persona turu ozet.md metnini balonlara çevirir; her `## <kart>` başlığı bir balon.
+// `# Persona turu` H1 ve özet `- ...` satırları (ilk `## ` öncesi) balon olmaz.
+export function personaBalonlarHtml(ozet) {
+  const metin = String(ozet || '').trim();
+  if (!metin) return '<p class="bos">bu adım için persona turu yok</p>';
+  const bloklar = [];
+  let cari = null;
+  for (const satir of metin.split('\n')) {
+    const baslik = satir.match(/^##\s+(.+?)\s*$/);
+    if (baslik) {
+      cari = { rol: baslik[1], govde: [] };
+      bloklar.push(cari);
+    } else if (cari) {
+      cari.govde.push(satir);
+    }
+  }
+  if (bloklar.length === 0) return '<p class="bos">bu adım için persona turu yok</p>';
+  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  const basHarf = (rol) => {
+    const k = rol.trim().split(/\s+/);
+    const s = k.length >= 2 ? k[0][0] + k[1][0] : rol.trim().slice(0, 2);
+    return s.toLocaleUpperCase('tr');
+  };
+  return bloklar
+    .map((b, i) => {
+      const govde = esc(b.govde.join('\n').trim()).replace(/\n+/g, '<br>');
+      return (
+        `<div class="persona-balon ${renkler[i % renkler.length]}">` +
+        `<span class="avatar">${esc(basHarf(b.rol))}</span>` +
+        `<div class="icerik"><span class="rol">${esc(b.rol)}</span>` +
+        `<p class="metin">${govde}</p></div></div>`
+      );
+    })
+    .join('');
+}
+
 export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {}) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));

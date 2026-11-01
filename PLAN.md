@@ -815,7 +815,7 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
   - Görev: kod
   - Ne: `panel/sunucu.mjs`: `pathname === '/api/persona'` → `adim` sorgu parametresiyle planı bul, adımın `persona` yolundaki `persona-tur/<zaman>/ozet.md`'yi oku, `{ adim, ozet }` JSON döndür. Yol `<kök>/persona-tur/` dışındaysa (kroki servisindeki `realpath` kısıt mantığı) 400; `persona` yoksa/dosya yoksa `{ adim, ozet: null }`. Diğer uç noktalara dokunma.
   - Kapı: `node panel/persona-api.test.mjs` (geçerli yol → ozet metni; kök dışı yol → 400; persona'sız adım → `ozet:null`)
-- [ ] 95. ciz.mjs: `personaBalonlarHtml(ozet)`
+- [x] 95. ciz.mjs: `personaBalonlarHtml(ozet)`
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `personaBalonlarHtml(ozet)` export; `ozet.md` metnini persona balonlarına çevirir (her `## <kart>` bloğu bir balon: rol adı + baş harf avatar + sıraya göre renk sınıfı `persona-a/b/c`, varsa saat). `ozet` boş/null → `<p class="bos">bu adım için persona turu yok</p>`. HTML kaçışı uygula.
