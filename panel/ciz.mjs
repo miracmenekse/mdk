@@ -511,6 +511,75 @@ export function dengeHtml(tel, cl) {
     '</div>';
 }
 
+// Modeller v2 — birleşik "TOKEN PAYI VE MALIYET" kartı: degrade halka gauge + maliyet rakamları + lejant
+export function tokenPayiHtml(snap) {
+  const tel = snap?.telemetri?.var ? snap.telemetri : null;
+  const cl = snap?.claude?.var ? snap.claude : null;
+  const ocToken = tel && typeof tel.toplam?.toplam === 'number'
+    ? tel.toplam.toplam
+    : (snap?.modeller || []).reduce((t, m) => t + (Number.isFinite(m.token) ? m.token : 0), 0);
+  const clToken = cl && typeof cl.toplam?.toplam === 'number' ? cl.toplam.toplam : 0;
+  const toplam = ocToken + clToken;
+  const ocPct = toplam > 0 ? Math.round((ocToken / toplam) * 100) : 0;
+  const clPct = toplam > 0 ? 100 - ocPct : 0;
+  const telPara = tel && tel.tasarruf && typeof tel.tasarruf.listeFiyati === 'number'
+    ? `liste fiyatıyla ~${esc(para(tel.tasarruf.listeFiyati))} (kaçınılan, tahmin)`
+    : 'fiyat yok';
+  const clPara = cl && typeof cl.toplam?.maliyet === 'number'
+    ? `~${esc(para(cl.toplam.maliyet))}${(cl.toplam.fiyatsiz || []).length ? ' en az' : ''}`
+    : 'fiyat yok';
+  const r = 66;
+  const C = 2 * Math.PI * r;
+  const ocLen = (ocPct / 100) * C;
+  const clLen = (clPct / 100) * C;
+  const donut = toplam > 0
+    ? `<svg viewBox="0 0 180 180" class="donut" role="img" aria-label="token payı halkası">` +
+      '<defs><linearGradient id="g-claude" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0" stop-color="#e537c9"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>' +
+      '<g transform="rotate(-90 90 90)" fill="none" stroke-width="22">' +
+      `<circle cx="90" cy="90" r="${r}" stroke="var(--cizgi)"/>` +
+      `<circle cx="90" cy="90" r="${r}" stroke="#22d3ee" stroke-dasharray="${ocLen.toFixed(1)} ${(C - ocLen).toFixed(1)}"/>` +
+      `<circle cx="90" cy="90" r="${r}" stroke="url(#g-claude)" stroke-dasharray="${clLen.toFixed(1)} ${(C - clLen).toFixed(1)}" stroke-dashoffset="${(-ocLen).toFixed(1)}"/>` +
+      '</g>' +
+      `<text x="90" y="86" text-anchor="middle" class="donut-buyuk">${esc(kisa(toplam))}</text>` +
+      '<text x="90" y="106" text-anchor="middle" class="donut-alt">toplam token</text>' +
+      '</svg>'
+    : '<p class="bos">token verisi yok</p>';
+  return '<div class="kart token-payi">' +
+    '<div class="tp-ust"><span class="baslik">TOKEN PAYI VE MALIYET</span> <span class="alt">ücretsiz vs ücretli</span></div>' +
+    '<div class="tp-govde">' +
+    `<div class="tp-donut">${donut}</div>` +
+    '<div class="tp-maliyet">' +
+    `<div class="tp-blok"><span class="ad">OpenCode (ücretsiz)</span><p class="buyuk"><b>${esc(kisa(ocToken))}</b> token</p><p class="kucuk">${telPara}</p></div>` +
+    `<div class="tp-blok"><span class="ad">Claude</span><p class="buyuk"><b>${esc(kisa(clToken))}</b> token</p><p class="kucuk">${clPara}</p></div>` +
+    '</div>' +
+    '</div>' +
+    '<div class="tp-lejant">' +
+    `<span class="e"><i style="background:#22d3ee"></i>OpenCode (ücretsiz)</span><b>%${ocPct}</b>` +
+    `<span class="e"><i style="background:#2563eb"></i>Claude</span><b>%${clPct}</b>` +
+    '</div>' +
+    (toplam > 0 ? `<p class="tp-oran">token'ların <b>%${ocPct}</b>'i ücretsiz modelde</p>` : '') +
+    '</div>';
+}
+
+// Modeller v2 — model başına token degrade çubuk grafiği
+export function modelTokenCubukHtml(snap) {
+  const modeller = (snap?.modeller || []).filter((m) => Number.isFinite(m.token) && m.token > 0);
+  const ust = '<div class="tp-ust"><span class="baslik">MODEL BAŞINA TOKEN</span> <span class="alt">kaynak: model metrikleri</span></div>';
+  if (modeller.length === 0) return `<div class="kart cubuk-grafik">${ust}<span class="bos">model token verisi yok</span></div>`;
+  const maxT = Math.max(...modeller.map((m) => m.token));
+  const bars = modeller.map((m) => {
+    const h = maxT > 0 ? (m.token / maxT) * 100 : 0;
+    const cacheOran = Number.isFinite(m.cacheOkuma) && m.token > 0 ? Math.round((m.cacheOkuma / m.token) * 100) : null;
+    const alt = cacheOran !== null ? `<span class="cubuk-cache">cache %${cacheOran}</span>` : '';
+    return '<div class="cubuk-sutun">' +
+      `<div class="cubuk-kap"><div class="cubuk-dolu" style="height:${h.toFixed(1)}%"><span class="cubuk-deger">${esc(tam(m.token))}</span></div></div>` +
+      `<div class="cubuk-ad">${esc(m.model)}</div>${alt}` +
+      '</div>';
+  }).join('');
+  return `<div class="kart cubuk-grafik">${ust}<div class="cubuklar">${bars}</div></div>`;
+}
+
 // kısa token: 1000 ve üstü tek ondalıklı k (42,5k), altı olduğu gibi
 function kisaToken(n) {
   if (n < 1000) return String(n);

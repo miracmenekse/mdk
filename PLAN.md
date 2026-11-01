@@ -853,6 +853,14 @@ Tasarım: Figma "Akış sekmesi v3 · 720px" + "…_adım detail" (kullanıcı o
 
 Sonraya bırakılan (Faz 13): Modeller sayfası grafik yeniden tasarımı (degrade halka gauge + yığılmış çubuk, açık tema — `tasarim.md §8`); panelde görev rozeti ve model tablosunda görev sütunu (metrikte `gorev` alanı 82'de birikir).
 
+## Faz 13 — Modeller sayfası grafikler + tam genişlik düzen
+Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Downloads/MDK Modeller v2.pdf`; `tasarim.md §8`. Kullanıcı isteği (2026-11-01): panel yatayda sayfayı doldursun (geniş ekranda dar 720px kolon olmasın, dikey scroll azalsın); Modeller sekmesi degrade halka gauge + degrade çubuk grafiğiyle.
+- [x] 103a. Tam genişlik: `main { max-width: 720px }` → `1600px` + yanal padding (clamp).
+- [x] 103. Modeller v2 grafikleri: `tokenPayiHtml` (degrade halka + maliyet birleşik kart) + `modelTokenCubukHtml` (degrade çubuk); Modeller sekmesi "Özet grafikler" bölümüne eklenir, eski "Maliyet dengesi" (denge) kartı yerini birleşik karta bırakır; detay tablolar (modeller/telemetri) korunur.
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Kapı: `node panel/modeller-grafik.test.mjs` + görsel doğrulama
+
 ## Faz 12.1 — OpenCode `--standalone` uyumu
 - **Sorun/karar (SORUN.md, kullanıcı, 2026-11-01):** Bu Mac'teki yayınlanmış opencode dev build'i (`0.0.0-dev-202610280534`, npm `dev` dist-tag = en güncel) `--standalone` bayrağını TANIMIYOR → `opencode run --standalone` yardım basıp çıkıyor, model hiç çağrılmıyor (`token:0`, `neden=kapi`, adım eskale). `run` zaten varsayılan olarak kendi yerel sunucusunu açar (`--port` random; `--attach` = dış sunucu), yani `--standalone` gereksiz. Bayraksız teyit edildi (glm-5.3-flash "OK", 13k token, çıkış 0). VM'de bayrak farklı/özel bir build'den; `run` kendi sunucusunu açtığı için orada da gereksiz olmalı (kullanıcı teyit edecek).
 - [x] 102. `--standalone` bayrağını kaldır (3 çağrı + 2 kapı)

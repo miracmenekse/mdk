@@ -37,9 +37,10 @@ assert.equal(dengeHtml(null, null), '');
 assert.equal(dengeHtml({ var: false }, { var: false }), '');
 for (const x of [dengeHtml(tel, cl(null)), dengeHtml(null, cl(1)), dengeHtml(tel, null)]) assert.ok(!/undefined|NaN|null/.test(x), x);
 
-// sayfa: Modeller sekmesinin en üstünde
+// sayfa: Modeller sekmesinin en üstünde Özet grafikler (Faz 13: denge yerini birleşik token-payı kartına bıraktı)
 const s = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const sekme = s.slice(s.indexOf('id="sekme-modeller"'));
-assert.ok(/^id="sekme-modeller"[^>]*>\s*<h2>Maliyet dengesi<\/h2>\s*<section id="denge">/.test(sekme), 'Modeller sekmesinin ilk bölümü: ' + sekme.slice(0, 120));
-assert.match(s, /dengeHtml\(d\.telemetri, d\.claude\)/);
+assert.ok(/^id="sekme-modeller"[^>]*>\s*<h2>Özet grafikler<\/h2>\s*<div class="grafik-izgara">\s*<section id="token-payi">/.test(sekme), 'Modeller sekmesinin ilk bölümü: ' + sekme.slice(0, 160));
+assert.match(s, /tokenPayiHtml\(d\)/);
+assert.match(s, /modelTokenCubukHtml\(d\)/);
 console.log('denge.test ok');
