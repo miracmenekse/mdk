@@ -321,7 +321,8 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .suzgec button[aria-pressed="true"] { background: var(--vurgu); border-color: var(--vurgu); color: var(--kart); }
 
 /* v3 Akış düz ADIMLAR tablosu */
-.akis-tablo { width: 100%; max-width: 1040px; table-layout: fixed; border-collapse: collapse; font-size: 14px; }
+.akis-tablo { width: 100%; max-width: 1040px; table-layout: fixed; border-collapse: collapse; font-size: 14px; display: table; overflow-x: visible; }
+.akis-tablo td { white-space: normal; }
 .akis-tablo .ad { word-break: break-word; }
 .akis-tablo thead th { text-align: left; font-size: 12px; font-weight: 600; color: var(--soluk); padding: 6px 10px; border-bottom: 1px solid var(--cizgi); }
 .akis-tablo thead th.ilerleme { width: 180px; }

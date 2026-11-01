@@ -932,7 +932,7 @@ Kaynaklar: [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve
 
 **Elle yapılacaklar (kullanıcı):** (a) Mac: `brew install --cask tailscale`, oturum aç. (b) iPhone: App Store'dan Tailscale, aynı hesap. (c) Mac: `tailscale serve --bg 4747`; çıkan adres ve hesap e-postasıyla `.mdk-uzak.json` = `{"host":"<ad>.<ağ>.ts.net","kullanici":"<e-posta>"}`. (d) iPhone'u kabloyla bağla, Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu aç; ilk kurulumdan sonra Ayarlar → Genel → VPN ve Aygıt Yönetimi → geliştiriciye güven.
 
-- [ ] 111. Yazma izni kararı (saf modül)
+- [x] 111. Yazma izni kararı (saf modül)
   - Görev: kod
   - Ne: Yeni `panel/uzak.mjs`: `uzakAyar(kok)` kökteki `.mdk-uzak.json`'dan `{host,kullanici}` döner (yok/bozuk/eksik: `null`). `yazmaIzni(basliklar, ayar)` `{izin:true,kaynak:'yerel'|'uzak'}` ya da `{izin:false,neden}`. Yerel: hostname 127.0.0.1/localhost ve `tailscale-user-login`/`x-forwarded-for` yok; origin varsa `http://<host>`. Uzak: hostname = ayar.host (harf duyarsız), kimlik başlığı = ayar.kullanici, origin varsa `https://<ayar.host>`. Neden metinleri sunucu.mjs:113/118 ile aynı.
   - Kapı: `node panel/uzak.test.mjs`
