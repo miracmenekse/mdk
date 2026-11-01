@@ -197,6 +197,13 @@ function adimlarHtml(adimlar, simdi, acik) {
 // secenek.sadeceSorunlu: biten bölümlerde sorunlu adım varsa kat açık gelir.
 // persona turu ozet.md metnini balonlara çevirir; her `## <kart>` başlığı bir balon.
 // `# Persona turu` H1 ve özet `- ...` satırları (ilk `## ` öncesi) balon olmaz.
+// avatar baş harfleri: iki kelimesi ilk harfleri ('Ürün Sahibi' → 'ÜS'), tek kelimesi ilk iki harfi ('Mühendis' → 'MÜ')
+function basHarf(ad) {
+  const k = String(ad ?? '').trim().split(/\s+/);
+  const s = k.length >= 2 && k[0] && k[1] ? k[0][0] + k[1][0] : k[0].slice(0, 2);
+  return s.toLocaleUpperCase('tr');
+}
+
 export function personaBalonlarHtml(ozet) {
   const metin = String(ozet || '').trim();
   if (!metin) return '<p class="bos">bu adım için persona turu yok</p>';
@@ -213,11 +220,6 @@ export function personaBalonlarHtml(ozet) {
   }
   if (bloklar.length === 0) return '<p class="bos">bu adım için persona turu yok</p>';
   const renkler = ['persona-a', 'persona-b', 'persona-c'];
-  const basHarf = (rol) => {
-    const k = rol.trim().split(/\s+/);
-    const s = k.length >= 2 ? k[0][0] + k[1][0] : rol.trim().slice(0, 2);
-    return s.toLocaleUpperCase('tr');
-  };
   return bloklar
     .map((b, i) => {
       const govde = esc(b.govde.join('\n').trim()).replace(/\n+/g, '<br>');
@@ -229,6 +231,27 @@ export function personaBalonlarHtml(ozet) {
       );
     })
     .join('');
+}
+
+// persona takımı kartları: her persona için ad + avatar + sıraya göre persona-a/b/c rengi;
+// gövdede optimize eder / körlüğü / sorusu alanları
+export function personaTakimHtml(takim) {
+  const liste = (takim && takim.personalar) || [];
+  if (liste.length === 0) return '<span class="bos">persona takımı yok</span>';
+  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  return liste.map((p, i) =>
+    `<div class="persona-kart ${renkler[i % renkler.length]}">` +
+    '<div class="persona-bas">' +
+    `<span class="avatar">${esc(basHarf(p.ad))}</span>` +
+    `<span class="ad">${esc(p.ad ?? '—')}</span>` +
+    '</div>' +
+    '<div class="persona-govde">' +
+    `<div class="ara-alan"><span>optimize eder</span> ${escMetin(p.optimize ?? '—')}</div>` +
+    `<div class="ara-alan"><span>körlüğü</span> ${escMetin(p.korluk ?? '—')}</div>` +
+    `<div class="ara-alan"><span>sorusu</span> ${escMetin(p.soru ?? '—')}</div>` +
+    '</div>' +
+    '</div>'
+  ).join('');
 }
 
 // v3 Akış düz ADIMLAR tablosu: Adım / İlerleme / Durum. Her satır data-adim=<no> (tıklanabilir,

@@ -868,7 +868,7 @@ Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Download
 
 ## Faz 15 — Persona takımı (panel sekmesi + reasoning)
 Kullanıcı (2026-11-01): her proje için bir persona takımı; panelde yeni "Persona" sekmesi. Şema (kullanıcı kararı): **Ad + Optimize eder + Körlük + Soru**. Takım `persona/takim.json`'da. Akış: proje ilk kez yapılırken personalar önerilir → kullanıcı sil/ekle/yorum; yeni özellikte personalar reasoning yapar (fikir) → kullanıcı okur → backlog → geliştirme müsaitse başlar; adımda çalışan personaların çıktısı adım detay drawer'ında görünür. Kapsam: hepsi bir arada.
-- [ ] 107. `ciz.mjs`: `personaTakimHtml(takim)` (persona kartları: Ad/Optimize/Körlük/Soru, avatar+renk)
+- [x] 107. `ciz.mjs`: `personaTakimHtml(takim)` (persona kartları: Ad/Optimize/Körlük/Soru, avatar+renk)
   - Yürütücü: opencode
   - Görev: kod
   - Ne: `panel/ciz.mjs`: yeni saf `personaTakimHtml(takim)` export; `takim.personalar` her biri için kart: başlıkta ad + baş harf avatarı + sıraya göre `persona-a/b/c` renk; gövdede "optimize eder: …", "körlüğü: …", "sorusu: …". Boş/null → boş durum. HTML kaçışı (`esc`). Kart sınıfı `persona-kart`.
