@@ -381,7 +381,7 @@ export async function baslat(dir, port, { calistir } = {}) {
     if (pathname === '/') {
       const dosya = join(fileURLToPath(new URL('.', import.meta.url)), 'index.html');
       if (existsSync(dosya)) {
-        yanit.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        yanit.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
         yanit.end(readFileSync(dosya));
       } else {
         yanit.writeHead(404).end('bulunamadı');
@@ -439,7 +439,7 @@ export async function baslat(dir, port, { calistir } = {}) {
       // yalnızca çizim modülü; diğer panel dosyaları sunulmaz
       const dosya = join(fileURLToPath(new URL('.', import.meta.url)), 'ciz.mjs');
       if (existsSync(dosya)) {
-        yanit.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+        yanit.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
         yanit.end(readFileSync(dosya));
       } else {
         yanit.writeHead(404).end();
