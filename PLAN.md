@@ -866,6 +866,19 @@ Tasarım: Figma "MDK paneli modeller v2" (node 34:1313) + `/Users/mirac/Download
   - Ne: `panel/ciz.mjs` `akisTablosuHtml`: biten/temsil denemesi olan satırın meta satırına ortalama süreyi ekle — `rep.sure_sn` varsa `${rep.sure_sn} sn` olarak, sıra: model · N deneme · S sn · token. Başka davranış değişmesin, `planHtml`'e dokunma.
   - Kapı: `node panel/akis-sure.test.mjs`
 
+## Faz 14 — Manuel test tetikleme (Depo sekmesinde buton)
+Kullanıcı (2026-11-01): tüm testleri koşma işi artık elle tetiklenecek; Depo sekmesinde bir butona basınca testler çalışıp hata panelde görünecek.
+- [ ] 105. Sunucu: `POST /api/test`
+  - Yürütücü: opencode
+  - Görev: kod
+  - Ne: `panel/sunucu.mjs`: `POST /api/test` → kök dizinde `bash test/hepsi.sh` çalıştır (`child_process.spawn('bash', ['test/hepsi.sh'], { cwd: kok })`), stdout+stderr'i topla, zaman aşımı ~180 sn (aşarsa süreci öldür, gecti false). Yanıt JSON `{ gecti: <çıkış 0 mı>, cikti: <çıktı, son ~8000 bayt> }`. Yalnız POST; başka method 405. Diğer uç noktalara dokunma.
+  - Kapı: `node panel/test-api.test.mjs`
+- [ ] 106. Depo sekmesinde "Testleri çalıştır" butonu + sonuç
+  - Yürütücü: kodcu
+  - Görev: kod
+  - Ne: `panel/index.html` Depo sekmesine "Testleri çalıştır" butonu + sonuç alanı; tıkla → `POST /api/test`, "çalışıyor…" göster, dönünce geçti ✓ (yeşil) / ✗ + `cikti`yı `<pre>`de göster. CSS küçük. Yalnız index.html.
+  - Kapı: `node panel/test-ui.test.mjs` (index.html: buton + /api/test fetch + sonuç alanı) + görsel
+
 ## Faz 12.1 — OpenCode `--standalone` uyumu
 - **Sorun/karar (SORUN.md, kullanıcı, 2026-11-01):** Bu Mac'teki yayınlanmış opencode dev build'i (`0.0.0-dev-202610280534`, npm `dev` dist-tag = en güncel) `--standalone` bayrağını TANIMIYOR → `opencode run --standalone` yardım basıp çıkıyor, model hiç çağrılmıyor (`token:0`, `neden=kapi`, adım eskale). `run` zaten varsayılan olarak kendi yerel sunucusunu açar (`--port` random; `--attach` = dış sunucu), yani `--standalone` gereksiz. Bayraksız teyit edildi (glm-5.3-flash "OK", 13k token, çıkış 0). VM'de bayrak farklı/özel bir build'den; `run` kendi sunucusunu açtığı için orada da gereksiz olmalı (kullanıcı teyit edecek).
 - [x] 102. `--standalone` bayrağını kaldır (3 çağrı + 2 kapı)
