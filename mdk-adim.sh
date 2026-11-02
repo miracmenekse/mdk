@@ -4,6 +4,7 @@
 # Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor | 8 modeller kilitli (tavan doldu)
 set -uo pipefail
 # donmuş kopya: bir adım mdk-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
+export MDK_SELF_DIR="${MDK_SELF_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 if [ -z "${MDK_DONMUS:-}" ]; then
   mkdir -p .mdk-log && cp "$0" .mdk-log/mdk-adim.run.sh && MDK_DONMUS=1 exec bash .mdk-log/mdk-adim.run.sh "$@"
 fi
@@ -11,7 +12,7 @@ N=${1:?adım no}; PLAN=${2:-PLAN.md}
 DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
-ILK=${ILK:-90}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
+ILK=${ILK:-35}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
 OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}   # v2: v1 ücretsiz modellerde hata veriyor (#59387)
 LOGD=.mdk-log; mkdir -p "$LOGD"
 # deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün
@@ -48,6 +49,17 @@ IFS=, read -ra MODELLER <<<"$(tr -d ' ' <<<"$modline")"
 if [ -n "${ONCE:-}" ] && [[ " ${MODELLER[*]} " == *" $ONCE "* ]]; then
   SIRA=("$ONCE"); for x in "${MODELLER[@]}"; do [ "$x" = "$ONCE" ] || SIRA+=("$x"); done; MODELLER=("${SIRA[@]}")
 fi
+# otomatik eskale modelleri: Görev kod/vb. modelleri gerçek hatayla tükenirse kodcu öncesi Görev eskale: denenir
+ESKALE_MODELLER=()
+if [ "$gorev" != eskale ] && ! grep -q '^\s*- Modeller:' <<<"$blok"; then
+  eskale_satir=$(grep -m1 -oP '^Görev eskale: \K.*' "$PLAN" || true)
+  if [ -n "$eskale_satir" ]; then
+    IFS=, read -ra E_ADAY <<<"$(tr -d ' ' <<<"$eskale_satir")"
+    for em in "${E_ADAY[@]}"; do
+      [[ " ${MODELLER[*]} " == *" $em "* ]] || ESKALE_MODELLER+=("$em")
+    done
+  fi
+fi
 # token bütçesi (model başına): adım satırı önceliklidir, yoksa dosya başındaki Bütçe; ikisi de yoksa denetim yok
 butce=$(grep -m1 -oP '^\s*- Bütçe: \K[0-9]+' <<<"$blok" || grep -m1 -oP '^Bütçe: \K[0-9]+' "$PLAN" || true)
 
@@ -69,6 +81,61 @@ fi
 if [ -f test/hepsi.sh ] && [ -z "${MDK_ONKONTROL_YOK:-}" ]; then
   yaz_durum "" 0 regresyon
   ok=$(env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT HEPSI_HIZLI=1 bash test/hepsi.sh 2>&1) || { yaz_durum "" 0 regresyon_kirmizi; echo "adım $N başlamadı: test/hepsi.sh HEAD'de kırmızı (kapıyı düzelt):"; grep 'BAŞARISIZ' <<<"$ok"; tail -5 <<<"$ok"; exit 4; }
+fi
+# adım bazlı persona turu: "- Persona: sor" varsa kodlamadan önce persona takımını koşturur ve özeti isteme bağlar
+persona_ipucu=""
+if grep -q '^\s*- Persona:\s*sor\b' <<<"$blok" && [ -f "$MDK_SELF_DIR/persona-takim-tur.mjs" ] && [ -f persona/takim.json ]; then
+  yaz_durum "" 0 persona
+  printf '%s\n' "$blok" >"$LOGD/persona-soru-$N.txt"
+  p_model=$(grep -m1 -oP '^Görev persona: \K[^, ]+' "$PLAN" || echo "opencode-go/glm-5.3-flash")
+  p_dizin=$(env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT node "$MDK_SELF_DIR/persona-takim-tur.mjs" "$LOGD/persona-soru-$N.txt" "$p_model" 2>/dev/null | tail -1 || true)
+  if [ -n "$p_dizin" ] && [ -f "$p_dizin/ozet.md" ]; then
+    persona_ipucu="Persona takımı görüşleri (uygularken dikkate al):
+$(cat "$p_dizin/ozet.md")"
+    if [ "${MDK_PLAN_DOKUNMA:-0}" != 1 ]; then
+      sed -i -E "s|^(\s*- Persona:)\s*sor\b|\1 $p_dizin|" "$PLAN"
+      git add "$PLAN" && git commit -qm "adım $N: persona turu ($p_dizin)"; CP=$(git rev-parse HEAD)
+    fi
+  fi
+fi
+# otomatik kapı üretimi: adımdaki .test.mjs/.test.sh dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
+mapfile -t EKSIK_KAPILAR < <(printf '%s\n' "${KAPILAR[@]}" | grep -oE '[A-Za-z0-9_./-]+\.test\.(mjs|sh)' | sort -u | while read -r tf; do [ -n "$tf" ] && [ ! -f "$tf" ] && echo "$tf"; done)
+if [ ${#EKSIK_KAPILAR[@]} -gt 0 ]; then
+  kapi_satir=$(grep -m1 -oP '^Görev kapi: \K.*' "$PLAN" || true)
+  if [ -n "$kapi_satir" ]; then
+    IFS=, read -ra KAPI_MOD <<<"$(tr -d ' ' <<<"$kapi_satir")"
+    eksik_str="${EKSIK_KAPILAR[*]}"; kapi_ok=0
+    for km in "${KAPI_MOD[@]}"; do
+      yaz_durum "$km" 1 kapi_yaziliyor
+      klog="$LOGD/kapi$N-$(date +%s).jsonl"; kt0=$(date +%s); kneden=""
+      kistem="PLAN.md içindeki $N numaralı adım için YALNIZCA şu eksik kapı test dosyasını yaz: $eksik_str. Üretim koduna veya PLAN.md'ye DOKUNMA. Yazdığın test mevcut kodda KIRMIZI (çıkış != 0) olmalı, adımın 'Ne:' maddesi uygulandığında YEŞİL (çıkış 0) olmalı. Adım:
+$blok"
+      OPENCODE_LOG_LEVEL=error env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT setsid "$OC" run -m "$km" --title "kapi-$N" --format json --print-logs "$kistem" </dev/null >"$klog" 2>"$klog.err" &
+      kpid=$!
+      while kill -0 "$kpid" 2>/dev/null; do
+        sleep "$POLL"; kel=$(( $(date +%s) - kt0 ))
+        if grep -q "Free usage limit" "$klog.err" 2>/dev/null || grep -q '"type":"error".*Free usage limit' "$klog" 2>/dev/null; then kneden=kota
+        elif [ ! -s "$klog" ] && [ "$kel" -ge "$ILK" ]; then kneden=yanit_yok
+        elif [ "$kel" -ge "$SURE" ]; then kneden=sure; fi
+        [ -z "$kneden" ] || { kill -TERM -- -"$kpid" 2>/dev/null; sleep 2; kill -KILL -- -"$kpid" 2>/dev/null; break; }
+      done
+      wait "$kpid" 2>/dev/null; pgrep -g "$kpid" >/dev/null && kill -KILL -- -"$kpid" 2>/dev/null
+      hepsi_var=1; for tf in "${EKSIK_KAPILAR[@]}"; do [ -f "$tf" ] || hepsi_var=0; done
+      git add -A
+      diger=$(git diff --cached --name-only "$CP" | grep -vxFf <(printf '%s\n' "${EKSIK_KAPILAR[@]}") || true)
+      kirmizi=0
+      if [ -z "$kneden" ] && [ "$hepsi_var" = 1 ] && [ -z "$diger" ]; then
+        for k in "${KAPILAR[@]}"; do
+          env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT bash -c "$k" >/dev/null 2>&1 || { kirmizi=1; break; }
+        done
+      fi
+      if [ "$kirmizi" = 1 ]; then
+        git commit -qm "adım $N kapısı: $eksik_str ($km)"; CP=$(git rev-parse HEAD); kapi_ok=1; break
+      fi
+      git reset -q --hard "$CP"; git clean -fdq
+    done
+    [ "$kapi_ok" = 1 ] || { yaz_durum "" 0 kapi_hata; echo "adım $N: eksik kapı ($eksik_str) üretilemedi veya kırmızı doğrulanamadı"; exit 4; }
+  fi
 fi
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
@@ -114,19 +181,22 @@ for m in "${aday[@]}"; do
   for ((d=1; d<=DENEME; d++)); do
     yaz_durum "$m" "$d" calisiyor
     log="$LOGD/adim$N-$(date +%s).jsonl"; t0=$(date +%s); neden=""
-    istem="PLAN.md içindeki $N numaralı adımı yap, yalnızca onu. Adım:
+    istem="PLAN.md içindeki $N numaralı adımı yap, yalnızca onu.
+KURAL: Doğrulama için YALNIZCA adımdaki \"- Kapı:\" komutunu çalıştır; ASLA test/hepsi.sh veya test/mdk-adim.test.sh çalıştırma (regresyonu çalıştırıcı kendisi koşar).
+Adım:
 $blok
+$persona_ipucu
 $SADE_IPUCU
 $ipucu"
     # setsid: süreç kendi grubunun lideri olur (pgid = pid); durdururken grup topluca öldürülür
     # stdin kapalı: süreç grubunda tty okuması takılıyordu
     if [[ $m == cursor/* ]]; then
       yurm=cursor; cursor_izin
-      setsid "${MDK_CURSOR:-cursor-agent}" -p --output-format stream-json --trust --model "${m#cursor/}" "$istem" </dev/null >"$log" 2>"$log.err" &
+      env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT setsid "${MDK_CURSOR:-cursor-agent}" -p --output-format stream-json --trust --model "${m#cursor/}" "$istem" </dev/null >"$log" 2>"$log.err" &
     else
       yurm=opencode
       # v2 (adım 72): v1 ücretsiz modellerde "Unexpected server error" veriyor
-      OPENCODE_LOG_LEVEL=error setsid "$OC" run -m "$m" --title "adim-$N" --format json --print-logs \
+      OPENCODE_LOG_LEVEL=error env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT setsid "$OC" run -m "$m" --title "adim-$N" --format json --print-logs \
         "$istem" </dev/null >"$log" 2>"$log.err" &
     fi
     pid=$!
@@ -145,6 +215,12 @@ $ipucu"
     # ponytail: Cursor kota metni henüz görülmedi, tahmin; gerçek mesaj görülünce daralt
     [ -z "$neden" ] && [ "$yurm" = cursor ] && grep -qiE "usage limit|rate limit|upgrade to|quota" "$log.err" 2>/dev/null && neden=kota
     pgrep -g "$pid" >/dev/null && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
+    # 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
+    if [ -z "$neden" ] && [ ! -s "$log" ] && grep -qiE "Unknown argument|Positionals:|command not found|No such file" "$log.err" 2>/dev/null; then
+      kilit_birak; yaz_durum "$m" "$d" ortam_hatasi
+      echo "adım $N: çalıştırıcı/ortam hatası ($m):" >&2; head -5 "$log.err" >&2
+      git reset -q --hard "$CP"; git clean -fdq; exit 4
+    fi
     # kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
     git add -A
     # SORUN.md: model bir sorun bildirdiyse kapı geçse bile deneme başarısız; içerik sonraki denemeye ipucu olur
@@ -170,6 +246,9 @@ $ipucu"
     if [ -z "$neden" ]; then
       [ "${MDK_PLAN_DOKUNMA:-0}" = 1 ] || sed -i -E "s/^- \[ \] $N\./- [x] $N./" "$PLAN"; git add -A
       git commit -qm "adım $N: $baslik ($m, deneme $d)"; yaz_durum "$m" "$d" gecti
+      if grep -qiE '^\s*-\s+(İncele|Incele):\s*evet\b' <<<"$blok" && [ -f "$MDK_SELF_DIR/mdk-incele.sh" ]; then
+        env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT bash "$MDK_SELF_DIR/mdk-incele.sh" "$N" "$PLAN" || true
+      fi
       echo "adım $N geçti ($m, deneme $d)"; exit 0
     fi
     case $neden in
@@ -183,16 +262,23 @@ $sorun_icerik" ;;
     [ "$neden" = kota ] && kota_goruldu=1
     echo "adım $N: $m deneme $d başarısız ($neden)"
     case $neden in yanit_yok|kota) ;; *) SAGLAYICI=0 ;; esac   # kota/sessizlik model değil sağlayıcı sorunu: eskale etme
+    [ "$neden" = sorun ] && [ "$d" = "$DENEME" ] && { durdu=sorun; break; }   # SORUN.md çözülmediyse diğer modelleri boşuna deneme
     [ "$neden" = butce ] && { durdu=butce; break; }   # bu modelin bütçesi bitti: sıradaki modele geç
     case $neden in yanit_yok|kota) break ;; esac   # sessiz/kotalı modeli yeniden denemek boşuna: sıradaki modele geç
   done
   kilit_birak
+  [ "$durdu" = sorun ] && break
 done
-[ ${#bekleyen[@]} -gt 0 ] || break
-aday=("${bekleyen[@]}")
-if [ $denendi = 0 ]; then   # tüm kalan modeller kilitli: bekle, tavan dolunca çık (model çağrılmadan)
-  [ $((beklenen + KILIT_BEKLE)) -gt "$KILIT_TAVAN" ] && { yaz_durum "" 0 kilit; echo "adım $N: modeller $KILIT_TAVAN sn kilitli kaldı"; exit 8; }
-  sleep "$KILIT_BEKLE"; beklenen=$((beklenen + KILIT_BEKLE))
+if [ "${#bekleyen[@]}" -gt 0 ] && [ "$durdu" != sorun ]; then
+  aday=("${bekleyen[@]}")
+  if [ $denendi = 0 ]; then   # tüm kalan modeller kilitli: bekle, tavan dolunca çık (model çağrılmadan)
+    [ $((beklenen + KILIT_BEKLE)) -gt "$KILIT_TAVAN" ] && { yaz_durum "" 0 kilit; echo "adım $N: modeller $KILIT_TAVAN sn kilitli kaldı"; exit 8; }
+    sleep "$KILIT_BEKLE"; beklenen=$((beklenen + KILIT_BEKLE))
+  fi
+elif [ "${eskale_denendi:-0}" = 0 ] && [ $SAGLAYICI = 0 ] && [ "$durdu" != sorun ] && [ ${#ESKALE_MODELLER[@]} -gt 0 ]; then
+  eskale_denendi=1; DENEME=1; gorev=eskale; aday=("${ESKALE_MODELLER[@]}")
+else
+  break
 fi
 done
 if [ "$durdu" = butce ]; then

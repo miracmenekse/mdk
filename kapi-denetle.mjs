@@ -5,8 +5,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parse } from './panel/plan.mjs';
 
-// Kapı bir test dosyası ya da test betiği çalıştırıyor mu?
-const TEST_KAPI = /\.test\.|(^|[ \/])test\/|npm test|node --test/;
+// Kapı bir test dosyası, test betiği ya da satır içi assert çalıştırıyor mu?
+const TEST_KAPI = /\.test\.|(^|[ \/])test\/|npm test|node --test|node -e .*assert/;
 
 export function denetle(planMetni) {
   const bulgular = [];

@@ -13,10 +13,22 @@ bekleyen=$(node -e '
   }
   console.log([...acik].filter((f)=>!bitti.has(f)).join("\n"))' 2>/dev/null)
 atla() { grep -qxF "$1" <<<"$bekleyen"; }
+TDIR=$(mktemp -d); trap 'rm -rf "$TDIR"' EXIT
+IDX=0
 for t in panel/*.test.mjs etki/*.test.mjs test/*.test.mjs; do
   [ -f "$t" ] || continue
   atla "$t" && { echo "atlandı (bekleyen adımın kapısı): $t"; continue; }
-  out=$(node "$t" 2>&1) || { echo "BAŞARISIZ: $t"; echo "$out" | tail -5; FAIL=1; }
+  while [ "$(jobs -rp | wc -l)" -ge 8 ]; do sleep 0.05; done
+  ( node "$t" >"$TDIR/$IDX.out" 2>&1 || printf '%s' "$t" >"$TDIR/$IDX.fail" ) &
+  IDX=$((IDX + 1))
+done
+wait
+for ((i=0; i<IDX; i++)); do
+  if [ -f "$TDIR/$i.fail" ]; then
+    echo "BAŞARISIZ: $(cat "$TDIR/$i.fail")"
+    tail -5 "$TDIR/$i.out"
+    FAIL=1
+  fi
 done
 # HEPSI_HIZLI=1 (adım 91): ön kontrol kipi; mdk-adim.test.sh yavaştır, onu atlar
 for t in test/mdk-adim.test.sh test/mdk-panel.test.sh; do
