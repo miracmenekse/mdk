@@ -9,6 +9,7 @@ import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
 import { parse } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
+import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
 
 const IP = '127.0.0.1';
@@ -31,7 +32,22 @@ export async function baslat(dir, port, { calistir } = {}) {
       return { personalar: [] };
     }
   };
-  const durum = () => ({ ...snapshot(kok), depo: sonDepo, ad: basename(kok), personaTakim: personaTakim() }); // ad: başlıkta proje adı
+  // görev modelleri: PLAN.md her anlık görüntüde okunur; okunamazsa boş liste
+  const gorevListesi = () => {
+    try {
+      return gorevler(readFileSync(join(kok, 'PLAN.md'), 'utf8'));
+    } catch {
+      return [];
+    }
+  };
+  const durum = () => ({
+    ...snapshot(kok),
+    depo: sonDepo,
+    ad: basename(kok),
+    personaTakim: personaTakim(),
+    gorevler: gorevListesi(),
+    serbestModeller: SERBEST_MODELLER,
+  }); // ad: başlıkta proje adı
 
   const gonder = (res) => {
     res.write(`data: ${JSON.stringify(durum())}\n\n`);
@@ -266,6 +282,73 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/gorev-model: `Görev <tür>:` satırındaki bir modeli değiştirir/yedek ekler.
+  // Gövde { gorev, sira, model }; yalnız o satır yazılır, dosyanın geri kalanı korunur.
+  const gorevModelAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 65536) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume(); // kalan gövdeyi boşalt, soketi kapatma
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      let yeni;
+      try {
+        const metin = readFileSync(join(kok, 'PLAN.md'), 'utf8');
+        yeni = gorevModelYaz(metin, girdi?.gorev, girdi?.sira, girdi?.model);
+      } catch (e) {
+        hata(yanit, 400, e.message);
+        return;
+      }
+
+      try {
+        writeFileSync(join(kok, 'PLAN.md'), yeni);
+      } catch {
+        hata(yanit, 500, 'PLAN.md yazılamadı');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true }));
+      planla();
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
 
@@ -276,6 +359,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/persona-takim') {
       personaTakimAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/gorev-model') {
+      gorevModelAl(istek, yanit);
       return;
     }
 
