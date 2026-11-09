@@ -4,8 +4,8 @@ Amaç: Claude planlar, OpenCode (ücretsiz modellerle) geliştirir; kalite kapı
 Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
 
 Yürütücü: opencode
-Modeller: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash
-Görev kod: opencode-go/glm-5.3-flash, opencode-go/glm-5.3, opencode-go/deepseek-v4.1-flash
+Modeller: opencode-go/glm-5.3-flash, opencode-go/deepseek-v4.1-flash, opencode-go/glm-5.3
+Görev kod: opencode-go/glm-5.3-flash, opencode-go/deepseek-v4.1-flash, opencode-go/glm-5.3
 Görev tasarim: opencode-go/glm-5.3-flash, opencode-go/mimo-v2.6-pro
 Görev persona: opencode-go/gpt-6-luna, opencode-go/beam-free
 Görev kapi: opencode-go/gemini-4-argon, opencode-go/gpt-5.6-luna

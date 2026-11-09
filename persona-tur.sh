@@ -79,6 +79,11 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
       (( SECONDS - t0 >= SURE )) && { kill -KILL -- -"$pid" 2>/dev/null; durum=sure; break; }
     done
     wait "$pid" 2>/dev/null
+    if [ -n "$durum" ]; then
+      local sid
+      sid=$(grep -m1 -oE '"sessionID":"ses_[^"]+"' "$f.deneme" 2>/dev/null | cut -d'"' -f4 || true)
+      [[ "${sid:-}" == ses_* ]] && "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true
+    fi
     { read -r _; metin=$(cat); } < <(ayikla "$f.deneme")
     cat "$f.deneme" >>"$f.jsonl"; rm -f "$f.deneme"   # ham olaylar: iki deneme de kalır
     [ -n "$durum" ] || { grep -q "Seçenek A" <<<"$metin" && durum=gecerli || durum=gecersiz; }

@@ -12,8 +12,26 @@ N=${1:?adım no}; PLAN=${2:-PLAN.md}
 DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
-ILK=${ILK:-35}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır
+ILK=${ILK:-75}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır (Go ilk yanıtı ~63 sn sürebiliyor)
 OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}   # v2: v1 ücretsiz modellerde hata veriyor (#59387)
+KOTA_KALIP="Free usage limit|Go usage limit|GoUsageLimitError|provider\.quota"
+# kesilen oturumu arka plan servisinde de durdurur (yoksa çalışmaya devam eder ve servis restart'ta hortlar)
+oturum_kapat() { # $1=log dosyası, $2=başlık (adim-$N / kapi-$N)
+  local sid
+  sid=$(grep -m1 -oE '"sessionID":"ses_[^"]+"' "$1" 2>/dev/null | cut -d'"' -f4 || true)
+  if [ -z "$sid" ] && [ -n "${2:-}" ] && { [ "${MDK_OPENCODE:-}" != opencode ] || [ -n "${OPENCODE_DB:-}" ]; }; then
+    sid=$(node -e 'try{const db=new(require("node:sqlite").DatabaseSync)(process.env.OPENCODE_DB||require("os").homedir()+"/.local/share/opencode/opencode.db",{readOnly:true});const r=db.prepare("select id from session_v2 where title=? order by time_created desc limit 1").get(process.argv[1]);if(r&&/^ses_/.test(r.id))process.stdout.write(r.id)}catch{}' "$2" 2>/dev/null || true)
+  fi
+  [[ "${sid:-}" == ses_* ]] && "$OC" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true
+}
+# başlangıçta yarım kalmış (son mesajı idle olmayan) eski adim-/kapi-/persona- oturumlarını sustur
+zombi_temizle() {
+  [ -z "${MDK_OPENCODE:-}" ] || return 0
+  local sids
+  sids=$(node -e 'try{const db=new(require("node:sqlite").DatabaseSync)(process.env.OPENCODE_DB||require("os").homedir()+"/.local/share/opencode/opencode.db",{readOnly:true});const q=db.prepare("select s.id,(select type from session_message m where m.session_id=s.id order by seq desc limit 1) ty from session_v2 s where (s.title like \"adim-%\" or s.title like \"kapi-%\" or s.title like \"persona-%\") and s.time_idle is null");for(const r of q.all())if(r.id&&/^ses_/.test(r.id)&&r.ty&&r.ty!=="idle")console.log(r.id)}catch{}' 2>/dev/null || true)
+  for sid in $sids; do "$OC" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true; done
+}
+zombi_temizle
 LOGD=.mdk-log; mkdir -p "$LOGD"
 # deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün
 METRIK=${MDK_METRIK:-metrikler.jsonl}
@@ -98,8 +116,8 @@ $(cat "$p_dizin/ozet.md")"
     fi
   fi
 fi
-# otomatik kapı üretimi: adımdaki .test.mjs/.test.sh dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
-mapfile -t EKSIK_KAPILAR < <(printf '%s\n' "${KAPILAR[@]}" | grep -oE '[A-Za-z0-9_./-]+\.test\.(mjs|sh)' | sort -u | while read -r tf; do [ -n "$tf" ] && [ ! -f "$tf" ] && echo "$tf"; done)
+# otomatik kapı üretimi: adımdaki .test.mjs/.test.sh veya kapi/* dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
+mapfile -t EKSIK_KAPILAR < <(printf '%s\n' "${KAPILAR[@]}" | grep -oE '([A-Za-z0-9_./-]+\.test\.(mjs|sh)|kapi/[A-Za-z0-9_./-]+\.(sh|py|mjs|java))' | grep -v '^kapi/derle\.sh$' | sort -u | while read -r tf; do [ -n "$tf" ] && [ ! -f "$tf" ] && echo "$tf"; done)
 if [ ${#EKSIK_KAPILAR[@]} -gt 0 ]; then
   kapi_satir=$(grep -m1 -oP '^Görev kapi: \K.*' "$PLAN" || true)
   if [ -n "$kapi_satir" ]; then
@@ -114,12 +132,14 @@ $blok"
       kpid=$!
       while kill -0 "$kpid" 2>/dev/null; do
         sleep "$POLL"; kel=$(( $(date +%s) - kt0 ))
-        if grep -q "Free usage limit" "$klog.err" 2>/dev/null || grep -q '"type":"error".*Free usage limit' "$klog" 2>/dev/null; then kneden=kota
+        if grep -qE "$KOTA_KALIP" "$klog.err" 2>/dev/null || grep -qE '"type":"error".*('"$KOTA_KALIP"')' "$klog" 2>/dev/null; then kneden=kota
         elif [ ! -s "$klog" ] && [ "$kel" -ge "$ILK" ]; then kneden=yanit_yok
         elif [ "$kel" -ge "$SURE" ]; then kneden=sure; fi
         [ -z "$kneden" ] || { kill -TERM -- -"$kpid" 2>/dev/null; sleep 2; kill -KILL -- -"$kpid" 2>/dev/null; break; }
       done
       wait "$kpid" 2>/dev/null; pgrep -g "$kpid" >/dev/null && kill -KILL -- -"$kpid" 2>/dev/null
+      [ -z "$kneden" ] && { grep -qE "$KOTA_KALIP" "$klog.err" 2>/dev/null || grep -qE '"type":"error".*('"$KOTA_KALIP"')' "$klog" 2>/dev/null; } && kneden=kota
+      [ -n "$kneden" ] && oturum_kapat "$klog" "kapi-$N"
       hepsi_var=1; for tf in "${EKSIK_KAPILAR[@]}"; do [ -f "$tf" ] || hepsi_var=0; done
       git add -A
       diger=$(git diff --cached --name-only "$CP" | grep -vxFf <(printf '%s\n' "${EKSIK_KAPILAR[@]}") || true)
@@ -130,13 +150,17 @@ $blok"
         done
       fi
       if [ "$kirmizi" = 1 ]; then
-        git commit -qm "adım $N kapısı: $eksik_str ($km)"; CP=$(git rev-parse HEAD); kapi_ok=1; break
+        git diff --cached --quiet || { git commit -qm "adım $N kapısı: $eksik_str ($km)"; CP=$(git rev-parse HEAD); }
+        kapi_ok=1; break
       fi
-      git reset -q --hard "$CP"; git clean -fdq
+      rm -f "${EKSIK_KAPILAR[@]}"; git reset -q --hard "$CP"; git clean -fdq
     done
     [ "$kapi_ok" = 1 ] || { yaz_durum "" 0 kapi_hata; echo "adım $N: eksik kapı ($eksik_str) üretilemedi veya kırmızı doğrulanamadı"; exit 4; }
   fi
 fi
+# yerel/ignore'lu kapi/ dizini varsa (dbeaver-mm, adimadim) kurcalama tespiti için özetini al
+kapi_imza=""
+[ -d kapi ] && kapi_imza=$(find kapi -type f -exec cksum {} + 2>/dev/null | sort || true)
 yaz_metrik() { M_JSON="$1" M_DOSYA=$METRIK node -e 'require("fs").appendFileSync(process.env.M_DOSYA, process.env.M_JSON+"\n")'; }
 topla() { node -e '                       // step_finish olaylarından token, maliyet, etkin token (önbellekten okuma hariç), istek
   let t=0,c=0,e=0,ss=0,sf=0,cur=new Set(); for (const l of require("fs").readFileSync(process.argv[1],"utf8").split("\n")) {
@@ -203,7 +227,7 @@ $ipucu"
     while kill -0 "$pid" 2>/dev/null; do
       sleep "$POLL"
       el=$(( $(date +%s) - t0 ))
-      if grep -q "Free usage limit" "$log.err" 2>/dev/null || grep -q '"type":"error".*Free usage limit' "$log" 2>/dev/null; then neden=kota   # kota dolu: stderr'deki log ya da v2'nin stdout error olayı (yalnız error olayı: araç çıktısında geçen metin sayılmaz); ILK'yı bekleme
+      if grep -qE "$KOTA_KALIP" "$log.err" 2>/dev/null || grep -qE '"type":"error".*('"$KOTA_KALIP"')' "$log" 2>/dev/null; then neden=kota   # kota dolu: stderr'deki log ya da v2'nin stdout error olayı (yalnız error olayı: araç çıktısında geçen metin sayılmaz); ILK'yı bekleme
       elif [ ! -s "$log" ] && [ "$el" -ge "$ILK" ]; then neden=yanit_yok
       elif [ "$el" -ge "$SURE" ]; then neden=sure
       elif [ -n "$butce" ]; then   # ponytail: bütçe yoklama aralığında ölçülür, tek tur bütçeyi biraz aşabilir; sert sınır için token akışı izlenmeli
@@ -212,9 +236,12 @@ $ipucu"
       [ -z "$neden" ] || { kill -TERM -- -"$pid" 2>/dev/null; sleep 2; kill -KILL -- -"$pid" 2>/dev/null; break; }
     done
     wait "$pid" 2>/dev/null
+    # hızlı kota çıkışı: Go kota hatası POLL (3 sn) dolmadan çıkabilir; çıktıktan sonra da kontrol et
+    [ -z "$neden" ] && [ "$yurm" = opencode ] && { grep -qE "$KOTA_KALIP" "$log.err" 2>/dev/null || grep -qE '"type":"error".*('"$KOTA_KALIP"')' "$log" 2>/dev/null; } && neden=kota
     # ponytail: Cursor kota metni henüz görülmedi, tahmin; gerçek mesaj görülünce daralt
     [ -z "$neden" ] && [ "$yurm" = cursor ] && grep -qiE "usage limit|rate limit|upgrade to|quota" "$log.err" 2>/dev/null && neden=kota
     pgrep -g "$pid" >/dev/null && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
+    [ -n "$neden" ] && [ "$yurm" = opencode ] && oturum_kapat "$log" "adim-$N"
     # 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
     if [ -z "$neden" ] && [ ! -s "$log" ] && grep -qiE "Unknown argument|Positionals:|command not found|No such file" "$log.err" 2>/dev/null; then
       kilit_birak; yaz_durum "$m" "$d" ortam_hatasi
@@ -229,7 +256,11 @@ $ipucu"
       [ -n "$neden" ] || neden=sorun
     fi
     if [ -z "$neden" ]; then
-      kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|\.test\.[a-z]+$|^PLAN\.md$' || true)
+      kurcalama=$(git diff --cached --name-only --no-renames --diff-filter=MD "$CP" | grep -E '(^|/)test/|^kapi/|\.test\.[a-z]+$|^PLAN\.md$' || true)
+      if [ -z "$kurcalama" ] && [ -n "$kapi_imza" ]; then
+        yeni_kapi_imza=$(find kapi -type f -exec cksum {} + 2>/dev/null | sort || true)
+        [ "$yeni_kapi_imza" = "$kapi_imza" ] || kurcalama="kapi/"
+      fi
       if [ -n "$kurcalama" ]; then
         printf 'kurcalama: kapı dosyaları değiştirilmiş, kapı çalıştırılmadı:\n%s\nKapı dosyalarını değiştirme.\n' "$kurcalama" >"$log.kapi"
         neden=kurcalama

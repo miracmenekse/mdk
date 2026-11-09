@@ -98,4 +98,47 @@ kontrol '[ "$KOD" = 4 ]'
 kontrol '[ "$(cat "$T/modeller.log")" = "m/a" ]'   # ikinci model denenmeden anında durmalı
 kontrol 'grep -q "ortam_hatasi" "$R/durum.json"'
 
+CASE=go_kota
+setup 'Yürütücü: opencode
+Modeller: opencode-go/glm-5.3-flash, opencode-go/glm-5.3
+
+## K
+- [ ] 1. Go kota testi
+  - Kapı: `test -f x.txt`
+' 'davran(){ :; }'
+cat >"$T/bin/opencode" <<'STUB'
+#!/usr/bin/env bash
+while [ $# -gt 0 ]; do case $1 in -m) M=$2; shift;; esac; shift; done
+echo "$M" >>"$STUB_DIR/modeller.log"
+echo '{"type":"error","error":{"type":"provider.quota","message":"Go usage limit exceeded"}}'
+exit 0
+STUB
+chmod +x "$T/bin/opencode"
+DENEME=2 kos
+kontrol '[ "$KOD" = 6 ]'
+kontrol '[ "$(wc -l < "$T/modeller.log" | tr -d " ")" = "2" ]'   # model başına 2 deneme değil, ilk kota hatasında sonraki modele geçer
+kontrol 'grep -q "\"neden\":\"kota\"" "$R/metrikler.jsonl"'
+
+CASE=oturum_interrupt
+setup 'Yürütücü: opencode
+Modeller: opencode-go/glm-5.3-flash
+
+## K
+- [ ] 1. Interrupt testi
+  - Kapı: `test -f x.txt`
+' 'davran(){ :; }'
+cat >"$T/bin/opencode" <<'STUB'
+#!/usr/bin/env bash
+if [ "$1" = "api" ]; then
+  echo "$*" >>"$STUB_DIR/interrupt.log"
+  exit 0
+fi
+echo '{"type":"step_start","sessionID":"ses_testZombi123"}'
+sleep 30
+STUB
+chmod +x "$T/bin/opencode"
+SURE=2 kos
+kontrol '[ "$KOD" = 2 ]'
+kontrol 'grep -q "POST /api/session/ses_testZombi123/interrupt" "$T/interrupt.log"'
+
 [ $FAIL = 0 ] && echo "mdk-hiz.test ok" || { echo "mdk-hiz.test BAŞARISIZ"; exit 1; }

@@ -55,7 +55,7 @@ sinif=""; uyum=""
 for m in "${MODELLER[@]}"; do
   log="$LOGD/incele$N-$(date +%s).jsonl"; neden=""
   # setsid: süreç kendi grubunun lideri; bekletince grup topluca öldürülür. stdin kapalı: tty okuması takılmasın
-  OPENCODE_LOG_LEVEL=error setsid "$OC" run --format json -m "$m" --agent plan "$istem" \
+  OPENCODE_LOG_LEVEL=error setsid "$OC" run --format json -m "$m" --title "incele-$N" --agent plan "$istem" \
     </dev/null >"$log" 2>"$log.err" &
   pid=$!; t0=$SECONDS
   while kill -0 "$pid" 2>/dev/null; do
@@ -67,6 +67,10 @@ for m in "${MODELLER[@]}"; do
   done
   wait "$pid" 2>/dev/null
   pgrep -g "$pid" >/dev/null 2>&1 && kill -KILL -- -"$pid" 2>/dev/null   # grupta kalan yetim süreç
+  if [ -n "$neden" ]; then
+    sid=$(grep -m1 -oE '"sessionID":"ses_[^"]+"' "$log" 2>/dev/null | cut -d'"' -f4 || true)
+    [[ "${sid:-}" == ses_* ]] && "$OC" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true
+  fi
   metin=$(ayikla "$log")
   uyum=$(awk 'NR==1 && $0 ~ /^UYUM: [0-9]+$/ {print substr($0,7); exit}' <<<"$metin")
   if [ -n "$uyum" ] && [ "$uyum" -le 100 ]; then
