@@ -105,7 +105,7 @@ persona_ipucu=""
 if grep -q '^\s*- Persona:\s*sor\b' <<<"$blok" && [ -f "$MDK_SELF_DIR/persona-takim-tur.mjs" ] && [ -f persona/takim.json ]; then
   yaz_durum "" 0 persona
   printf '%s\n' "$blok" >"$LOGD/persona-soru-$N.txt"
-  p_model=$(grep -m1 -oP '^Görev persona: \K[^, ]+' "$PLAN" || echo "opencode-go/glm-5.3-flash")
+  p_model=$(grep -m1 -oP '^Görev persona: \K[^, ]+' "$PLAN" || echo "opencode/beam-free")
   p_dizin=$(env -u MDK_DONMUS -u MDK_METRIK -u MDK_DURUM -u MDK_PLAN_DOKUNMA -u MDK_KILIT node "$MDK_SELF_DIR/persona-takim-tur.mjs" "$LOGD/persona-soru-$N.txt" "$p_model" 2>/dev/null | tail -1 || true)
   if [ -n "$p_dizin" ] && [ -f "$p_dizin/ozet.md" ]; then
     persona_ipucu="Persona takımı görüşleri (uygularken dikkate al):
