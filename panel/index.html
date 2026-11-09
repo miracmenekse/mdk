@@ -402,6 +402,10 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   </div>
 
   <div role="tabpanel" id="sekme-modeller" hidden>
+  <h2>Görev modelleri</h2>
+  <section id="gorev-modelleri"></section>
+  <p id="gorev-hata" class="hata" hidden></p>
+
   <h2>Özet grafikler</h2>
   <div class="grafik-izgara">
   <section id="token-payi"></section>
@@ -451,12 +455,14 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
 const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
+const gorevModelleriEl = document.getElementById('gorev-modelleri');
+const gorevHataEl = document.getElementById('gorev-hata');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
 const claudeEl = document.getElementById('claude');
@@ -687,6 +693,7 @@ function ciz(d) {
   suAnCiz();
   sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
   planCiz();
+  gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   modellerEl.innerHTML = modellerHtml(d.modeller);
   tokenPayiEl.innerHTML = tokenPayiHtml(d);
   modelCubukEl.innerHTML = modelTokenCubukHtml(d);
@@ -725,6 +732,31 @@ dinle();
 
 // araştırma verisi canlı değil: açılışta bir kez çekilir, süzgeç yerelde çizer
 const arastirmaEl = document.getElementById('arastirma');
+
+// Görev modelleri: seçim değişince PLAN.md'ye yaz → POST /api/gorev-model
+gorevModelleriEl.addEventListener('change', async (e) => {
+  const s = e.target.closest('.gorev-model');
+  if (!s || !s.value) return;
+  const govde = { gorev: s.dataset.gorev, sira: Number(s.dataset.sira), model: s.value };
+  try {
+    const yanit = await fetch('/api/gorev-model', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(govde),
+    });
+    if (!yanit.ok) {
+      const j = await yanit.json().catch(() => ({}));
+      gorevHataEl.hidden = false;
+      gorevHataEl.textContent = j.hata || ('kaydedilemedi (' + yanit.status + ')');
+    } else {
+      gorevHataEl.hidden = true;
+      gorevHataEl.textContent = '';
+    }
+  } catch {
+    gorevHataEl.hidden = false;
+    gorevHataEl.textContent = 'bağlantı hatası';
+  }
+});
 
 // Persona takımı: sil / ekle / yorum → POST /api/persona-takim
 const personaTakimEl = document.getElementById('persona-takim');

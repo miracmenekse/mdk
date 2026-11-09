@@ -411,6 +411,35 @@ export function modellerHtml(modeller) {
     `<th>ort. süre</th><th>veri</th></tr></thead><tbody>${satirlar}</tbody></table>`;
 }
 
+// görev modelleri: her `Görev <tür>:` satırı için model seçicileri ve yedek ekleme
+export function gorevModelleriHtml(gorevler, serbest) {
+  if (!gorevler || gorevler.length === 0) return '<span class="bos">görev yok</span>';
+  const liste = Array.isArray(serbest) ? serbest : [];
+  const secenekler = (gorev, model, sira) => {
+    const ops = [];
+    // mevcut model ücretsiz listede yoksa en üstte seçili gelir
+    if (!liste.includes(model)) {
+      ops.push(`<option value="${esc(model)}" selected>(${esc(model)}) — ücretsiz değil</option>`);
+    }
+    for (const m of liste) {
+      ops.push(`<option value="${esc(m)}"${m === model ? ' selected' : ''}>${esc(m)}</option>`);
+    }
+    return `<select class="gorev-model" data-gorev="${esc(gorev)}" data-sira="${sira}">${ops.join('')}</select>`;
+  };
+  const satirlar = gorevler.map((g) => {
+    const modeller = Array.isArray(g.modeller) ? g.modeller : [];
+    const hucreler = modeller.map((m, i) => `<td>${secenekler(g.gorev, m, i)}</td>`).join('');
+    const yedek = `<td><select class="gorev-model" data-gorev="${esc(g.gorev)}" data-sira="${modeller.length}">` +
+      '<option value="">+ yedek ekle</option>' +
+      liste.map((m) => `<option value="${esc(m)}">${esc(m)}</option>`).join('') +
+      '</select></td>';
+    return `<tr><td>${esc(g.gorev)}</td>${hucreler}${yedek}</tr>`;
+  }).join('');
+  return '<p class="not">Seçenekler şimdilik sabit ücretsiz OpenCode listesi; sağlayıcı entegrasyonu sonra.</p>' +
+    '<table><thead><tr><th>görev</th><th>modeller</th></tr></thead>' +
+    `<tbody>${satirlar}</tbody></table>`;
+}
+
 // büyük sayılar kısaltılır: 4,1 M · 55 k · 999 (tr-TR)
 function kisa(n) {
   const f = (x) => x.toLocaleString('tr-TR', { maximumFractionDigits: 1 });
