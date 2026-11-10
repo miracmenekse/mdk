@@ -11,7 +11,7 @@ import { claudeKullanim } from './claude.mjs';
 import { kararlar } from './karar.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -41,6 +41,22 @@ export function snapshot(dir) {
   } catch {
     satirlar = [];
   }
+
+  // kapı üretim satırları (tur=kapi): model başına ayrı özet; model/adım istatistiğine, geçmişe ve matrise girmez
+  const kapiHarita = new Map();
+  for (const s of satirlar.filter((x) => x.tur === 'kapi' && typeof x.model === 'string' && x.model)) {
+    const k = kapiHarita.get(s.model) ?? { model: s.model, deneme: 0, kabul: 0, sessiz: 0, sure: 0, sureSay: 0, nedenler: {} };
+    kapiHarita.set(s.model, k);
+    if (s.neden === 'yanit_yok' || s.neden === 'kota') { k.sessiz += 1; continue; }
+    k.deneme += 1;
+    if (s.gecti === true) k.kabul += 1;
+    else if (s.neden) k.nedenler[s.neden] = (k.nedenler[s.neden] ?? 0) + 1;
+    if (typeof s.sure_sn === 'number' && Number.isFinite(s.sure_sn)) { k.sure += s.sure_sn; k.sureSay += 1; }
+  }
+  sonuc.kapiUretim = [...kapiHarita.values()]
+    .sort((a, b) => a.model.localeCompare(b.model))
+    .map(({ sure, sureSay, ...k }) => ({ ...k, ortSure: sureSay > 0 ? sure / sureSay : null }));
+  satirlar = satirlar.filter((x) => x.tur !== 'kapi');
 
   // inceleme satırları: adım başına son sonuç; deneme istatistiğine girmez
   for (const s of satirlar) {

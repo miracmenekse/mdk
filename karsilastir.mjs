@@ -24,5 +24,11 @@ export function tablo(modeller) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  console.log(tablo(snapshot(process.argv[2] ?? '.').modeller));
+  const anlik = snapshot(process.argv[2] ?? '.');
+  console.log(tablo(anlik.modeller));
+  // kapı üretimi ayrı: kabul = sözdizimi temiz, kod yazılmadan kırmızı, yalnız istenen dosya
+  for (const k of anlik.kapiUretim) {
+    const neden = Object.entries(k.nedenler).map(([n, a]) => `${n} ${a}`).join(', ');
+    console.log(`kapı üretimi  ${k.model}  ${k.kabul}/${k.deneme} kabul  ort ${k.ortSure == null ? '-' : Math.round(k.ortSure)} sn${k.sessiz ? `  ${k.sessiz} sessiz` : ''}${neden ? `  (${neden})` : ''}`);
+  }
 }

@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { denetle } from '../kapi-denetle.mjs';
+import { denetle, dosyaDenetle } from '../kapi-denetle.mjs';
 
 const plan = `Yürütücü: opencode
 Modeller: a/x
@@ -51,3 +51,20 @@ r = spawnSync(process.execPath, [KOMUT, join(d, 'IYI.md')], { encoding: 'utf8' }
 assert.equal(r.status, 0, r.stderr);
 assert.match(r.stdout, /kapılar tamam/);
 console.log('kapi-denetle.test ok');
+
+// üretilmiş kapı dosyası: davranışı çalıştıran kapı temiz, yalnız kaynak metni arayan ve assert'siz kapı uyarı alır
+assert.deepEqual(dosyaDenetle(`import assert from 'node:assert';\nimport { x } from './yeni.mjs';\nassert.equal(x, 1);`), []);
+assert.deepEqual(dosyaDenetle(`import assert from 'node:assert';\nconst { x } = await import('../panel/ciz.mjs');\nassert.ok(x);`), []);
+assert.deepEqual(dosyaDenetle(`import assert from 'node:assert';\nimport { spawnSync } from 'node:child_process';\nassert.equal(spawnSync('node',['a.mjs']).status, 0);`), []);
+const metin = dosyaDenetle(`import assert from 'node:assert';\nimport { readFileSync } from 'node:fs';\nassert.ok(readFileSync('panel/index.html','utf8').includes('id="x"'));`);
+assert.equal(metin.length, 1);
+assert.match(metin[0], /kaynak metni/);
+assert.deepEqual(dosyaDenetle(`import { existsSync } from 'node:fs'; if (!existsSync('a')) process.exit(1);`), ['assert yok']);
+{
+  const d = mkdtempSync(join(tmpdir(), 'kapi-dosya-'));
+  const zayif = join(d, 'z.test.mjs');
+  writeFileSync(zayif, `import assert from 'node:assert';\nimport { readFileSync } from 'node:fs';\nassert.ok(readFileSync('a','utf8'));`);
+  const r = spawnSync('node', [fileURLToPath(new URL('../kapi-denetle.mjs', import.meta.url)), '--dosya', zayif], { encoding: 'utf8' });
+  assert.equal(r.status, 0);                       // yalnız uyarır, reddetmez
+  assert.match(r.stdout, /UYARI: zayıf kapı .*z\.test\.mjs: yalnız kaynak metni/);
+}

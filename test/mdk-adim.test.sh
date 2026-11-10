@@ -4,7 +4,7 @@
 RUNNER=$(cd "$(dirname "$0")/.." && pwd)/mdk-adim.sh
 FAIL=0; CASE=""
 TEMEL="gecer ikinci eskale donmus kurcalama"
-HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma ortam_yalitim onkontrol_durum onkontrol_kirmizi onkontrol_onay"
+HEPSI="$TEMEL coklu onay neden sure yanit_yok kota butce butce_model butce_ok sorun once deney cursor cursor_kota v2 v1_token v2_kota v2_kota_metin gorev gorev_adim gorev_yok gorev_varsayilan kilit_bekle kilit_ikinci kilit_tavan plan_dokunma ortam_yalitim onkontrol_durum onkontrol_kirmizi onkontrol_onay regresyon_sonra izin_kural kapi_metrik kapi_sozdizimi"
 
 kontrol() { eval "$1" || { echo "BAŞARISIZ [$CASE]: $1  (çıktı: $T/cikti.txt)"; FAIL=1; }; }
 plan() { printf 'Yürütücü: opencode\nModeller: %s\n\n## K\n- [ ] 1. İş\n%s\n' "$1" "$2"; }
@@ -371,6 +371,79 @@ c_onkontrol_onay() { # onaysız adımda ön regresyon koşmaz, durum.json "regre
   kontrol '[ "$KOD" = 5 ]'
   kontrol '[ ! -f $T/onk.txt ]'
   kontrol '! grep -q regresyon durum.json 2>/dev/null'
+}
+
+# sahte opencode: son argümanı (istem), izin ayarını ve yalıtım bayrağını çağrı sırasıyla kaydeder
+kayitli_stub() {
+  cat >"$T/bin/opencode" <<'STUB'
+#!/usr/bin/env bash
+while [ $# -gt 0 ]; do case $1 in -m) M=$2; shift;; esac; SON=$1; shift; done
+n=$(( $(cat "$STUB_DIR/sayac" 2>/dev/null || echo 0) + 1 )); echo $n >"$STUB_DIR/sayac"
+echo "$M" >>"$STUB_DIR/modeller.log"
+printf '%s' "$SON" >"$STUB_DIR/istem-$n.txt"; printf '%s' "${OPENCODE_CONFIG_CONTENT:-}" >"$STUB_DIR/izin-$n.json"
+printf '%s' "${OPENCODE_DISABLE_CLAUDE_CODE:-}" >"$STUB_DIR/yalitim-$n.txt"
+source "$STUB_DIR/davran.sh"; davran "$M" "$n"
+echo '{"type":"step_finish","part":{"tokens":{"total":100},"cost":0}}'
+STUB
+  chmod +x "$T/bin/opencode"
+}
+izin() { node -e 'const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).permission;console.log(eval(process.argv[2]))' "$T/izin-$1.json" "$2"; }
+kplan() { printf 'Yürütücü: opencode\nModeller: m/kod\nGörev kod: m/kod\nGörev kapi: %s\n\nKurallar (tüm adımlar için):\n- Yalnız yerleşik modüller.\n\n## K\n- [ ] 1. İş\n  - Ne: yeni.mjs x=1 dışa aktarır\n  - Kapı: `node yeni.test.mjs`\n%s\n' "$1" "${2:-}"; }
+KAPI_IYI='printf "import assert from \"node:assert\"; import { x } from \"./yeni.mjs\"; assert.equal(x, 1);\n" > yeni.test.mjs'
+
+c_regresyon_sonra() { # adım kapısı geçse de regresyon kırıldıysa deneme başarısız; çıktı sonraki denemeye ipucu
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; [ "$2" = 1 ] && echo x > bozuk.txt; true; }'; kayitli_stub
+  mkdir -p test; printf '%s\n' '[ ! -f bozuk.txt ] || { echo "BAŞARISIZ: panel/denge.test.mjs"; exit 1; }' >test/hepsi.sh; commit0
+  DENEME=2 kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(gecti_listesi)" = false,true ]'
+  kontrol '[ "$(neden_listesi)" = regresyon,- ]'
+  kontrol 'grep -q "panel/denge.test.mjs" "$T/istem-2.txt"'   # kırılan test ikinci denemenin isteminde
+  kontrol '[ ! -f bozuk.txt ]'
+  # tek denemede kalırsa adım geçmiş sayılmaz, ağaç temiz
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; echo x > bozuk.txt; }'
+  mkdir -p test; printf '%s\n' '[ ! -f bozuk.txt ] || exit 1' >test/hepsi.sh; commit0; kos
+  kontrol '[ "$KOD" = 2 ]'
+  kontrol 'grep -q "^- \[ \] 1\." PLAN.md && [ -z "$(git status --porcelain)" ]'
+}
+c_izin_kural() { # yasaklar izinde; kurallar ve proje kuralları istemde; Claude kuralları/skill'leri yürütücüye gitmez
+  setup "$(kplan m/kapi)" "davran(){ if [ \"\$1\" = m/kapi ]; then $KAPI_IYI; else echo 'export const x = 1;' > yeni.mjs; fi; }"; kayitli_stub; commit0; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(paste -sd, "$T/modeller.log")" = m/kapi,m/kod ]'
+  # 1. çağrı kapı üretimi: yalnız eksik kapı dosyası yazılabilir
+  kontrol '[ "$(izin 1 "c.edit[\"*\"]+\",\"+c.edit[\"yeni.test.mjs\"]")" = deny,allow ]'
+  # 2. çağrı kod: kapı dosyaları yazılamaz, regresyon betiği ve push/stash koşulamaz
+  kontrol '[ "$(izin 2 "[c.edit[\"*\"],c.edit[\"PLAN.md\"],c.edit[\"test/*\"],c.edit[\"*.test.*\"],c.edit[\"kapi/*\"]].join()")" = allow,deny,deny,deny,deny ]'
+  kontrol '[ "$(izin 2 "[c.bash[\"*\"],c.bash[\"*test/hepsi.sh*\"],c.bash[\"*mdk-adim.test.sh*\"],c.bash[\"git push*\"],c.bash[\"git stash*\"],c.bash[\"sudo *\"]].join()")" = allow,deny,deny,deny,deny,deny ]'
+  kontrol '[ "$(izin 2 "JSON.stringify(c.shell)===JSON.stringify(c.bash) && c.external_directory")" = deny ]'
+  kontrol '[ "$(cat "$T/yalitim-1.txt")" = 1 ] && [ "$(cat "$T/yalitim-2.txt")" = 1 ]'
+  kontrol 'grep -q "Yürütücü kuralları" "$T/istem-1.txt" && grep -q "Yürütücü kuralları" "$T/istem-2.txt"'
+  kontrol 'grep -q "Yalnız yerleşik modüller" "$T/istem-2.txt" && grep -q "yeni.mjs x=1" "$T/istem-2.txt"'
+  kontrol 'grep -q "KAPI ÜRETME" "$T/istem-1.txt" && ! grep -q "KAPI ÜRETME" "$T/istem-2.txt"'
+  # adımın kendi kapısındaki betik yasaklanmaz; MDK_CLAUDE_KURAL=1 yalıtımı kapatır
+  setup "$(plan m/a '  - Kapı: `bash test/mdk-adim.test.sh temel || test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; kayitli_stub; commit0
+  kos MDK_CLAUDE_KURAL=1
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(izin 1 "String(c.bash[\"*mdk-adim.test.sh*\"])+\",\"+c.bash[\"*test/hepsi.sh*\"]")" = undefined,deny ]'
+  kontrol '[ -z "$(cat "$T/yalitim-1.txt")" ]'
+}
+c_kapi_metrik() { # kapı üretimi tur=kapi satırıyla ölçülür; adım satırı ayrı
+  setup "$(kplan m/kapi)" "davran(){ if [ \"\$1\" = m/kapi ]; then $KAPI_IYI; else echo 'export const x = 1;' > yeni.mjs; fi; }"; commit0; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(metrik "r.map(x=>(x.tur||\"adim\")+\":\"+x.model+\":\"+x.gecti).join()")" = kapi:m/kapi:true,adim:m/kod:true ]'
+  kontrol '[ "$(metrik "r[0].gorev+\",\"+r[0].deneme+\",\"+r[0].token+\",\"+(typeof r[0].sure_sn)")" = kapi,1,100,number ]'
+  kontrol 'git log --format=%s | grep -q "^adım 1 kapısı: yeni.test.mjs (m/kapi)"'
+}
+c_kapi_sozdizimi() { # sözdizimi bozuk ya da kod yazılmadan yeşil kapı reddedilir, sıradaki kapı modeli denenir
+  setup "$(kplan 'm/k1, m/k2, m/k3')" "davran(){ case \$1 in m/k1) echo 'import {' > yeni.test.mjs ;; m/k2) echo 'process.exit(0)' > yeni.test.mjs ;; m/k3) $KAPI_IYI ;; *) echo 'export const x = 1;' > yeni.mjs ;; esac; }"; commit0; kos
+  kontrol '[ "$KOD" = 0 ]'
+  kontrol '[ "$(paste -sd, "$T/modeller.log")" = m/k1,m/k2,m/k3,m/kod ]'
+  kontrol '[ "$(neden_listesi)" = kapi_sozdizimi,kapi_yesil,-,- ]'
+  kontrol 'grep -q "assert.equal" yeni.test.mjs'
+  # hepsi reddedilirse kod modeli hiç çağrılmaz
+  setup "$(kplan m/k1)" "davran(){ echo 'import {' > yeni.test.mjs; }"; commit0; kos
+  kontrol '[ "$KOD" = 4 ] && [ "$(cat "$T/modeller.log")" = m/k1 ]'
+  kontrol '[ ! -f yeni.test.mjs ] && [ -z "$(git status --porcelain)" ]'
 }
 
 SECILEN=${*:-$HEPSI}; SECILEN=${SECILEN//temel/$TEMEL}

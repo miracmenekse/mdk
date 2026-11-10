@@ -1,5 +1,6 @@
 // Kapı denetleyici: PLAN.md'deki bitmemiş opencode adımlarının kapılarını kontrol eder.
 // Kullanım: node kapi-denetle.mjs [PLAN.md]
+//          node kapi-denetle.mjs --dosya <kapı.test.mjs>   (üretilmiş kapı zayıf mı; mdk-adim.sh kapı üretiminden sonra çağırır, yalnız uyarır)
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +29,19 @@ export function denetle(planMetni) {
   return bulgular;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// Üretilmiş kapı dosyası: projeden bir şey çalıştırıyor mu (içe aktarma, süreç, sunucu), yoksa yalnız kaynak metni mi okuyor?
+const CALISTIRIR = /from\s+['"]\.{1,2}\/|import\(\s*['"`]\.{1,2}\/|child_process|fetch\(|createServer|node:http/;
+export function dosyaDenetle(icerik) {
+  const bulgular = [];
+  if (!/assert/.test(icerik)) bulgular.push('assert yok');
+  if (!CALISTIRIR.test(icerik) && /readFileSync/.test(icerik)) bulgular.push('yalnız kaynak metni arıyor (davranışı çalıştırmıyor)');
+  return bulgular;
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv[2] === '--dosya') {
+  const dosya = process.argv[3];
+  if (/\.mjs$/.test(dosya ?? '')) for (const b of dosyaDenetle(readFileSync(dosya, 'utf8'))) console.log(`UYARI: zayıf kapı ${dosya}: ${b}`);
+} else if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const bulgular = denetle(readFileSync(process.argv[2] ?? 'PLAN.md', 'utf8'));
   for (const b of bulgular) console.log(`adım ${b.no}: ${b.seviye}: ${b.mesaj}`);
   if (bulgular.length === 0) console.log('kapılar tamam');
