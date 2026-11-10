@@ -569,6 +569,29 @@ Kullanıcı Go kotası bitti; yalnız OpenCode ücretsiz modelleri kullanılıyo
   - Ne: `panel/ciz.mjs`'ye `export function gorevModelleriHtml(gorevler, serbest)` (~40 satır, `modellerHtml` ~385 yakınına): tablo; her satır bir görev (`<td>` görev adı), modellerin her biri için bir `<select class="gorev-model" data-gorev="<tür>" data-sira="<i>">` (seçenekler = `serbest`; mevcut model `serbest`te yoksa en üstte "(<model>) — ücretsiz değil" seçeneği olarak seçili gelir), satır sonunda yedek eklemek için `data-sira="<modeller.length>"` ve boş "+ yedek ekle" ilk seçenekli bir select. Boş/eksik girdide `<span class="bos">görev yok</span>`. Tüm metinler `esc` ile. Başlık altına kısa not: "Seçenekler şimdilik sabit ücretsiz OpenCode listesi; sağlayıcı entegrasyonu sonra." `panel/index.html`: `sekme-modeller` içinde "Özet grafikler"den önce `<h2>Görev modelleri</h2><section id="gorev-modelleri"></section>`; `ciz` (~690) içinde `gorevModelleriHtml(d.gorevler, d.serbestModeller)` ile doldur; `change` olayını bölüm üzerinde dinle (event delegation), boş değer değilse `POST /api/gorev-model` `{gorev, sira:Number, model}`; hata gelirse bölümün altına kısa hata metni yaz. Sayfa yenilenmesi SSE ile kendiliğinden gelir.
   - Kapı: `node panel/gorev-ui.test.mjs` — `gorevModelleriHtml` için: iki görevli girdide her görev adı ve her model için seçili `<option ... selected>` var, `data-gorev`/`data-sira` doğru, "+ yedek ekle" var, serbest listede olmayan model "ücretsiz değil" etiketiyle seçili gelir, `<script>` içeren görev adı kaçışlanır, boş girdi "görev yok" verir; `index.html` metninde `id="gorev-modelleri"`, `gorevModelleriHtml` ve `/api/gorev-model` geçer.
 
+## Faz 18 — Koşturucu sertleştirme (2026-11-10; kullanıcı kararıyla Claude elle yaptı)
+Bulgu: adım 121 kapıyı geçti ama regresyonu bozdu (elle düzeltildi); adım 105/108'de model `test/hepsi.sh` koşup 600 sn'yi yaktı (yürütücü süresinin %54'ü); Claude'un CLAUDE.md'si ve skill listesi yürütücüye gidiyordu (ilk istek 21k token; yalıtımla boş depoda 8,7k); kurallar dört yerde kopyaydı. Gerekçeler `docs/gunluk.md` yerine burada, kısa.
+- [x] 122. Kapı sonrası regresyon: adım kapısı geçince hızlı regresyon, kırılırsa `neden: regresyon` + ipucu
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-adim.test.sh regresyon_sonra`
+- [x] 123. Yasaklar izinde: kod görevinde kapı dosyaları yazılamaz, hepsi.sh/stash/push koşulamaz; kapı görevinde yalnız eksik kapı dosyası
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-adim.test.sh izin_kural`
+- [x] 124. Yürütücü yalıtımı: kurallar `yurutucu-kurallar.md`'den isteme (cursor dahil), `OPENCODE_DISABLE_CLAUDE_CODE=1`, PLAN `Kurallar` bloğu istemde
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-adim.test.sh izin_kural`
+- [x] 125. Tek koşu döngüsü (`calistir`) ve kapı üretim metriği (`tur: kapi`), panel anlık görüntüsünde `kapiUretim`
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-adim.test.sh kapi_metrik && node panel/kapi-uretim.test.mjs`
+- [x] 126. Doğru nedenle kırmızı: sözdizimi bozuk / kod yazılmadan yeşil kapı reddedilir; yalnız kaynak metni arayan kapıya UYARI
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-adim.test.sh kapi_sozdizimi && node test/kapi-denetle.test.mjs`
+- [x] 127. Kurallar tek kaynakta: `esit/` → `mdk-esitle.sh` kopyalar; CLAUDE.md kısa kurallar, tarihçe `docs/gunluk.md`; kural dosyalarında model adı yok
+  - Yürütücü: claude
+  - Kapı: `bash test/mdk-esitle.test.sh`
+Ertelenenler: opencode plugin'i (izin kalıpları aynı korumayı veriyor; kurcalama verisi yok), otomatik model sıralama (ölçüm az), koşturucuyu Node'a taşıma.
+Doğrulanacak (ilk gerçek adımda): ilk istek girdi token'ı 21k'dan ne kadar düştü; izin reddi alan model toparlanıyor mu; cursor dalı kuralları izliyor mu.
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
