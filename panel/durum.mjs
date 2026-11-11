@@ -187,10 +187,8 @@ export function snapshot(dir) {
           karar,
           alindi: karar !== null && karar.ts <= isaret,
           tahmin: tahmin(satirlar, 1),
+          figma: a.figma ?? null,
         };
-        // figma: mevcut derin karşılaştırmalarda görünmez, JSON'a (panoya) taşınır
-        Object.defineProperty(kayit, 'figma', { value: a.figma ?? null, writable: true, enumerable: false, configurable: true });
-        Object.defineProperty(kayit, 'toJSON', { value() { return { ...this, figma: this.figma }; }, enumerable: false });
         sonuc.etki.push(kayit);
       }
     }

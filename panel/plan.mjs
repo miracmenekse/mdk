@@ -39,9 +39,8 @@ export function parse(text) {
         deger: null,
         butce: null,
         onay: false,
+        figma: null,
       };
-      // figma: adım nesnesinde okunur ama mevcut derin karşılaştırmaları bozmaz
-      Object.defineProperty(adim, 'figma', { value: null, writable: true, enumerable: false, configurable: true });
       if (!kategori) {
         kategori = { ad: '', adimlar: [] };
         sonuc.kategoriler.push(kategori);

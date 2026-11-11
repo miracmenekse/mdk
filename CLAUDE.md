@@ -42,7 +42,10 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 
 ## Panelden karar (etki taslağı onayı)
 - Oturum başında ve taslak yazınca: `node karar-bekle.mjs --bir-kez`, sonra Monitor ile `node karar-bekle.mjs` (`timeout_ms` 1800000).
-- `adım <no> onay` → adıma `- Onay: evet`, commit, `./mdk-adim.sh <no>`. `red: <not>` → `etki/` taslağını düzelt. `yorum:` → yanıtla ya da düzelt; onay sayılmaz.
+- `adım <no> onay` iki aşamalıdır; aşamayı adımda `- Figma:` satırının varlığı belirler:
+  1. **Taslak onayı** (adımda `- Figma:` yok): Figma'daki orijinal panel tasarımını ("mdk paneli", `ov6dUo0vLvaZXGgBout9L2`) `use_figma` ile güncelle (özellik başına 1–2 çağrı; görseli aynı çağrıda `node.screenshot()` ile al). Adıma `- Figma: <değişen çerçevenin node-id'li url'i>` yaz, commit et. Panel "Figma güncellendi · Figma'da aç" gösterir, düğme "Adımı onayla" olur. Kota hatası gelirse aynı ay `generate_figma_design` (HTML yakalama, kotadan muaf) ile yeni sayfa olarak aktar.
+  2. **Adım onayı** (adımda `- Figma:` var): adıma `- Onay: evet`, commit, `./mdk-adim.sh <no>`.
+  UI'ı etkilemeyen adımda `- Figma:` beklenmez; ilk `onay` doğrudan adım onayıdır. `red: <not>` → `etki/` taslağını düzelt. `yorum:` → yanıtla ya da düzelt; onay sayılmaz.
 
 ## Açık işler
 - Faz 16 (iPhone kabuğu, 114–119) bekliyor.
