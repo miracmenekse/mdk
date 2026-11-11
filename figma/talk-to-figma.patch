@@ -1,0 +1,21 @@
+diff --git a/src/socket.ts b/src/socket.ts
+index 1781dc3..48ffcbc 100644
+--- a/src/socket.ts
++++ b/src/socket.ts
+@@ -41,7 +41,7 @@ function handleConnection(ws: ServerWebSocket<any>) {
+ const server = Bun.serve({
+   port: 3055,
+   // uncomment this to allow connections in windows wsl
+-  // hostname: "0.0.0.0",
++  hostname: "127.0.0.1", // MDK: yalnız yerel (WSL→Windows localhost yönlendirmesi yeterli)
+   fetch(req: Request, server: Server) {
+     // Handle CORS preflight
+     if (req.method === "OPTIONS") {
+@@ -73,6 +73,7 @@ const server = Bun.serve({
+     });
+   },
+   websocket: {
++    idleTimeout: 0, // MDK: boşta kalan Figma eklentisi bağlantısı kapanmasın (varsayılan 120 sn)
+     open: handleConnection,
+     message(ws: ServerWebSocket<any>, message: string | Buffer) {
+       try {
