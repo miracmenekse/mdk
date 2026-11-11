@@ -13,7 +13,7 @@ DENEME=${DENEME:-2}   # model başına deneme
 SURE=${SURE:-600}     # deneme başına saniye
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
 ILK=${ILK:-75}        # ilk olay bu kadar saniyede gelmezse sağlayıcı yanıt vermiyor sayılır (Go ilk yanıtı ~63 sn sürebiliyor)
-OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}   # v2: v1 ücretsiz modellerde hata veriyor (#59387)
+OC=${MDK_OPENCODE:-$(node "$MDK_SELF_DIR/oc-sec.mjs")}   # seçim kuralı oc-sec.mjs'de (v2 varsayılan; dev derlemesiyse kararlı v1)
 KOTA_KALIP="Free usage limit|Go usage limit|GoUsageLimitError|provider\.quota"
 # kesilen oturumu arka plan servisinde de durdurur (yoksa çalışmaya devam eder ve servis restart'ta hortlar)
 oturum_kapat() { # $1=log dosyası, $2=başlık (adim-$N / kapi-$N)

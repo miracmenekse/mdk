@@ -5,10 +5,11 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { ocSec } from './oc-sec.mjs';
 
 const soruDosya = process.argv[2];
 const model = process.argv[3] || 'opencode-go/glm-5.3-flash';
-const OC = process.env.MDK_OPENCODE || `${process.env.HOME}/.local/opt/opencode-v2/node_modules/.bin/opencode`;
+const OC = ocSec();
 if (!soruDosya) { console.error('kullanım: node persona-takim-tur.mjs <soru-dosyası> [model]'); process.exit(2); }
 
 const soru = readFileSync(soruDosya, 'utf8').trim();

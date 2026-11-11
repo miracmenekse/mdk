@@ -11,7 +11,7 @@ N=${1:?adım no}; PLAN=${2:-PLAN.md}
 POLL=${POLL:-3}       # süreç izleme aralığı, saniye
 ILK=${ILK:-90}        # model bu kadar saniyede hiç olay yazmazsa atlanır (kota sessizliği)
 SURE=${SURE:-300}     # deneme başına süre sınırı, saniye
-OC=${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}   # v2: v1 ücretsiz modellerde hata veriyor (#59387)
+OC=${MDK_OPENCODE:-$(node "$DIR/oc-sec.mjs")}   # seçim kuralı oc-sec.mjs'de
 LOGD=.mdk-log; mkdir -p "$LOGD"
 
 [ -f "$PLAN" ] || { echo "plan dosyası yok: $PLAN"; exit 4; }

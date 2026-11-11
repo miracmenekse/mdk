@@ -3,6 +3,7 @@
 # Ortam: PERSONA_SURE, PERSONA_ILK, PERSONA_MODELLER, PERSONALAR, PLAN
 # Her persona kartını OpenCode'da ayrı oturumda (plan ajanı, salt-okunur) paralel koşturur; çıktı persona-tur/<zaman>/.
 # Çıkış: 0 en az 2 geçerli yanıt (tek kartta 1) | 1 yetersiz | 2 hatalı kullanım
+OC=${MDK_OPENCODE:-$(node "$(cd "$(dirname "$0")" && pwd)/oc-sec.mjs")}   # seçim kuralı oc-sec.mjs'de
 set -uo pipefail
 [ $# -ge 3 ] || { echo "kullanım: persona-tur.sh <alan> <soru-dosyası> \"<kart 1>\" \"<kart 2>\" [...]" >&2; exit 2; }
 ALAN=$1; SORU=$2; shift 2; KARTLAR=("$@")
@@ -69,7 +70,7 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
     m=${MODELLER[$(( (i+j) % n ))]}; durum=""
     # setsid: süreç kendi grubunun lideri; süre aşılınca grup topluca öldürülür
     # run kendi yerel sunucusunu açar (yayınlanmış build'de --standalone yok), grup öldürülünce biter; stderr ayrı: log satırı "sessiz" denetimini bozmasın
-    OPENCODE_LOG_LEVEL=error setsid "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" run --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>>"$f.err" &
+    OPENCODE_LOG_LEVEL=error setsid "$OC" run --agent plan -m "$m" --title "persona-$ALAN" --format json "$istem" </dev/null >"$f.deneme" 2>>"$f.err" &
     pid=$!; t0=$SECONDS
     while kill -0 "$pid" 2>/dev/null; do
       sleep 1
@@ -82,7 +83,7 @@ Kod ya da dosya değiştirme; yalnız yukarıdaki biçimde yanıt ver."
     if [ -n "$durum" ]; then
       local sid
       sid=$(grep -m1 -oE '"sessionID":"ses_[^"]+"' "$f.deneme" 2>/dev/null | cut -d'"' -f4 || true)
-      [[ "${sid:-}" == ses_* ]] && "${MDK_OPENCODE:-$HOME/.local/opt/opencode-v2/node_modules/.bin/opencode}" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true
+      [[ "${sid:-}" == ses_* ]] && "$OC" api POST "/api/session/$sid/interrupt" >/dev/null 2>&1 || true
     fi
     { read -r _; metin=$(cat); } < <(ayikla "$f.deneme")
     cat "$f.deneme" >>"$f.jsonl"; rm -f "$f.deneme"   # ham olaylar: iki deneme de kalır
