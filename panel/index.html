@@ -129,6 +129,8 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .kpi-kart .kpi-rozet { background: var(--maliyet); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
 .kpi-kart .deger { font-size: 20px; font-variant-numeric: tabular-nums; }
 .kpi-kart .alt { color: var(--soluk); font-size: 12px; }
+.karar-seridi { display: block; width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; border-radius: 8px; padding: 6px 10px; margin: 0 0 6px; font: inherit; font-size: 13px; cursor: pointer; }
+.karar-seridi:hover { border-color: #ea580c; }
 /* Persona takımı sekmesi */
 .persona-aciklama { font-size: 13px; color: var(--soluk); margin: 0 0 14px; max-width: 760px; }
 #persona-takim { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
@@ -382,6 +384,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
   <section id="depo-serit"></section>
   <section id="kpi"></section>
+  <div id="karar-seridi"></div>
 
   <!-- sekmeler artık #kpi kartlarıdır (kpiHtml, role=tablist); ayrı sekme çubuğu yok -->
 
@@ -455,7 +458,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -469,6 +472,7 @@ const claudeEl = document.getElementById('claude');
 const tokenPayiEl = document.getElementById('token-payi');
 const modelCubukEl = document.getElementById('model-cubuk');
 const kpiEl = document.getElementById('kpi');
+const kararSeridiEl = document.getElementById('karar-seridi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
 
@@ -506,6 +510,11 @@ function sekmeSec() {
 kpiEl.addEventListener('click', (e) => {
   const b = e.target.closest('[role="tab"]');
   if (b) location.hash = b.dataset.sekme;
+});
+// bekleyen karar şeridi: ilk bekleyen adımın çekmecesi
+kararSeridiEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-adim]');
+  if (b) drawerAc(Number(b.dataset.adim));
 });
 window.addEventListener('hashchange', sekmeSec);
 sekmeSec();
@@ -687,6 +696,7 @@ function ciz(d) {
   }
   // KPI kartları = sekmeler; her çizimde yenilenir, sonra seçili sekme işaretlenir
   kpiEl.innerHTML = kpiHtml(d, araVeri);
+  kararSeridiEl.innerHTML = kararSeridiHtml(d.etki);
   sekmeSec();
   // persona takımı değiştiyse yeniden çiz (yazılan yorumu silmemek için değişmediyse dokunma)
   const yeniTakim = d.personaTakim || { personalar: [] };
@@ -845,7 +855,7 @@ fetch('/api/arastirma')
     }
     arastirmaCiz();
     // araştırma verisi gelince Araştırma kartının sayısı güncellensin
-    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri); sekmeSec(); }
+    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri); kararSeridiEl.innerHTML = kararSeridiHtml(sonD.etki); sekmeSec(); }
   })
   .catch(() => {
     arastirmaEl.innerHTML = arastirmaHtml(null);
