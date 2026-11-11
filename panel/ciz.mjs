@@ -428,38 +428,6 @@ export function modellerHtml(modeller) {
 }
 
 // görev modelleri: her `Görev <tür>:` satırı için model seçicileri ve yedek ekleme
-// kapı üretimi: testi hangi modelin yazdığı; kabul % kod başarısı değildir
-export function kapiUretimHtml(kapiUretim) {
-  if (!kapiUretim || kapiUretim.length === 0) return '<p class="bos">henüz kapı üretilmedi</p>';
-  const NEDEN = {
-    kapi_yesil: 'kod yazılmadan yeşil',
-    kapi_sozdizimi: 'sözdizimi bozuk',
-    kapi_eksik: 'dosya yazılmadı',
-    kapi_kapsam: 'başka dosyaya yazdı',
-  };
-  const sirali = [...kapiUretim].sort((a, b) => (b.deneme || 0) - (a.deneme || 0));
-  const satirlar = sirali.map((m) => {
-    const deneme = m.deneme || 0;
-    const kabul = m.kabul || 0;
-    const oran = deneme === 0 ? '—' : `${kabul} / ${deneme} · %${Math.round((kabul / deneme) * 100)}`;
-    const nedenler = m.nedenler || {};
-    const nedenMetni = Object.keys(nedenler).length === 0 ? '—' :
-      Object.entries(nedenler).map(([kod, sayi]) => `${esc(NEDEN[kod] || kod)} ×${esc(sayi)}`).join(', ');
-    const az = deneme < 5 ? ' <span class="rozet az-ornek">az örnek</span>' : '';
-    return '<tr>' +
-      `<td class="model">${esc(m.model)}${az}</td>` +
-      `<td class="sayi">${esc(deneme)}</td>` +
-      `<td class="sayi">${oran}</td>` +
-      `<td>${nedenMetni}</td>` +
-      `<td class="sayi">${esc(m.sessiz ?? 0)}</td>` +
-      `<td class="sayi">${m.ortSure == null ? '—' : esc(m.ortSure) + ' sn'}</td>` +
-      '</tr>';
-  }).join('');
-  return '<p class="not">Kapı kabul % kod başarısı değildir; yalnız bu modelin yazdığı kapıların kabulüdür.</p>' +
-    '<table><thead><tr><th>model</th><th>deneme</th><th>kapı kabul</th><th>ret nedenleri</th><th>kota</th><th>ort. sn</th></tr></thead>' +
-    `<tbody>${satirlar}</tbody></table>`;
-}
-
 export function gorevModelleriHtml(gorevler, serbest) {
   if (!gorevler || gorevler.length === 0) return '<span class="bos">görev yok</span>';
   const liste = Array.isArray(serbest) ? serbest : [];

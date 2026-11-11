@@ -611,7 +611,7 @@ Akış: kullanıcı özellik ister → (persona) → Claude `etki/<ad>.html` ön
   - Ne: Sorun: `panel/index.html:556-577` `drawerAc` çekmeceyi yalnız açılışta çiziyor; adıma sonradan `- Persona:`/`- Figma:` eklenince ya da karar/onay değişince açık çekmece eski kalıyor. `panel/ciz.mjs` (`drawerHtml` ~314 yanına) `export function drawerImza(adim, etki)`: adımın `persona`, `bitti` alanları ile etki kaydının `figma`, `onay`, `bitti`, `karar?.ts`, `alindi` alanlarından kararlı bir metin üretir (eksik/null girdiler hata vermez; aynı girdi → aynı imza, bu alanlardan biri değişince farklı imza; başka alanlar (ör. `baslik`) imzayı değiştirmez). `panel/index.html`: import satırına (458) `drawerImza` ekle; `drawerAc` sonunda açık adımın imzasını `drawerSonImza`'ya yaz; canlı çizimde (`kpiEl.innerHTML = kpiHtml(d, araVeri)` ~684 sonrası) `drawerAdim != null` ise yeni imzayı hesapla, farklıysa ve çekmecedeki `textarea[name=metin]` boşsa `drawerAc(drawerAdim)` çağır (not yazılıyorsa dokunma).
   - Kapı: `node panel/drawer-imza.test.mjs` — `drawerImza` için: aynı girdiyle iki çağrı eşit; `persona` null→'persona-tur/x' değişince farklı; etki `figma` null→url farklı; `onay` false→true farklı; `karar` null→{ts:5} farklı; yalnız `baslik` değişince eşit; `drawerImza(null, null)` ve `drawerImza({no:1}, undefined)` hata vermez. `panel/index.html` metni `drawerImza(` çağrısını ve `textarea[name=metin]` denetimini içerir.
 
-- [x] 131. Modeller sekmesinde "Kapı üretimi" tablosu (testi hangi model yazdı)
+- [ ] 131. Modeller sekmesinde "Kapı üretimi" tablosu (testi hangi model yazdı)
   - Etki: etki/kapi-uretim.html
   - Değer: 4
   - Persona: persona-tur/20261111-174738
