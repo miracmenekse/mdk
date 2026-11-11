@@ -49,7 +49,8 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 
 ## Açık işler
 - Faz 16 (iPhone kabuğu, 114–119) bekliyor.
-- Kapı üretim özeti (`kapiUretim`) anlık görüntüde var, panelde henüz çizilmiyor.
+- Karar şeridi en küçük numaralı bekleyeni gösteriyor: Faz 16 (115/116) taslakları bekledikçe yeni adım (ör. 133) şeritte görünmez; çekmeceye Akış satırından ulaşılır.
+- Talk to Figma `export_node_as_image` bu makinede yanıt vermiyor (eklenti hiç `imageData` döndürmedi; diğer komutlar çalışıyor). Figma kontrolü şimdilik düğüm geometrisiyle + kullanıcının gözüyle.
 - Cursor kota mesajı hâlâ tahmini regex; gerçek mesaj görülünce daralt.
 - Otomatik model sıralama: önce yeterli ölçüm birikmeli (model başına ≥ 10 gerçek deneme).
 - Claude'un planlama token'ı ölçülmüyor.
