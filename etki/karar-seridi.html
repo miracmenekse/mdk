@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: karar şeridi</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: bekleyen karar yalnız Akış'taki adımın çekmecesinde görünüyor; üstten fark edilmiyor</figcaption>
+  <svg id="once" viewBox="0 0 640 360" role="img" aria-label="Karar şeridi olmadan panel">
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="16" width="112" height="56"/><rect x="136" y="16" width="112" height="56"/>
+      <rect x="256" y="16" width="112" height="56"/><rect x="376" y="16" width="112" height="56"/>
+      <rect x="496" y="16" width="128" height="56"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="26" y="36">Depo</text><text x="146" y="36">Akış</text><text x="266" y="36">Modeller</text>
+      <text x="386" y="36">Araştırma</text><text x="506" y="36">Persona</text>
+    </g>
+    <g font-size="18" fill="#424242">
+      <text x="26" y="62">0</text><text x="146" y="62">5 / 6</text><text x="266" y="62">12</text>
+      <text x="386" y="62">2</text><text x="506" y="62">3</text>
+    </g>
+    <rect x="16" y="88" width="608" height="28" fill="#757575"/>
+    <text x="28" y="107" font-size="13" fill="#ffffff">Adımlar</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="116" width="608" height="36"/><rect x="16" y="152" width="608" height="36"/>
+      <rect x="16" y="188" width="608" height="36"/><rect x="16" y="224" width="608" height="36"/>
+    </g>
+    <g font-size="13" fill="#616161">
+      <text x="28" y="138">127 Kurallar tek kaynakta</text><text x="540" y="138">bitti</text>
+      <text x="28" y="174">128 Etki kartında Figma aşaması</text><text x="540" y="174">bitti</text>
+      <text x="28" y="210">129 Karar şeridi</text><text x="520" y="210">bekliyor</text>
+      <text x="28" y="246">130 (sıradaki adım)</text><text x="520" y="246">bekliyor</text>
+    </g>
+    <text x="28" y="292" font-size="12" fill="#757575">Karar formu yalnız 129'a tıklayınca açılan çekmecede.</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: bekleyen karar varken kartların altında tek satırlık şerit; tıklayınca ilk bekleyen adımın çekmecesi açılır; karar yoksa şerit hiç çizilmez</figcaption>
+  <svg id="sonra" viewBox="0 0 640 360" role="img" aria-label="Karar şeridiyle panel">
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="16" width="112" height="56"/><rect x="136" y="16" width="112" height="56"/>
+      <rect x="256" y="16" width="112" height="56"/><rect x="376" y="16" width="112" height="56"/>
+      <rect x="496" y="16" width="128" height="56"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="26" y="36">Depo</text><text x="146" y="36">Akış</text><text x="266" y="36">Modeller</text>
+      <text x="386" y="36">Araştırma</text><text x="506" y="36">Persona</text>
+    </g>
+    <g font-size="18" fill="#424242">
+      <text x="26" y="62">0</text><text x="146" y="62">5 / 6</text><text x="266" y="62">12</text>
+      <text x="386" y="62">2</text><text x="506" y="62">3</text>
+    </g>
+    <!-- değişim: koşullu karar şeridi -->
+    <rect class="degisen" x="16" y="82" width="608" height="30" stroke-width="2"/>
+    <text class="degisen-text" x="28" y="102" font-size="13">1 adım karar bekliyor · 129 Karar şeridi: taslak onayı  →</text>
+    <rect x="16" y="122" width="608" height="28" fill="#757575"/>
+    <text x="28" y="141" font-size="13" fill="#ffffff">Adımlar</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="150" width="608" height="36"/><rect x="16" y="186" width="608" height="36"/>
+      <rect x="16" y="222" width="608" height="36"/><rect x="16" y="258" width="608" height="36"/>
+    </g>
+    <g font-size="13" fill="#616161">
+      <text x="28" y="172">127 Kurallar tek kaynakta</text><text x="540" y="172">bitti</text>
+      <text x="28" y="208">128 Etki kartında Figma aşaması</text><text x="540" y="208">bitti</text>
+      <text x="28" y="244">129 Karar şeridi</text><text x="520" y="244">bekliyor</text>
+      <text x="28" y="280">130 (sıradaki adım)</text><text x="520" y="280">bekliyor</text>
+    </g>
+    <text x="28" y="326" font-size="12" fill="#757575">Aşama metni: Figma satırı yoksa "taslak onayı", varsa "adım onayı".</text>
+  </svg>
+</figure>
+
+</body>
+</html>
