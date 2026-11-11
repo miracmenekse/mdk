@@ -4,7 +4,8 @@
 export const SERBEST_MODELLER = [
   'opencode/iceman-free',
   'opencode/inkling-2-small-free',
-  'opencode/crouton-alpha-free',
+  'opencode/glm-5.3-flash-free',
+  'opencode/minimax-m3.1-flash-free',
   'opencode/longcat-2.5-free',
   'opencode/flint-40b-free',
   'opencode/nemotron-3.5-super-vl-free',

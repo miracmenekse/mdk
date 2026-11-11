@@ -4,15 +4,15 @@ Amaç: Claude planlar, OpenCode (ücretsiz modellerle) geliştirir; kalite kapı
 Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
 
 Yürütücü: opencode
-Modeller: opencode/deepseek-v4.1-flash-free, opencode/big-pickle, opencode/mimo-v2.6-flash-free
-Görev kod: opencode/deepseek-v4.1-flash-free, opencode/big-pickle, opencode/mimo-v2.6-flash-free
-Görev tasarim: opencode/mimo-v2.6-flash-free, opencode/longcat-2.5-free
-Görev persona: opencode/beam-free, opencode/inkling-2-small-free
-Görev kapi: opencode/big-pickle, opencode/deepseek-v4.1-flash-free
-Görev inceleme: opencode/big-pickle, opencode/flint-40b-free
-Görev eskale: opencode/longcat-2.5-free, opencode/nemotron-3.5-super-vl-free
-Görev mekanik: opencode/nemotron-3.5-lightning-free, opencode/iceman-free
-Görev arastirma: opencode/crouton-alpha-free
+Modeller: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free
+Görev kod: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free
+Görev tasarim: opencode/glm-5.3-flash-free, opencode/minimax-m3.1-flash-free, opencode/mimo-v2.6-flash-free
+Görev persona: opencode/inkling-2-small-free, opencode/mimo-v2.6-flash-free
+Görev kapi: opencode/beam-free, opencode/deepseek-v4.1-flash-free
+Görev inceleme: opencode/minimax-m3.1-flash-free, opencode/inkling-2-small-free
+Görev eskale: opencode/longcat-2.5-free, opencode/minimax-m3.1-flash-free, opencode/big-pickle
+Görev mekanik: opencode/nemotron-3.5-lightning-free, opencode/flint-40b-free, opencode/iceman-free
+Görev arastirma: opencode/inkling-2-small-free, opencode/nemotron-3.5-super-vl-free
 
 Bütçe: 300000
 

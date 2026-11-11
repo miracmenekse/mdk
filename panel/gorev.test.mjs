@@ -43,7 +43,8 @@ assert.deepEqual(gorevler(fikstur), beklenenGorevler, 'görevler ve modeller dos
 const serbest = [
   'opencode/iceman-free',
   'opencode/inkling-2-small-free',
-  'opencode/crouton-alpha-free',
+  'opencode/glm-5.3-flash-free',
+  'opencode/minimax-m3.1-flash-free',
   'opencode/longcat-2.5-free',
   'opencode/flint-40b-free',
   'opencode/nemotron-3.5-super-vl-free',
@@ -53,7 +54,7 @@ const serbest = [
   'opencode/nemotron-3.5-lightning-free',
   'opencode/big-pickle',
 ];
-assert.equal(SERBEST_MODELLER.length, 11, 'serbest listede 11 model olmalı');
+assert.equal(SERBEST_MODELLER.length, 12, 'serbest listede 12 model olmalı');
 assert.ok(SERBEST_MODELLER.includes('opencode/big-pickle'), 'big-pickle listede olmalı');
 assert.deepEqual(SERBEST_MODELLER, serbest, 'serbest liste verilen sırayla olmalı');
 
