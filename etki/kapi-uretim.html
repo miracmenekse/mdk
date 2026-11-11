@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: kapı üretimi özeti</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: Modeller sekmesi; kapıyı (testi) hangi modelin ne kadar iyi yazdığı panelde yok, yalnız terminalde (karsilastir.mjs)</figcaption>
+  <svg id="once" viewBox="0 0 640 300" role="img" aria-label="Kapı üretimi özeti olmadan Modeller sekmesi">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <text x="28" y="35" font-size="13" fill="#fff">Görev modelleri</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="44" width="608" height="30"/><rect x="16" y="74" width="608" height="30"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="28" y="64">kod · deepseek-v4.1-flash-free, glm-5.3-flash-free, beam-free</text>
+      <text x="28" y="94">kapi · beam-free, deepseek-v4.1-flash-free</text>
+    </g>
+    <rect x="16" y="120" width="608" height="28" fill="#757575"/>
+    <text x="28" y="139" font-size="13" fill="#fff">Modeller · ayrıntı</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="148" width="608" height="30"/><rect x="16" y="178" width="608" height="30"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="28" y="168">model · deneme · geçti · kod başarısı · token</text>
+      <text x="28" y="198">…</text>
+    </g>
+    <text x="28" y="240" font-size="12" fill="#757575">"Görev kapi:" sırasını değiştirmek için veri panelde yok.</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: Görev modellerinin hemen altında ayrı "Kapı üretimi" tablosu (kod başarısıyla karışmaz); az örnekte uyarı rozeti, kota sessizliği ayrı sütun</figcaption>
+  <svg id="sonra" viewBox="0 0 640 300" role="img" aria-label="Kapı üretimi tablosuyla Modeller sekmesi">
+    <rect x="16" y="16" width="608" height="28" fill="#757575"/>
+    <text x="28" y="35" font-size="13" fill="#fff">Görev modelleri</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="44" width="608" height="30"/>
+    </g>
+    <text x="28" y="64" font-size="12" fill="#616161">kapi · beam-free, deepseek-v4.1-flash-free</text>
+    <!-- değişim: kapı üretimi tablosu -->
+    <rect class="degisen" x="16" y="86" width="608" height="150" stroke-width="2"/>
+    <text class="degisen-text" x="28" y="106" font-size="14" font-weight="bold">Kapı üretimi</text>
+    <text class="degisen-text" x="28" y="124" font-size="11">kabul = sözdizimi temiz, kod yazılmadan kırmızı · kabul % kod başarısı değildir</text>
+    <g class="degisen-text" font-size="11" font-weight="bold">
+      <text x="28" y="148">model</text><text x="200" y="148">deneme</text><text x="258" y="148">kapı kabul</text>
+      <text x="350" y="148">ret nedenleri</text><text x="510" y="148">kota</text><text x="560" y="148">ort. sn</text>
+    </g>
+    <g class="degisen-text" font-size="11">
+      <text x="28" y="172">beam-free</text><text x="200" y="172">6</text><text x="258" y="172">6 / 6 · %100</text>
+      <text x="350" y="172">—</text><text x="510" y="172">0</text><text x="560" y="172">85</text>
+      <text x="28" y="196">deepseek-v4.1-flash</text><text x="200" y="196">2</text><text x="258" y="196">1 / 2 · %50</text>
+      <text x="350" y="196">kod yazılmadan yeşil ×1</text><text x="510" y="196">1</text><text x="560" y="196">91</text>
+    </g>
+    <rect class="degisen" x="28" y="204" width="150" height="18" rx="9"/>
+    <text class="degisen-text" x="36" y="217" font-size="10">az örnek · sırayı henüz değiştirme</text>
+    <rect x="16" y="250" width="608" height="28" fill="#757575"/>
+    <text x="28" y="269" font-size="13" fill="#fff">Modeller · ayrıntı (değişmez)</text>
+  </svg>
+</figure>
+
+</body>
+</html>
