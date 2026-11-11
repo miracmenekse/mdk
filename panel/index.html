@@ -23,6 +23,10 @@
   --rozet-bekliyor-m: #4b5563;
   --rozet-eskale-z: #fef3c7;
   --rozet-eskale-m: #92400e;
+  --rozet-karar-z: #ffedd5;
+  --rozet-karar-m: #9a3412;
+  --rozet-hata-z: #fee2e2;
+  --rozet-hata-m: #991b1b;
   --bos: #9ca3af;
 }
 @media (prefers-color-scheme: dark) {
@@ -43,6 +47,10 @@
     --rozet-bekliyor-m: #b6bfc9;
     --rozet-eskale-z: #3a2e12;
     --rozet-eskale-m: #fcd34d;
+    --rozet-karar-z: #3a2210;
+    --rozet-karar-m: #fdba74;
+    --rozet-hata-z: #3f1515;
+    --rozet-hata-m: #fca5a5;
     --bos: #6b7480;
   }
 }
@@ -81,6 +89,8 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: v
 .rozet.calisiyor { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
 .rozet.bekliyor { background: var(--rozet-bekliyor-z); color: var(--rozet-bekliyor-m); }
 .rozet.eskale { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+.rozet.karar { background: var(--rozet-karar-z); color: var(--rozet-karar-m); }
+.rozet.hata { background: var(--rozet-hata-z); color: var(--rozet-hata-m); }
 .rozet.dusuk { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
 .rozet.orta { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
 .rozet.yuksek { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
@@ -463,7 +473,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -537,14 +547,15 @@ let drawerAdim = null;   // açık drawer'ın adım no'su
 let drawerZaman = null;  // çalışan adımda geçen süre sayacı
 let drawerSonImza = null; // açık drawer'ın en son çizilen veri imzası
 
-// plan + gecmis + simdi'den drawer için normalize adım nesnesi
+// plan + gecmis + simdi + etki'den drawer için normalize adım nesnesi
 function drawerAdimNesnesi(no) {
   let a = null;
   for (const k of (sonPlan?.plan?.kategoriler || [])) for (const x of k.adimlar) if (x.no === no) a = x;
   const g = (sonPlan?.gecmis || []).find((x) => x.no === no) || null;
-  const kosuyor = !!sonSimdi && sonSimdi.adim === no && ['calisiyor', 'regresyon'].includes(sonSimdi.durum || 'calisiyor');
-  const eskale = !!sonSimdi && sonSimdi.adim === no && sonSimdi.durum === 'eskale';
-  const durum = a?.bitti ? 'bitti' : kosuyor ? 'calisiyor' : eskale ? 'eskale' : 'bekliyor';
+  const etkiE = (sonD?.etki || []).find((x) => x.no === no) || null;
+  // aşama: rozet sınıfı, etiketi ve ilerlemeyi adimAsama'dan al
+  const asama = adimAsama(a, sonSimdi, etkiE);
+  const calisiyor = asama.sinif === 'calisiyor';
   const gercek = g ? (g.denemeler || []).filter((x) => x.neden !== 'yanit_yok' && x.neden !== 'kota') : [];
   const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
   return {
@@ -552,12 +563,14 @@ function drawerAdimNesnesi(no) {
     persona: a?.persona ?? null,
     bitti: !!a?.bitti,
     baslik: a?.baslik || (sonSimdi && sonSimdi.adim === no ? sonSimdi.baslik : '') || '—',
-    durum,
-    model: kosuyor ? sonSimdi.model : rep?.model || null,
-    deneme: kosuyor ? sonSimdi.deneme : (gercek.length || null),
-    ts: kosuyor ? sonSimdi.ts : null,
-    yuzde: a?.bitti || durum === 'eskale' ? 100 : kosuyor ? (Number.isFinite(sonSimdi.yuzde) ? sonSimdi.yuzde : null) : 0,
-    calisiyor: kosuyor,
+    durum: asama.sinif,
+    sinif: asama.sinif,
+    etiket: asama.etiket,
+    model: calisiyor ? sonSimdi.model : rep?.model || null,
+    deneme: calisiyor ? sonSimdi.deneme : (gercek.length || null),
+    ts: calisiyor ? sonSimdi.ts : null,
+    yuzde: asama.yuzde,
+    calisiyor,
     simdiMs: Date.now(),
   };
 }
@@ -688,7 +701,7 @@ function suAnCiz() {
 
 function planCiz() {
   if (!sonPlan) return;
-  kategorilerEl.innerHTML = akisTablosuHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler);
+  kategorilerEl.innerHTML = akisTablosuHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler, sonD?.etki || []);
 }
 
 function ciz(d) {

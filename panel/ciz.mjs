@@ -35,8 +35,43 @@ function gecenSure(ts, simdiMs) {
   return dk > 0 ? `${dk} dk ${sn % 60} sn` : `${sn % 60} sn`;
 }
 
-function rozet(adi) {
-  return `<span class="rozet ${adi}">${ROZETLER[adi]}</span>`;
+function rozet(adi, etiket) {
+  const metin = etiket ?? ROZETLER[adi] ?? '';
+  return `<span class="rozet ${adi}">${esc(metin)}</span>`;
+}
+
+// adımın akıştaki aşaması: neyi beklediğini söyleyen rozet ve aşamaya göre ilerleme.
+// (1) adım bitti → (2) koşturucu bu adımdaysa durumuna göre → (3) etki kaydına göre → (4) sırada
+export function adimAsama(adim, simdi, etki) {
+  if (adim?.bitti) return { sinif: 'bitti', etiket: 'bitti', yuzde: 100 };
+  if (simdi && simdi.adim === adim?.no) {
+    const d = simdi.durum || 'calisiyor';
+    const kural = {
+      '': ['calisiyor', 'kod yazılıyor', 75],
+      calisiyor: ['calisiyor', 'kod yazılıyor', 75],
+      regresyon: ['calisiyor', 'ön regresyon', 45],
+      persona: ['calisiyor', 'persona turu', 40],
+      kapi_yaziliyor: ['calisiyor', 'kapı yazılıyor', 55],
+      gecti: ['bitti', 'bitti', 100],
+      eskale: ['eskale', 'eskale', 100],
+      kapi_hata: ['hata', 'kapı üretilemedi', 55],
+      regresyon_kirmizi: ['hata', 'ön regresyon kırmızı', 45],
+      ortam_hatasi: ['hata', 'ortam hatası', 75],
+      saglayici: ['hata', 'sağlayıcı yanıt vermiyor', 75],
+      kilit: ['hata', 'modeller kilitli', 75],
+    }[d];
+    if (kural) return { sinif: kural[0], etiket: kural[1], yuzde: kural[2] };
+    // bilinmeyen koşturucu durumu: etiketi değerin kendisi olsun
+    return { sinif: 'calisiyor', etiket: String(d), yuzde: 50 };
+  }
+  if (etki) {
+    if (etki.onay === true) return { sinif: 'bekliyor', etiket: 'sırada', yuzde: 35 };
+    if (etki.figma) return { sinif: 'karar', etiket: 'adım onayı bekliyor', yuzde: 30 };
+    if (etki.karar?.tur === 'onay') return { sinif: 'karar', etiket: 'Figma bekleniyor', yuzde: 20 };
+    if (etki.karar?.tur === 'red') return { sinif: 'karar', etiket: 'taslak düzeltiliyor', yuzde: 10 };
+    return { sinif: 'karar', etiket: 'taslak onayı bekliyor', yuzde: 10 };
+  }
+  return { sinif: 'bekliyor', etiket: 'sırada', yuzde: 0 };
 }
 
 function adimDurumu(a, simdi) {
@@ -262,14 +297,14 @@ export function personaTakimHtml(takim) {
 
 // v3 Akış düz ADIMLAR tablosu: Adım / İlerleme / Durum. Her satır data-adim=<no> (tıklanabilir,
 // drawer'ı açar). Gruplu kategori / deneme-genişletme / "sadece sorunlu" süzgeci YOK (planHtml ayrı).
-export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
+export function akisTablosuHtml(plan, simdi, gecmis, incelemeler, etki = []) {
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
   const satirlar = [];
   for (const k of (plan && plan.kategoriler) || []) {
     for (const a of k.adimlar) {
       const g = gecmisMap.get(a.no);
-      const durum = adimDurumu(a, simdi);
-      const calisiyorMu = durum === 'calisiyor';
+      const asama = adimAsama(a, simdi, (etki || []).find((e) => e.no === a.no));
+      const calisiyorMu = asama.sinif === 'calisiyor';
       const gercek = g ? (g.denemeler || []).filter((x) => !denemeDegilMi(x)) : [];
       const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
       const mp = [];
@@ -283,21 +318,13 @@ export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
         if (rep.token != null) mp.push(`${Math.round(rep.token).toLocaleString('tr-TR')} token`);
       }
       const meta = mp.length ? `<div class="meta">${mp.join(' · ')}</div>` : '';
-      const yuzde = durum === 'bitti' || durum === 'eskale'
-        ? 100
-        : calisiyorMu && simdi && Number.isFinite(simdi.yuzde)
-          ? simdi.yuzde
-          : calisiyorMu
-            ? null
-            : 0;
-      const w = yuzde == null ? 50 : yuzde;
-      const yuzdeMetin = yuzde == null ? '' : `%${yuzde}`;
+      const yuzde = asama.yuzde;
       const secili = calisiyorMu ? ' secili' : '';
       satirlar.push(
-        `<tr class="adim-satir ${durum}${secili}" data-adim="${esc(a.no)}" tabindex="0">` +
+        `<tr class="adim-satir ${asama.sinif}${secili}" data-adim="${esc(a.no)}" tabindex="0">` +
         `<td class="ad"><span class="no">${esc(a.no)}</span> ${esc(a.baslik)}${meta}</td>` +
-        `<td class="ilerleme"><div class="cubuk${yuzde == null ? ' belirsiz' : ''}"><span style="width:${w}%"></span></div><span class="yuzde">${yuzdeMetin}</span></td>` +
-        `<td class="durum">${rozet(durum)}</td>` +
+        `<td class="ilerleme"><div class="cubuk"><span style="width:${yuzde}%"></span></div><span class="yuzde">%${yuzde}</span></td>` +
+        `<td class="durum">${rozet(asama.sinif, asama.etiket)}</td>` +
         '</tr>',
       );
     }
@@ -330,11 +357,13 @@ export function drawerImza(adim, etki) {
 export function drawerHtml(adim, etkiKartiHtml) {
   const a = adim || {};
   const durum = a.durum || 'bekliyor';
-  const sinif = ROZETLER[durum]
+  // etiket verilmişse rozet metni o; yoksa eski durum→sınıf eşlemesi
+  const eskiSinif = ROZETLER[durum]
     ? durum
     : durum === 'regresyon'
       ? 'calisiyor'
       : 'bekliyor';
+  const sinif = a.sinif || eskiSinif;
   const parcalar = [];
   if (a.model) parcalar.push(`<span class="model">${esc(a.model)}</span>`);
   if (a.deneme != null) parcalar.push(`${esc(a.deneme)}. deneme`);
@@ -353,7 +382,7 @@ export function drawerHtml(adim, etkiKartiHtml) {
     '<button type="button" id="drawer-kapat" aria-label="kapat">×</button>' +
     '</div>' +
     `<h2 class="drawer-baslik">${esc(a.baslik || '—')}</h2>` +
-    `<div class="drawer-durum">${rozet(sinif)} ${meta}${gecen}</div>` +
+    `<div class="drawer-durum">${rozet(sinif, a.etiket)} ${meta}${gecen}</div>` +
     ilerleme +
     '<h3 class="drawer-bolum">PERSONA DÜŞÜNCELERİ</h3>' +
     '<div id="drawer-persona"></div>' +
