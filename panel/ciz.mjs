@@ -456,6 +456,40 @@ export function gorevModelleriHtml(gorevler, serbest) {
     `<tbody>${satirlar}</tbody></table>`;
 }
 
+// kapı üretimi: hangi model kapı testini yazdı, kabul/ret nedenleri, kota ve ortalama süre
+const KAPI_NEDENLERI = {
+  kapi_yesil: 'kod yazılmadan yeşil',
+  kapi_sozdizimi: 'sözdizimi bozuk',
+  kapi_eksik: 'dosya yazılmadı',
+  kapi_kapsam: 'başka dosyaya yazdı',
+};
+export function kapiUretimHtml(kapiUretim) {
+  if (!kapiUretim || !Array.isArray(kapiUretim) || kapiUretim.length === 0) return '<p class="bos">henüz kapı üretilmedi</p>';
+  // azalan deneme; eşitse model adı artan
+  const sirali = [...kapiUretim].sort((a, b) => (b.deneme || 0) - (a.deneme || 0) || String(a.model).localeCompare(String(b.model)));
+  const satirlar = sirali.map((m) => {
+    const kabul = m.deneme
+      ? `${esc(m.kabul ?? 0)} / ${esc(m.deneme)} · %${Math.round(((m.kabul || 0) / m.deneme) * 100)}`
+      : '—';
+    // bilinmeyen ret kodu olduğu gibi yazılır (kaçışlanmış)
+    const nedenler = Object.entries(m.nedenler || {})
+      .map(([kod, sayi]) => `${esc(KAPI_NEDENLERI[kod] || kod)} ×${esc(sayi)}`)
+      .join(', ') || '—';
+    const azOrnek = m.deneme < 5 ? ' <span class="rozet az-ornek">az örnek · sırayı henüz değiştirme</span>' : '';
+    return '<tr>' +
+      `<td class="model">${esc(m.model)}${azOrnek}</td>` +
+      `<td class="sayi">${esc(m.deneme ?? 0)}</td>` +
+      `<td class="sayi">${kabul}</td>` +
+      `<td>${nedenler}</td>` +
+      `<td class="sayi">${esc(m.sessiz ?? 0)}</td>` +
+      `<td class="sayi">${m.ortSure == null ? '—' : esc(Math.round(m.ortSure)) + ' sn'}</td>` +
+      '</tr>';
+  }).join('');
+  return '<p class="not">kabul = sözdizimi temiz, kod yazılmadan kırmızı · kabul % kod başarısı değildir</p>' +
+    '<table><thead><tr><th>model</th><th>deneme</th><th>kapı kabul</th><th>ret nedenleri</th><th>kota</th><th>ort. sn</th></tr></thead>' +
+    `<tbody>${satirlar}</tbody></table>`;
+}
+
 // büyük sayılar kısaltılır: 4,1 M · 55 k · 999 (tr-TR)
 function kisa(n) {
   const f = (x) => x.toLocaleString('tr-TR', { maximumFractionDigits: 1 });

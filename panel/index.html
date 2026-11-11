@@ -84,6 +84,8 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: v
 .rozet.dusuk { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
 .rozet.orta { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
 .rozet.yuksek { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.rozet.az-ornek { background: #fef3c7; color: #b45309; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rozet.az-ornek { background: #451a03; color: #fbbf24; } }
 ul.adimlar { list-style: none; margin: 0; padding: 0; }
 ul.adimlar li {
   background: var(--kart);
@@ -415,6 +417,9 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <section id="gorev-modelleri"></section>
   <p id="gorev-hata" class="hata" hidden></p>
 
+  <h2>Kapı üretimi</h2>
+  <section id="kapi-uretim"></section>
+
   <h2>Modeller · ayrıntı</h2>
   <section id="modeller"></section>
 
@@ -458,7 +463,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -466,6 +471,7 @@ const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
 const gorevModelleriEl = document.getElementById('gorev-modelleri');
 const gorevHataEl = document.getElementById('gorev-hata');
+const kapiUretimEl = document.getElementById('kapi-uretim');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
 const claudeEl = document.getElementById('claude');
@@ -718,6 +724,7 @@ function ciz(d) {
     if (yeniImza !== drawerSonImza && (!not || not.value === '')) drawerAc(drawerAdim);
   }
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
+  kapiUretimEl.innerHTML = kapiUretimHtml(d.kapiUretim);
   modellerEl.innerHTML = modellerHtml(d.modeller);
   tokenPayiEl.innerHTML = tokenPayiHtml(d);
   modelCubukEl.innerHTML = modelTokenCubukHtml(d);

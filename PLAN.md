@@ -617,7 +617,7 @@ Akış: kullanıcı özellik ister → (persona) → Claude `etki/<ad>.html` ön
 
 ## Faz 20 — Kapı üretimi özeti (2026-11-11)
 Kullanıcı isteği: Modeller sekmesinde hangi model kaç kapı yazdı, kaçı kabul/reddedildi ve neden, kota sessizliği, ortalama süre. Veri anlık görüntüde (`kapiUretim`, adım 125) hazır, çizilmiyor.
-- [ ] 133. Modeller sekmesinde "Kapı üretimi" özeti (testi hangi model yazdı, kabul/ret nedeni, kota, ort. süre)
+- [x] 133. Modeller sekmesinde "Kapı üretimi" özeti (testi hangi model yazdı, kabul/ret nedeni, kota, ort. süre)
   - Etki: etki/kapi-uretim.html
   - Değer: 4
   - Persona: persona-tur/20261111-232708
