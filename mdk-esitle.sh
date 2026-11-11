@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Kullanım: bash ~/mdk/mdk-esitle.sh
-# Mac ve Ubuntu VM'de OpenCode ayarlarını ve Claude kurallarını depodaki tek kaynaktan (esit/) kurar, zombi oturumları susturur.
+# OpenCode ayarlarını ve Claude kurallarını depodaki tek kaynaktan (esit/) kurar, zombi oturumları susturur.
 # Kaynaklar: esit/AGENTS.md → ~/.config/opencode/AGENTS.md (yalnız genel taban; MDK yürütücü kuralları yurutucu-kurallar.md'de, isteme eklenir)
 #            esit/opencode.jsonc → ~/.config/opencode/opencode.jsonc
 #            esit/ba-pm-bakis.SKILL.md → ~/.claude/skills/ba-pm-bakis/SKILL.md

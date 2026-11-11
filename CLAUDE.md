@@ -38,7 +38,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - `opencode run` stdin kapalı çalışmalı. Süreç durdururken `pkill -f` kullanma, PID ile öldür.
 - Ücretsiz kota dolunca OpenCode sessizce bekler (`yanit_yok`, çıkış 6); paralel koşu kotayı çabuk bitirir. Ücretsiz model listesi değişkendir.
 - Panel yalnız `127.0.0.1`'e bağlanır. PLAN.md'ye panel yalnız `Görev` satırını yazar; adımları yalnız Claude yazar.
-- `metrikler.jsonl` git'te değil, makineye özgü: Mac ve VM ayrı veri biriktirir. Model sırasını veriyle değiştirmeden önce örnek sayısına bak (`node karsilastir.mjs`).
+- `metrikler.jsonl` git'te değil, makineye özgü (yalnız bu Mac'te birikir). Model sırasını veriyle değiştirmeden önce örnek sayısına bak (`node karsilastir.mjs`).
 
 ## Panelden karar (etki taslağı onayı)
 - Oturum başında ve taslak yazınca: `node karar-bekle.mjs --bir-kez`, sonra Monitor ile `node karar-bekle.mjs` (`timeout_ms` 1800000).
