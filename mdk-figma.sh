@@ -43,9 +43,8 @@ kur() {
   if ! (cd "$TTF" && git apply --reverse --check "$KOK/figma/talk-to-figma.patch" >/dev/null 2>&1); then
     (cd "$TTF" && git apply "$KOK/figma/talk-to-figma.patch") || exit 1
   fi
-  if [ -z "${BUN_CONFIG_REGISTRY:-}" ]; then
-    (cd "$TTF" && BUN_CONFIG_REGISTRY=https://registry.yarnpkg.com "$BUN" install) || exit 1
-  fi
+  # npm bu ağda engelli olabilir: ayna verilmemişse yarnpkg aynası
+  (cd "$TTF" && BUN_CONFIG_REGISTRY=${BUN_CONFIG_REGISTRY:-https://registry.yarnpkg.com} "$BUN" install) || exit 1
   eklenti
   echo "claude mcp add --scope user TalkToFigma -- bun $TTF/src/talk_to_figma_mcp/server.ts"
 }

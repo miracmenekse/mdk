@@ -31,7 +31,7 @@ for ((i=0; i<IDX; i++)); do
   fi
 done
 # HEPSI_HIZLI=1 (adım 91): ön kontrol kipi; mdk-adim.test.sh yavaştır, onu atlar
-for t in test/mdk-adim.test.sh test/mdk-hiz.test.sh test/mdk-panel.test.sh test/mdk-esitle.test.sh; do
+for t in test/mdk-adim.test.sh test/mdk-hiz.test.sh test/mdk-panel.test.sh test/mdk-esitle.test.sh test/mdk-figma.test.sh; do
   [ -f "$t" ] || continue
   [ "${HEPSI_HIZLI:-}" = 1 ] && { [ "$t" = test/mdk-adim.test.sh ] || [ "$t" = test/mdk-hiz.test.sh ]; } && { echo "atlandı (hızlı): $t"; continue; }
   atla "$t" && { echo "atlandı (bekleyen adımın kapısı): $t"; continue; }

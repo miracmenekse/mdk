@@ -21,7 +21,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - **Çıkış kodları:** 0 geçti · 2 eskale · 3 adım opencode'un değil · 4 ön koşul (kirli ağaç, kırmızı regresyon, kapı üretilemedi, ortam hatası) · 5 taslak onayı bekliyor · 6 sağlayıcı sessiz/kota · 8 modeller kilitli.
 - **Paralel:** ayrı dosyalara dokunan adımlar `./mdk-paralel.sh <no> <no>...` (çıkış 9 = çakışma).
 - **İnceleme:** yalnız `- İncele: evet` olan adımda ya da Faz sonunda `./mdk-incele.sh <no>`; diff'i yalnız uyum < 80 ise kendin oku.
-- **İzleme:** `bash mdk-panel.sh start . 4747`, `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti).
+- **İzleme:** `bash mdk-panel.sh start . 4747`, `bash mdk-figma.sh start` (Figma aktarıcısı; yeni makinede önce `bash mdk-figma.sh kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti).
 - **Push öncesi:** tam `bash test/hepsi.sh` yeşil olmalı (~3 dk).
 
 ## Koşturucunun zorladıkları (kural metnine güvenme, bunlar izinde)
@@ -43,7 +43,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 ## Panelden karar (etki taslağı onayı)
 - Oturum başında ve taslak yazınca: `node karar-bekle.mjs --bir-kez`, sonra Monitor ile `node karar-bekle.mjs` (`timeout_ms` 1800000).
 - `adım <no> onay` iki aşamalıdır; aşamayı adımda `- Figma:` satırının varlığı belirler:
-  1. **Taslak onayı** (adımda `- Figma:` yok): Figma'daki orijinal panel tasarımını ("mdk paneli", `ov6dUo0vLvaZXGgBout9L2`) `use_figma` ile güncelle (özellik başına 1–2 çağrı; görseli aynı çağrıda `node.screenshot()` ile al). Adıma `- Figma: <değişen çerçevenin node-id'li url'i>` yaz, commit et. Panel "Figma güncellendi · Figma'da aç" gösterir, düğme "Adımı onayla" olur. Kota hatası gelirse aynı ay `generate_figma_design` (HTML yakalama, kotadan muaf) ile yeni sayfa olarak aktar.
+  1. **Taslak onayı** (adımda `- Figma:` yok): Figma'daki orijinal panel tasarımını ("mdk paneli", `ov6dUo0vLvaZXGgBout9L2`) **Talk to Figma** ile güncelle (kotasız): `bash mdk-figma.sh durum` (gerekirse `start`), kullanıcıdan Figma'da "Talk to Figma (MDK, analitiksiz)" eklentisini açıp Connect demesini ve kanal adını iste, `join_channel`. Çerçeveler otomatik yerleşimli: koordinat değil sıra önemli (`set_parent` + `index`); var olan başlığı `clone_node` ile kopyalayıp metnini değiştir; Türkçe büyük harfli başlığı doğrudan büyük yaz (UPPER dönüşümü "İ"yi bozar). Sonucu `export_node_as_image` ile kontrol et. Adıma `- Figma: <değişen çerçevenin node-id'li url'i>` yaz, commit et. Panel "Figma güncellendi · Figma'da aç" gösterir, düğme "Adımı onayla" olur. Resmi Figma MCP (`use_figma`) Starter+View'da ayda 20 çağrı: yalnız Talk to Figma çalışmıyorsa kullan; o da yoksa `generate_figma_design` (HTML yakalama, kotadan muaf) ile yeni sayfa.
   2. **Adım onayı** (adımda `- Figma:` var): adıma `- Onay: evet`, commit, `./mdk-adim.sh <no>`.
   UI'ı etkilemeyen adımda `- Figma:` beklenmez; ilk `onay` doğrudan adım onayıdır. `red: <not>` → `etki/` taslağını düzelt. `yorum:` → yanıtla ya da düzelt; onay sayılmaz.
 
