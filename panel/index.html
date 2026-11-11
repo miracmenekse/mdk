@@ -455,7 +455,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -520,6 +520,7 @@ const drawerEl = document.getElementById('drawer');
 const drawerOverlayEl = document.getElementById('drawer-overlay');
 let drawerAdim = null;   // açık drawer'ın adım no'su
 let drawerZaman = null;  // çalışan adımda geçen süre sayacı
+let drawerSonImza = null; // açık drawer'ın en son çizilen veri imzası
 
 // plan + gecmis + simdi'den drawer için normalize adım nesnesi
 function drawerAdimNesnesi(no) {
@@ -533,6 +534,8 @@ function drawerAdimNesnesi(no) {
   const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
   return {
     no,
+    persona: a?.persona ?? null,
+    bitti: !!a?.bitti,
     baslik: a?.baslik || (sonSimdi && sonSimdi.adim === no ? sonSimdi.baslik : '') || '—',
     durum,
     model: kosuyor ? sonSimdi.model : rep?.model || null,
@@ -573,6 +576,7 @@ async function drawerAc(no) {
       if (drawerAdim === no && kap.isConnected) kap.innerHTML = '<p class="bos">persona turu yüklenemedi</p>';
     }
   }
+  if (drawerAdim === no) drawerSonImza = drawerImza(aObj, etkiE);
 }
 
 function drawerKapat() {
@@ -580,6 +584,7 @@ function drawerKapat() {
   drawerOverlayEl.hidden = true;
   document.body.classList.remove('drawer-acik');
   drawerAdim = null;
+  drawerSonImza = null;
   clearInterval(drawerZaman);
   drawerZaman = null;
 }
@@ -693,6 +698,15 @@ function ciz(d) {
   suAnCiz();
   sonPlan = { plan: d.plan, gecmis: d.gecmis, incelemeler: d.incelemeler };
   planCiz();
+  // açık drawer canlı kalsın: persona/figma/onay/karar değişince, not yazılmıyorsa yeniden çiz
+  if (drawerAdim != null) {
+    let adimAcik = null;
+    for (const k of (d.plan?.kategoriler || [])) for (const x of (k.adimlar || [])) if (x.no === drawerAdim) adimAcik = x;
+    const etkiAcik = (d.etki || []).find((x) => x.no === drawerAdim) || null;
+    const yeniImza = drawerImza(adimAcik, etkiAcik);
+    const not = drawerEl.querySelector('textarea[name=metin]');
+    if (yeniImza !== drawerSonImza && (!not || not.value === '')) drawerAc(drawerAdim);
+  }
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   modellerEl.innerHTML = modellerHtml(d.modeller);
   tokenPayiEl.innerHTML = tokenPayiHtml(d);

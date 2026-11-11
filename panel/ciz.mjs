@@ -310,6 +310,22 @@ export function akisTablosuHtml(plan, simdi, gecmis, incelemeler) {
 
 // adım detay drawer'ı (kart=sekme tasarımı): başlık (ADIM no + ad + kapat), durum satırı,
 // ilerleme, PERSONA DÜŞÜNCELERİ (boş #drawer-persona kabı, JS lazy doldurur), ETKİ bölümü.
+// Açık drawer'ın canlı yenilenmesi için kararlı imza: yalnız gösterilen persona/etki
+// alanlarından üretilir; başlık gibi başka alanlar imzayı değiştirmez.
+export function drawerImza(adim, etki) {
+  const a = adim || {};
+  const e = etki || {};
+  return JSON.stringify([
+    a.persona ?? null,
+    a.bitti ?? null,
+    e.figma ?? null,
+    e.onay ?? null,
+    e.bitti ?? null,
+    e.karar?.ts ?? null,
+    e.alindi ?? null,
+  ]);
+}
+
 // etkiKartiHtml: o adımın etki kartı HTML'i (karar formuyla) ya da null → "etki yok".
 export function drawerHtml(adim, etkiKartiHtml) {
   const a = adim || {};
