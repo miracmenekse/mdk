@@ -40,6 +40,8 @@ export function parse(text) {
         butce: null,
         onay: false,
       };
+      // figma: adım nesnesinde okunur ama mevcut derin karşılaştırmaları bozmaz
+      Object.defineProperty(adim, 'figma', { value: null, writable: true, enumerable: false, configurable: true });
       if (!kategori) {
         kategori = { ad: '', adimlar: [] };
         sonuc.kategoriler.push(kategori);
@@ -54,7 +56,7 @@ export function parse(text) {
       continue;
     }
 
-    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona):\s*(.*)$/);
+    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma):\s*(.*)$/);
     if (alan && adim) {
       const [, anahtar, deger] = alan;
       if (anahtar === 'Kapı') adim.kapilar.push(temizle(deger));
@@ -65,6 +67,10 @@ export function parse(text) {
         // yalnız satır varsa atanır (nesne literaline eklenmez); yol güvenliği: persona-tur/ altında, `..` yok
         const y = deger.trim();
         adim.persona = y.startsWith('persona-tur/') && !y.includes('..') ? y : null;
+      } else if (anahtar === 'Figma') {
+        // yalnız figma.com adresleri kabul edilir
+        const y = deger.trim();
+        adim.figma = /^https:\/\/(www\.)?figma\.com\//.test(y) ? y : null;
       } else adim.butce = sayiOku(deger);
       continue;
     }

@@ -694,13 +694,21 @@ function kararDurum(e, izleyici) {
   return `son karar: ${esc(k.tur)} · ${saatMetin}${metin}${ileti}`;
 }
 
+// figma satırı: karar formunun üstünde, yalnız geçerli url varsa
+function figmaBilgi(e) {
+  if (!e.figma) return '';
+  return `<p class="figma-bilgi">Figma güncellendi · <a href="${esc(e.figma)}" target="_blank" rel="noopener">Figma'da aç ↗</a></p>`;
+}
+
 // kart sonundaki karar bölümü: biten adımda yok, onaylı adımda form yok
 function kararBolum(e, izleyici) {
   if (e.bitti) return '';
   if (e.onay) return '<p class="karar-durum">onaylandı</p>';
+  // figma yoksa taslak onayı; alan hiç yoksa eski "Onayla" korunur
+  const onayAd = e.figma ? 'Adımı onayla' : e.figma === undefined ? 'Onayla' : 'Taslağı onayla';
   return '<form class="karar" data-no="' + esc(e.no) + '">' +
     '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
-    '<button type="submit" name="tur" value="onay">Onayla</button>' +
+    `<button type="submit" name="tur" value="onay">${onayAd}</button>` +
     '<button type="submit" name="tur" value="red">Reddet</button>' +
     '<button type="submit" name="tur" value="yorum">Yorum</button>' +
     `<p class="karar-durum">${kararDurum(e, izleyici)}</p>` +
@@ -739,6 +747,7 @@ function etkiKart(e, maxToken, izleyici) {
     `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
     `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
     '</div>' +
+    figmaBilgi(e) +
     kararBolum(e, izleyici) +
     '</div>';
 }
