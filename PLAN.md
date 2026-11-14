@@ -686,7 +686,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
 - Onay: evet
 
 ## Epic 24 — Çekmecede çözüme ve krokiye yorum
-- Durum: analiz
+- Durum: gelistirme
 - Etki: etki/epic-yorum.html
 Kullanıcı tarifi (Yalın Kip, tartışma yok). Çözüm onaylanınca yorum kutusu kalkıyor; krokiye yorum yeri yok. Kroki onayı = Figma tetikleme. Sunucuda yeni karar türü yok (`yorum`, `figma` yeter).
 - [ ] 145. Epic çekmecesi: krokiye yorum + onay, onaydan sonra da çözüme yorum
