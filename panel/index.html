@@ -773,10 +773,12 @@ drawerEl.addEventListener('submit', async (e) => {
   const tur = e.submitter.value;
   const epic = form.dataset.epic;
   const textarea = form.querySelector('textarea');
+  let metin = textarea ? textarea.value : '';
+  if (form.dataset.onek && metin) metin = form.dataset.onek + metin;
   const dugmeler = form.querySelectorAll('button');
   dugmeler.forEach((b) => { b.disabled = true; });
   // form drawer kapanınca kaybolabilir: o an açık olanı bul
-  const canli = () => drawerEl.querySelector(`form.epic-karar[data-epic="${epic}"]`) || form;
+  const canli = () => drawerEl.querySelector(`form.epic-karar[data-epic="${epic}"][data-bolum="${form.dataset.bolum}"]`) || form;
   const durumYaz = (metin, hata = false) => {
     const d = canli().querySelector('.karar-durum');
     if (!d) return;
@@ -788,7 +790,7 @@ drawerEl.addEventListener('submit', async (e) => {
     const yanit = await fetch('/api/karar', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ epic, tur, metin: textarea ? textarea.value : '' }),
+      body: JSON.stringify({ epic, tur, metin }),
     });
     const f = canli();
     if (yanit.ok) {

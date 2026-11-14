@@ -563,9 +563,18 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
   }
   if (e.figma) html += figmaBilgi(e);
   if (statu !== 'tamamlandi') {
-    html += `<form class="epic-karar" data-epic="${esc(e.no)}">` +
-      '<button type="submit" name="tur" value="figma">Figma\'da çiz</button>' +
-      '</form>';
+    if (e.etki) {
+      html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="kroki" data-onek="kroki: ">` +
+        '<textarea name="metin" rows="2" maxlength="2000" placeholder="krokiye not"></textarea>' +
+        '<button type="submit" name="tur" value="figma">Krokiyi onayla → Figma\'da çiz</button>' +
+        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
+        '<p class="karar-durum"></p>' +
+        '</form>';
+    } else {
+      html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="kroki">` +
+        '<button type="submit" name="tur" value="figma">Figma\'da çiz</button>' +
+        '</form>';
+    }
   }
 
   // (4) KARAR
@@ -573,8 +582,13 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
     html += '<h3 class="drawer-bolum">KARAR</h3>';
     if (e.onay) {
       html += '<p class="karar-durum">çözüm onaylandı</p>';
+      html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
+        '<textarea name="metin" rows="2" maxlength="2000" placeholder="çözüme not (onayı değiştirmez)"></textarea>' +
+        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
+        '<p class="karar-durum"></p>' +
+        '</form>';
     } else if (tartisma?.durum === 'bitti') {
-      html += `<form class="epic-karar" data-epic="${esc(e.no)}">` +
+      html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
         '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
         '<button type="submit" name="tur" value="onay">Çözümü onayla</button>' +
         '<button type="submit" name="tur" value="red">Reddet</button>' +
