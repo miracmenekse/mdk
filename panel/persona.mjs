@@ -65,6 +65,17 @@ export function adCakisir(takim, ad, haric = -1) {
   return liste.some((p, i) => i !== haric && kucult(p?.ad) === anahtar);
 }
 
+// Düzenlenen indeksini silme / geri ekleme sonrası güvenli biçimde kaydırır.
+// `duzenlenen === -1` ise düzenleme yoktur; aynen -1 döner.
+export function duzenKaydir(duzenlenen, olay) {
+  if (duzenlenen === -1) return -1;
+  const { silinen, eklenen } = olay || {};
+  if (silinen === duzenlenen) return -1;
+  if (silinen < duzenlenen) return duzenlenen - 1;
+  if (eklenen <= duzenlenen) return duzenlenen + 1;
+  return duzenlenen;
+}
+
 // Verilen indeksteki personayı çıkarır; girdi takımı değiştirmez.
 // Geri almaya yarayan `{ persona, index }` bilgisini de döndürür. Geçersiz indekste null.
 export function personaSil(takim, i) {

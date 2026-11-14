@@ -288,10 +288,10 @@ export function personaTakimHtml(takim, duzenlenen = -1) {
     const govde = duzenliyor
       ? '<form class="persona-duzenle-form" data-index="' + esc(i) + '">' +
         alan('Ad', 'rolün kısa adı', `<input name="ad" maxlength="60" required value="${esc(p.ad ?? '')}">`) +
-        alan('Optimize eder', 'en çok neyi gözetir', `<textarea name="optimize" maxlength="400" required>${esc(p.optimize ?? '')}</textarea>`) +
-        alan('Körlüğü', 'bilerek neyi kaçırır', `<textarea name="korluk" maxlength="400">${esc(p.korluk ?? '')}</textarea>`) +
-        alan('Sorusu', 'her işe soracağı tek soru', `<textarea name="soru" maxlength="400">${esc(p.soru ?? '')}</textarea>`) +
         '<p class="persona-hata" role="alert"></p>' +
+        alan('Optimize eder', 'en çok neyi gözetir', `<textarea name="optimize" rows="3" maxlength="400" required>${esc(p.optimize ?? '')}</textarea>`) +
+        alan('Körlüğü', 'bilerek neyi kaçırır', `<textarea name="korluk" rows="3" maxlength="400">${esc(p.korluk ?? '')}</textarea>`) +
+        alan('Sorusu', 'her işe soracağı tek soru', `<textarea name="soru" rows="3" maxlength="400">${esc(p.soru ?? '')}</textarea>`) +
         '<div class="persona-duzenle-eylem"><button type="submit">Kaydet</button>' +
         '<button type="button" class="persona-vazgec">Vazgeç</button>' +
         '<span class="not">sıra, renk ve yorumlar korunur</span></div>' +
@@ -306,8 +306,10 @@ export function personaTakimHtml(takim, duzenlenen = -1) {
       '<div class="persona-bas">' +
       `<span class="avatar">${esc(basHarf(p.ad))}</span>` +
       `<span class="ad">${adMetni}</span>` +
-      `<button type="button" class="persona-duzenle" data-index="${esc(i)}">düzenle</button>` +
-      `<button type="button" class="persona-sil" data-index="${esc(i)}" title="personayı sil">sil</button>` +
+      (duzenliyor
+        ? ''
+        : `<button type="button" class="persona-duzenle" data-index="${esc(i)}">düzenle</button>` +
+          `<button type="button" class="persona-sil" data-index="${esc(i)}" title="personayı sil">sil</button>`) +
       '</div>' + govde + '</div>';
   }).join('');
 }

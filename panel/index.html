@@ -151,6 +151,7 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .persona-kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; padding: 14px; }
 .persona-kart .persona-bas { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .persona-kart .persona-bas .ad { font-weight: 600; flex: 1; }
+.persona-kart .avatar { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
 .persona-sil { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--soluk); cursor: pointer; }
 .persona-sil:hover { border-color: var(--maliyet); color: var(--maliyet); }
 .persona-duzenle { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--vurgu); background: var(--kart); color: var(--vurgu); cursor: pointer; }
@@ -537,7 +538,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
 <script type="module">
 import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
-import { adCakisir, personaSil, personaGeriEkle } from '/persona.mjs';
+import { adCakisir, personaSil, personaGeriEkle, duzenKaydir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -1040,10 +1041,15 @@ personaTakimEl.addEventListener('click', async (e) => {
   }
   const b = e.target.closest('.persona-sil');
   if (!b) return;
-  const sonuc = personaSil(sonPersonaTakim, Number(b.dataset.index));
+  const i = Number(b.dataset.index);
+  const sonuc = personaSil(sonPersonaTakim, i);
   if (!sonuc) return;
   const tamam = await personaKaydet(sonuc.takim);
-  if (tamam) geriCubuguGoster(sonuc.geri);
+  if (tamam) {
+    duzenlenen = duzenKaydir(duzenlenen, { silinen: i });
+    personaCiz();
+    geriCubuguGoster(sonuc.geri);
+  }
 });
 let geriDurum = null;
 let geriZamanlayici = null;
@@ -1071,10 +1077,15 @@ function geriCubuguGoster(geri) {
 }
 async function personaGeriAl() {
   if (!geriDurum) return;
+  const eklenen = geriDurum.index;
   const yeni = personaGeriEkle(sonPersonaTakim, geriDurum);
   geriCubuguGizle();
   if (!yeni) return;
-  await personaKaydet(yeni);
+  const tamam = await personaKaydet(yeni);
+  if (tamam) {
+    duzenlenen = duzenKaydir(duzenlenen, { eklenen });
+    personaCiz();
+  }
 }
 personaTakimEl.addEventListener('submit', async (e) => {
   const duzenleForm = e.target.closest('.persona-duzenle-form');
@@ -1083,18 +1094,33 @@ personaTakimEl.addEventListener('submit', async (e) => {
     const i = Number(duzenleForm.dataset.index);
     const g = (n) => duzenleForm.querySelector(`[name="${n}"]`).value.trim();
     const ad = g('ad');
+    const optimize = g('optimize');
+    const korluk = g('korluk');
+    const soru = g('soru');
     const hataEl = duzenleForm.querySelector('.persona-hata');
     if (adCakisir(sonPersonaTakim, ad, i)) {
       if (hataEl) hataEl.textContent = `"${ad}" adı takımda zaten var.`;
       return;
     }
     const eski = (sonPersonaTakim.personalar || [])[i] || {};
-    const yeni = { ...eski, ad, optimize: g('optimize'), korluk: g('korluk'), soru: g('soru') };
+    const yeni = { ...eski, ad, optimize, korluk, soru };
     const liste = (sonPersonaTakim.personalar || []).map((p, j) => (j === i ? yeni : p));
     const tamam = await personaKaydet({ ...sonPersonaTakim, personalar: liste });
     if (tamam) {
       duzenlenen = -1;
       personaCiz();
+    } else {
+      const form = personaTakimEl.querySelector(`.persona-duzenle-form[data-index="${i}"]`);
+      if (form) {
+        const degerler = { ad, optimize, korluk, soru };
+        for (const [n, deger] of Object.entries(degerler)) {
+          const alan = form.querySelector(`[name="${n}"]`);
+          if (alan) alan.value = deger;
+        }
+        const yeniHataEl = form.querySelector('.persona-hata');
+        const durumEl = document.getElementById('persona-durum');
+        if (yeniHataEl && durumEl) yeniHataEl.textContent = durumEl.textContent;
+      }
     }
     return;
   }
