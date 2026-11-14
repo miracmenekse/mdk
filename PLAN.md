@@ -750,7 +750,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). Ortak kalıp (her story'de geç
   - Kapı: `node -e "const fs=require('fs'),A=require('assert');for(const f of ['CLAUDE.md','esit/gorev-dagitimi.md','esit/AGENTS.md','esit/ba-pm-bakis.SKILL.md','yurutucu-kurallar.md']){const s=fs.readFileSync(f,'utf8');A.ok(!/(mdk-adim|mdk-paralel|mdk-incele|persona-tur|mdk-panel|mdk-figma|mdk-esitle)\.sh/.test(s),f)};A.ok(fs.readFileSync('CLAUDE.md','utf8').includes('node mdk-adim.mjs'))"`
 
 ## Epic 26 — Test betiklerinin Node'a taşınması
-- Durum: analiz
+- Durum: gelistirme
 Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının "Claude ile yap" talimatıyla Claude elle yazdı (tek seferlik; varsayılan yürütücü kuralı değişmedi). Bu story'ler kayıt içindir, koşturucudan geçmedi.
 - [x] 159. Test altyapısı Node'a
   - Ne: `test/hepsi.sh` → `test/hepsi.mjs` (bekleyen kapı atlama aynı; paralel 8 + süreç/süre hassas testler sırayla; `HEPSI_HIZLI=1` uzun koşturucu testlerini atlar; iOS ve `hepsi-hizli` dışarıda). Ortak `test/yardim.mjs` (geçici git deposu, `.mjs` sahte opencode, koşturma, metrik, yetim denetimi). `mdk-ortak.mjs` `komutHazirla`: komut `.mjs/.js` ise node ile; `mdk-figma`/`mdk-esitle` aynı. `kabukKos`: bash yoksa cmd. `mdk-adim` regresyonu ve panel "Testleri koş" `test/hepsi.mjs` (yoksa eski `hepsi.sh`). İzinler `hepsi.mjs`/`mdk-adim.test.mjs`'i de yasaklar.
