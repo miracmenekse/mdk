@@ -269,8 +269,8 @@ export function personaBalonlarHtml(ozet) {
 }
 
 // persona takımı kartları: her persona için ad + avatar + sıraya göre persona-a/b/c rengi;
-// gövdede optimize eder / körlüğü / sorusu alanları
-export function personaTakimHtml(takim) {
+// gövdede optimize eder / körlüğü / sorusu alanları. duzenlenen indeksi yerinde düzenleme formu gösterir.
+export function personaTakimHtml(takim, duzenlenen = -1) {
   const liste = (takim && takim.personalar) || [];
   if (liste.length === 0) return '<span class="bos">persona takımı yok</span>';
   const renkler = ['persona-a', 'persona-b', 'persona-c', 'persona-d'];
@@ -278,20 +278,37 @@ export function personaTakimHtml(takim) {
     const yorumlar = (p.yorumlar || [])
       .map((y) => `<div class="persona-not">${escMetin(typeof y === 'string' ? y : y.metin || '')}</div>`)
       .join('');
-    return `<div class="persona-kart ${renkler[i % renkler.length]}" data-index="${esc(i)}">` +
+    const yorumlarHtml = yorumlar ? `<div class="persona-notlar">${yorumlar}</div>` : '';
+    const duzenliyor = i === duzenlenen;
+    const kartSinif = `persona-kart ${renkler[i % renkler.length]}${duzenliyor ? ' duzenleniyor' : ''}`;
+    const adMetni = `${esc(p.ad ?? '—')}${duzenliyor ? ' · düzenleniyor' : ''}`;
+    const alan = (etiket, ipucu, icerik) =>
+      `<label class="persona-alan"><span class="etiket">${etiket}</span>` +
+      `<span class="ipucu">${ipucu}</span>${icerik}</label>`;
+    const govde = duzenliyor
+      ? '<form class="persona-duzenle-form" data-index="' + esc(i) + '">' +
+        alan('Ad', 'rolün kısa adı', `<input name="ad" maxlength="60" required value="${esc(p.ad ?? '')}">`) +
+        alan('Optimize eder', 'en çok neyi gözetir', `<textarea name="optimize" maxlength="400" required>${esc(p.optimize ?? '')}</textarea>`) +
+        alan('Körlüğü', 'bilerek neyi kaçırır', `<textarea name="korluk" maxlength="400">${esc(p.korluk ?? '')}</textarea>`) +
+        alan('Sorusu', 'her işe soracağı tek soru', `<textarea name="soru" maxlength="400">${esc(p.soru ?? '')}</textarea>`) +
+        '<p class="persona-hata" role="alert"></p>' +
+        '<div class="persona-duzenle-eylem"><button type="submit">Kaydet</button>' +
+        '<button type="button" class="persona-vazgec">Vazgeç</button>' +
+        '<span class="not">sıra, renk ve yorumlar korunur</span></div>' +
+        '</form>' + yorumlarHtml
+      : '<div class="persona-govde">' +
+        `<div class="ara-alan"><span>optimize eder</span> ${escMetin(p.optimize ?? '—')}</div>` +
+        `<div class="ara-alan"><span>körlüğü</span> ${escMetin(p.korluk ?? '—')}</div>` +
+        `<div class="ara-alan"><span>sorusu</span> ${escMetin(p.soru ?? '—')}</div>` +
+        '</div>' + yorumlarHtml +
+        `<form class="persona-yorum" data-index="${esc(i)}"><input type="text" maxlength="500" placeholder="yorum / geri bildirim"><button type="submit">gönder</button></form>`;
+    return `<div class="${kartSinif}" data-index="${esc(i)}">` +
       '<div class="persona-bas">' +
       `<span class="avatar">${esc(basHarf(p.ad))}</span>` +
-      `<span class="ad">${esc(p.ad ?? '—')}</span>` +
+      `<span class="ad">${adMetni}</span>` +
+      `<button type="button" class="persona-duzenle" data-index="${esc(i)}">düzenle</button>` +
       `<button type="button" class="persona-sil" data-index="${esc(i)}" title="personayı sil">sil</button>` +
-      '</div>' +
-      '<div class="persona-govde">' +
-      `<div class="ara-alan"><span>optimize eder</span> ${escMetin(p.optimize ?? '—')}</div>` +
-      `<div class="ara-alan"><span>körlüğü</span> ${escMetin(p.korluk ?? '—')}</div>` +
-      `<div class="ara-alan"><span>sorusu</span> ${escMetin(p.soru ?? '—')}</div>` +
-      '</div>' +
-      (yorumlar ? `<div class="persona-notlar">${yorumlar}</div>` : '') +
-      `<form class="persona-yorum" data-index="${esc(i)}"><input type="text" maxlength="500" placeholder="yorum / geri bildirim"><button type="submit">gönder</button></form>` +
-      '</div>';
+      '</div>' + govde + '</div>';
   }).join('');
 }
 

@@ -153,6 +153,21 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .persona-kart .persona-bas .ad { font-weight: 600; flex: 1; }
 .persona-sil { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--soluk); cursor: pointer; }
 .persona-sil:hover { border-color: var(--maliyet); color: var(--maliyet); }
+.persona-duzenle { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--vurgu); background: var(--kart); color: var(--vurgu); cursor: pointer; }
+.persona-duzenle:hover { background: var(--vurgu); color: #fff; }
+.persona-kart.duzenleniyor { border-color: var(--vurgu); }
+.persona-duzenle-form { display: flex; flex-direction: column; gap: 10px; }
+.persona-duzenle-form .persona-alan { display: flex; flex-direction: column; gap: 2px; }
+.persona-duzenle-form .etiket { font-size: 12px; font-weight: 600; color: var(--metin); }
+.persona-duzenle-form .ipucu { font-size: 11px; color: var(--soluk); }
+.persona-duzenle-form input, .persona-duzenle-form textarea { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--cizgi); border-radius: 8px; background: var(--kart); color: var(--metin); min-width: 0; width: 100%; box-sizing: border-box; }
+.persona-duzenle-form textarea { resize: vertical; min-height: 54px; }
+.persona-duzenle-eylem { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.persona-duzenle-eylem button { font: inherit; font-size: 13px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; white-space: nowrap; }
+.persona-duzenle-eylem .persona-vazgec { background: var(--kart); color: var(--soluk); border-color: var(--cizgi); }
+.persona-duzenle-eylem .not { font-size: 11px; color: var(--soluk); }
+.persona-hata { font-size: 12px; color: var(--maliyet); margin: 0; min-height: 1em; }
+.persona-hata:empty { display: none; }
 .persona-govde .ara-alan { font-size: 13px; margin: 6px 0; overflow-wrap: anywhere; }
 .persona-govde .ara-alan span { color: var(--soluk); font-size: 12px; }
 .persona-notlar { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
@@ -497,6 +512,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
 <script type="module">
 import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { adCakisir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -847,7 +863,7 @@ function ciz(d) {
   const yeniTakim = d.personaTakim || { personalar: [] };
   if (JSON.stringify(yeniTakim) !== JSON.stringify(sonPersonaTakim)) {
     sonPersonaTakim = yeniTakim;
-    personaCiz();
+    if (duzenlenen === -1) personaCiz();
   }
   sonSimdi = d.simdi || null;
   suAnCiz();
@@ -952,7 +968,8 @@ gorevModelleriEl.addEventListener('change', async (e) => {
 const personaTakimEl = document.getElementById('persona-takim');
 const personaEkleEl = document.getElementById('persona-ekle');
 let sonPersonaTakim = { personalar: [] };
-function personaCiz() { personaTakimEl.innerHTML = personaTakimHtml(sonPersonaTakim); }
+let duzenlenen = -1;
+function personaCiz() { personaTakimEl.innerHTML = personaTakimHtml(sonPersonaTakim, duzenlenen); }
 async function personaKaydet(yeni) {
   const onceki = sonPersonaTakim;
   sonPersonaTakim = yeni;
@@ -982,6 +999,20 @@ async function personaKaydet(yeni) {
   }
 }
 personaTakimEl.addEventListener('click', (e) => {
+  const duzenle = e.target.closest('.persona-duzenle');
+  if (duzenle) {
+    duzenlenen = Number(duzenle.dataset.index);
+    personaCiz();
+    const adGirdi = personaTakimEl.querySelector('input[name=ad]');
+    if (adGirdi) adGirdi.focus();
+    return;
+  }
+  const vazgec = e.target.closest('.persona-vazgec');
+  if (vazgec) {
+    duzenlenen = -1;
+    personaCiz();
+    return;
+  }
   const b = e.target.closest('.persona-sil');
   if (!b) return;
   const i = Number(b.dataset.index);
@@ -989,7 +1020,28 @@ personaTakimEl.addEventListener('click', (e) => {
   liste.splice(i, 1);
   personaKaydet({ ...sonPersonaTakim, personalar: liste });
 });
-personaTakimEl.addEventListener('submit', (e) => {
+personaTakimEl.addEventListener('submit', async (e) => {
+  const duzenleForm = e.target.closest('.persona-duzenle-form');
+  if (duzenleForm) {
+    e.preventDefault();
+    const i = Number(duzenleForm.dataset.index);
+    const g = (n) => duzenleForm.querySelector(`[name="${n}"]`).value.trim();
+    const ad = g('ad');
+    const hataEl = duzenleForm.querySelector('.persona-hata');
+    if (adCakisir(sonPersonaTakim, ad, i)) {
+      if (hataEl) hataEl.textContent = `"${ad}" adı takımda zaten var.`;
+      return;
+    }
+    const eski = (sonPersonaTakim.personalar || [])[i] || {};
+    const yeni = { ...eski, ad, optimize: g('optimize'), korluk: g('korluk'), soru: g('soru') };
+    const liste = (sonPersonaTakim.personalar || []).map((p, j) => (j === i ? yeni : p));
+    const tamam = await personaKaydet({ ...sonPersonaTakim, personalar: liste });
+    if (tamam) {
+      duzenlenen = -1;
+      personaCiz();
+    }
+    return;
+  }
   const f = e.target.closest('.persona-yorum');
   if (!f) return;
   e.preventDefault();
