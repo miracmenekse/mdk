@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: persona ekleme ve düzenleme</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+<figure>
+  <figcaption>Önce: kartlar salt okunur; değiştirmek için sil + yeniden ekle (sıra, renk, yorum kaybolur). Sil anında, kayıt hatası sessiz. Ekleme tek satır, açıklamasız.</figcaption>
+  <svg id="once" viewBox="0 0 640 380" role="img" aria-label="Önce: salt okunur persona kartları ve tek satırlık ekleme formu">
+    <text x="16" y="28" font-size="15" fill="#424242">Persona takımı</text>
+    <g fill="#fff" stroke="#bdbdbd">
+      <rect x="16" y="44" width="296" height="128" rx="8"/><rect x="328" y="44" width="296" height="128" rx="8"/>
+      <rect x="16" y="184" width="296" height="128" rx="8"/><rect x="328" y="184" width="296" height="128" rx="8"/>
+    </g>
+    <g fill="#9e9e9e"><circle cx="38" cy="66" r="10"/><circle cx="350" cy="66" r="10"/><circle cx="38" cy="206" r="10"/><circle cx="350" cy="206" r="10"/></g>
+    <g font-size="11" fill="#424242">
+      <text x="56" y="70">Bilişsel Yük Bekçisi</text><text x="368" y="70">Geliştirme Yöneticisi</text>
+      <text x="56" y="210">Ürün Yöneticisi</text><text x="368" y="210">UI/UX Uzmanı</text>
+    </g>
+    <g fill="#eeeeee" stroke="#bdbdbd"><rect x="272" y="58" width="30" height="16" rx="8"/><rect x="584" y="58" width="30" height="16" rx="8"/><rect x="272" y="198" width="30" height="16" rx="8"/><rect x="584" y="198" width="30" height="16" rx="8"/></g>
+    <g font-size="9" fill="#757575"><text x="280" y="70">sil</text><text x="592" y="70">sil</text><text x="280" y="210">sil</text><text x="592" y="210">sil</text></g>
+    <g fill="#e0e0e0">
+      <rect x="28" y="88" width="260" height="8"/><rect x="28" y="104" width="220" height="8"/><rect x="28" y="120" width="240" height="8"/>
+      <rect x="340" y="88" width="260" height="8"/><rect x="340" y="104" width="220" height="8"/><rect x="340" y="120" width="240" height="8"/>
+      <rect x="28" y="228" width="260" height="8"/><rect x="28" y="244" width="220" height="8"/><rect x="28" y="260" width="240" height="8"/>
+      <rect x="340" y="228" width="260" height="8"/><rect x="340" y="244" width="220" height="8"/><rect x="340" y="260" width="240" height="8"/>
+    </g>
+    <g fill="#fff" stroke="#bdbdbd"><rect x="28" y="142" width="272" height="20"/><rect x="340" y="142" width="272" height="20"/><rect x="28" y="282" width="272" height="20"/><rect x="340" y="282" width="272" height="20"/></g>
+    <g fill="#fff" stroke="#bdbdbd"><rect x="16" y="330" width="120" height="24"/><rect x="144" y="330" width="120" height="24"/><rect x="272" y="330" width="120" height="24"/><rect x="400" y="330" width="120" height="24"/></g>
+    <g font-size="9" fill="#9e9e9e"><text x="22" y="346">rol adı</text><text x="150" y="346">optimize eder…</text><text x="278" y="346">körlüğü…</text><text x="406" y="346">sorusu…</text></g>
+    <rect x="528" y="330" width="96" height="24" fill="#9e9e9e"/><text x="544" y="346" font-size="10" fill="#fff">Persona ekle</text>
+  </svg>
+</figure>
+<figure>
+  <figcaption>Sonra: kartta "düzenle" → kart yerinde forma döner (sıra, renk, yorum korunur). Hata alanın altında tek cümle. Sil → "Geri al" bildirimi. Ekleme formu açıklamalı ve örnekli; kayıt durumu başlıkta.</figcaption>
+  <svg id="sonra" viewBox="0 0 640 470" role="img" aria-label="Sonra: yerinde düzenleme, hata, geri al ve açıklamalı ekleme formu">
+    <text x="16" y="28" font-size="15" fill="#424242">Persona takımı</text>
+    <rect class="degisen" x="508" y="14" width="116" height="20" rx="10"/><text class="degisen-text" x="520" y="28" font-size="10">✓ kaydedildi</text>
+    <rect x="16" y="44" width="296" height="128" rx="8" fill="#fff" stroke="#bdbdbd"/>
+    <circle cx="38" cy="66" r="10" fill="#9e9e9e"/><text x="56" y="70" font-size="11" fill="#424242">Bilişsel Yük Bekçisi</text>
+    <rect class="degisen" x="214" y="58" width="52" height="16" rx="8"/><text class="degisen-text" x="222" y="70" font-size="9">düzenle</text>
+    <rect x="272" y="58" width="30" height="16" rx="8" fill="#eee" stroke="#bdbdbd"/><text x="280" y="70" font-size="9" fill="#757575">sil</text>
+    <g fill="#e0e0e0"><rect x="28" y="88" width="260" height="8"/><rect x="28" y="104" width="220" height="8"/><rect x="28" y="120" width="240" height="8"/></g>
+    <rect x="28" y="142" width="272" height="20" fill="#fff" stroke="#bdbdbd"/>
+    <!-- değişim: kart yerinde düzenleme -->
+    <rect class="degisen" x="328" y="44" width="296" height="232" rx="8" stroke-width="2"/>
+    <circle cx="350" cy="66" r="10" fill="#9e9e9e"/><text class="degisen-text" x="368" y="70" font-size="11">Geliştirme Yöneticisi · düzenleniyor</text>
+    <g font-size="9" class="degisen-text"><text x="340" y="92">Ad</text><text x="340" y="144">Optimize eder</text><text x="340" y="180">Körlüğü</text><text x="340" y="214">Sorusu</text></g>
+    <g fill="#fff" stroke="#c2410c"><rect x="340" y="96" width="272" height="20"/><rect x="340" y="148" width="272" height="20"/><rect x="340" y="184" width="272" height="20"/><rect x="340" y="218" width="272" height="20"/></g>
+    <g font-size="9" fill="#424242"><text x="346" y="110">Ürün Yöneticisi</text><text x="346" y="162">MDK'yı her gün kullananın işi…</text><text x="346" y="198">kendi alışkanlığına göre…</text><text x="346" y="232">Günlük kullanımda kaç komut…</text></g>
+    <text class="degisen-text" x="340" y="130" font-size="9">⚠ Bu ad takımda zaten var.</text>
+    <rect x="340" y="248" width="60" height="22" fill="#c2410c"/><text x="352" y="263" font-size="10" fill="#fff">Kaydet</text>
+    <rect x="408" y="248" width="60" height="22" fill="#fff" stroke="#bdbdbd"/><text x="418" y="263" font-size="10" fill="#424242">Vazgeç</text>
+    <rect x="16" y="184" width="296" height="92" rx="8" fill="#fff" stroke="#bdbdbd"/>
+    <circle cx="38" cy="206" r="10" fill="#9e9e9e"/><text x="56" y="210" font-size="11" fill="#424242">Ürün Yöneticisi</text>
+    <g fill="#e0e0e0"><rect x="28" y="228" width="260" height="8"/><rect x="28" y="244" width="220" height="8"/><rect x="28" y="260" width="240" height="8"/></g>
+    <!-- değişim: silme sonrası geri al -->
+    <rect class="degisen" x="16" y="288" width="608" height="26" rx="6"/>
+    <text class="degisen-text" x="28" y="305" font-size="10">"UI/UX Uzmanı" silindi.</text>
+    <text class="degisen-text" x="560" y="305" font-size="10" text-decoration="underline">Geri al</text>
+    <!-- değişim: açıklamalı ekleme formu -->
+    <rect class="degisen" x="16" y="326" width="608" height="132" rx="8"/>
+    <text class="degisen-text" x="28" y="344" font-size="11">Yeni persona</text>
+    <g font-size="9" class="degisen-text"><text x="28" y="362">Ad · rolün kısa adı</text><text x="324" y="362">Optimize eder · en çok neyi gözetir</text><text x="28" y="404">Körlüğü · bilerek neyi kaçırır</text><text x="324" y="404">Sorusu · her işe soracağı tek soru</text></g>
+    <g fill="#fff" stroke="#bdbdbd"><rect x="28" y="368" width="284" height="22"/><rect x="324" y="368" width="288" height="22"/><rect x="28" y="410" width="284" height="22"/><rect x="324" y="410" width="288" height="22"/></g>
+    <g font-size="9" fill="#9e9e9e"><text x="34" y="383">ör. Güvenlik Denetçisi</text><text x="330" y="383">ör. veri kaybı ve yetki riskini azaltmak</text><text x="34" y="425">ör. kullanım kolaylığını</text><text x="330" y="425">ör. Yanlış giderse geri alınır mı?</text></g>
+    <rect x="532" y="438" width="80" height="16" fill="#c2410c"/><text x="550" y="450" font-size="9" fill="#fff">Persona ekle</text>
+  </svg>
+</figure>
+</body>
+</html>

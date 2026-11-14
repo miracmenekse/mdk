@@ -15,6 +15,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
   - İş gelince: işi bir dosyaya yaz, `node mdk-epic.mjs ac "<ad>" <dosya>` → Epic no.
   - Kullanıcı tartışma istemediyse (varsayılan): story'leri yaz, `node mdk-epic.mjs gelistir <no>`, koştur.
   - Kullanıcı "tartıştır / personalara sor" derse: `node mdk-epic.mjs tartis <no> [--persona "Ad1,Ad2" --neden "<gerekçe>"]` (takım `persona/takim.json`; işe ilgisiz personayı çıkar, gerekçeyi yaz). Çözümü kendin sına (sayısal ve evet/hayır hükmüne güvenme). Tartışma tahmini story listesi üretir; **onay gelmeden story yazma** (koşturucu da çıkış 5 verir).
+  - **Tartışma biter bitmez, işin arayüze etkisi varsa ilk çıktı önce/sonra etki krokisidir:** `etki/<ad>.html` (`etki/ORNEK.html` kalıbı: `svg#once` + `svg#sonra`, değişen bölge `degisen`), Epic bloğuna `- Etki: etki/<ad>.html`, commit. Çekmecenin "UI/UX ETKİSİ" bölümü bunu gösterir. **Figma'ya bu aşamada dokunma:** Figma yalnız kullanıcı krokiyi onaylayınca ya da "Figma'da çiz" deyince üretilir.
   - `epic <no> onay` gelince: `node mdk-epic.mjs karar <no> onay` → story'leri yaz → `gelistir <no>` → koştur.
 - **Yalın Kip (varsayılan):** kullanıcının doğrudan tarif ettiği işte ve Faz içi adımlarda persona turu, benchmark, etki krokisi yok. `ba-pm-bakis` yalnız yeni Faz başında 1 kez ya da kullanıcı isteyince.
 - **Adım = dikey dilim:** 1–3 dosya, ~60–250 satır, 1 kapı. `Ne:` satırına hedef `dosya:satır-aralığı` yaz. Yeni adımları son numaradan devam ettir.

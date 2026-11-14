@@ -682,6 +682,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
 ## Epic 23 — Persona ekleme ve güncelleme
 - Durum: tasarim
 - Tartışma: epic/23
+- Etki: etki/persona-duzenle.html
 - Onay: evet
 
 ## Sonraki iyileştirmeler
