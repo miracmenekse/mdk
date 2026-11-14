@@ -535,23 +535,23 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
 - [ ] 114. iOS kabuğu: paneli WKWebView'da açar
   - Yürütücü: kodcu
   - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
-  - Kapı: `bash test/ios-kabuk.test.sh`
+  - Kapı: `node test/ios-kabuk.test.mjs`
 - [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
   - Yürütücü: kodcu
   - Etki: etki/ios-kabuk.html
   - Değer: 4
   - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler.
-  - Kapı: `bash test/ios-hata.test.sh`
+  - Kapı: `node test/ios-hata.test.mjs`
 - [ ] 116. İlk açılış adres ekranı
   - Yürütücü: kodcu
   - Etki: etki/ios-kabuk.html
   - Değer: 4
   - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar.
-  - Kapı: `bash test/ios-adres.test.sh && bash test/ios-kabuk.test.sh`
+  - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 117. Öne dönünce bayat paneli yenile
   - Yürütücü: kodcu
   - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez.
-  - Kapı: `bash test/ios-yenile.test.sh && bash test/ios-kabuk.test.sh`
+  - Kapı: `node test/ios-yenile.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
   - Yürütücü: kodcu
   - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.
@@ -751,6 +751,22 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). Ortak kalıp (her story'de geç
 
 ## Epic 26 — Test betiklerinin Node'a taşınması
 - Durum: analiz
+Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının "Claude ile yap" talimatıyla Claude elle yazdı (tek seferlik; varsayılan yürütücü kuralı değişmedi). Bu story'ler kayıt içindir, koşturucudan geçmedi.
+- [x] 159. Test altyapısı Node'a
+  - Ne: `test/hepsi.sh` → `test/hepsi.mjs` (bekleyen kapı atlama aynı; paralel 8 + süreç/süre hassas testler sırayla; `HEPSI_HIZLI=1` uzun koşturucu testlerini atlar; iOS ve `hepsi-hizli` dışarıda). Ortak `test/yardim.mjs` (geçici git deposu, `.mjs` sahte opencode, koşturma, metrik, yetim denetimi). `mdk-ortak.mjs` `komutHazirla`: komut `.mjs/.js` ise node ile; `mdk-figma`/`mdk-esitle` aynı. `kabukKos`: bash yoksa cmd. `mdk-adim` regresyonu ve panel "Testleri koş" `test/hepsi.mjs` (yoksa eski `hepsi.sh`). İzinler `hepsi.mjs`/`mdk-adim.test.mjs`'i de yasaklar.
+  - Kapı: `node test/hepsi-hizli.test.mjs`
+- [x] 160. Koşturucu testleri Node'a
+  - Ne: `test/mdk-adim.test.mjs` (39 vaka, kapılar `node -e` ile; kilit vakaları sabit 1 sn yerine A'nın kilidini bekler), `test/mdk-hiz.test.mjs`, `test/epic-onay.test.mjs`.
+  - Kapı: `node test/mdk-adim.test.mjs && node test/mdk-hiz.test.mjs && node test/epic-onay.test.mjs`
+- [x] 161. Persona, inceleme ve paralel testleri Node'a
+  - Ne: `test/persona-ortak.mjs` + `test/persona-tur.test.mjs` + `test/persona-gorev.test.mjs`, `test/mdk-incele.test.mjs`, `test/mdk-paralel.test.mjs` (paralellik sınırı Node açılışı için <8 sn).
+  - Kapı: `node test/persona-tur.test.mjs && node test/persona-gorev.test.mjs && node test/mdk-incele.test.mjs && node test/mdk-paralel.test.mjs`
+- [x] 162. Panel, eşitleme, Figma ve iOS testleri Node'a
+  - Ne: `test/mdk-panel.test.mjs` (curl yerine fetch), `test/mdk-esitle.test.mjs`, `test/mdk-figma.test.mjs` (sahte bun `.mjs`), `test/ios-ortak.mjs` + `test/ios-{adres,yenile,kabuk,hata}.test.mjs` (yalnız macOS; `ios/` ana dalda olmadığı için koşturulmadı).
+  - Kapı: `node test/mdk-panel.test.mjs && node test/mdk-esitle.test.mjs && node test/mdk-figma.test.mjs`
+- [x] 163. Bash testleri kaldırıldı, başvurular güncellendi
+  - Ne: `test/*.test.sh`, `test/ios-ortak.sh`, `test/hepsi.sh` silindi; bitmemiş adımların (114-117) iOS kapıları `node test/ios-*.test.mjs`; `CLAUDE.md`, `esit/*`, `yurutucu-kurallar.md` yeni adlarla; `mdk-esitle` koşuldu.
+  - Kapı: `node test/hepsi.mjs`
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.

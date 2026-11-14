@@ -20,7 +20,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - **Yalın Kip (varsayılan):** kullanıcının doğrudan tarif ettiği işte ve Faz içi adımlarda persona turu, benchmark, etki krokisi yok. `ba-pm-bakis` yalnız yeni Faz başında 1 kez ya da kullanıcı isteyince.
 - **Adım = dikey dilim:** 1–3 dosya, ~60–250 satır, 1 kapı. `Ne:` satırına hedef `dosya:satır-aralığı` yaz. Yeni adımları son numaradan devam ettir.
 - **Çalıştırma:** planı commit et (temiz ağaç şart), `node mdk-adim.mjs <no>`. Sırayla şunları yapar:
-  1. Ön regresyon (`HEPSI_HIZLI=1 test/hepsi.sh`); kırmızıysa çıkış 4.
+  1. Ön regresyon (`HEPSI_HIZLI=1 node test/hepsi.mjs`, ~20 sn; uzun koşturucu testleri atlanır); kırmızıysa çıkış 4.
   2. Kapı dosyası diskte yoksa `Görev kapi:` modeline yazdırır. Kabul şartı: yalnız istenen dosya, sözdizimi temiz, kod yazılmadan kırmızı. `UYARI: zayıf kapı` basarsa `Kapı:` metnini davranışa göre netleştir.
   3. `Görev <tür>:` modelleriyle kodu yazdırır (adımda `- Görev:` yoksa `kod`; adımdaki `- Modeller:` önce gelir).
   4. Adım kapısı + **kapı sonrası hızlı regresyon**; biri kırmızıysa deneme başarısız, çıktı sonraki denemeye ipucu.
@@ -28,17 +28,17 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - **Çıkış kodları:** 0 geçti · 2 eskale · 3 adım opencode'un değil · 4 ön koşul (kirli ağaç, kırmızı regresyon, kapı üretilemedi, ortam hatası) · 5 taslak ya da Epic çözüm onayı bekliyor · 6 sağlayıcı sessiz/kota · 8 modeller kilitli.
 - **Paralel:** ayrı dosyalara dokunan adımlar `node mdk-paralel.mjs <no> <no>...` (çıkış 9 = çakışma).
 - **İnceleme:** yalnız `- İncele: evet` olan adımda ya da Faz sonunda `node mdk-incele.mjs <no>`; diff'i yalnız uyum < 80 ise kendin oku.
-- **İzleme:** `node mdk-panel.mjs start . 4747`, `node mdk-figma.mjs start` (Figma aktarıcısı; yeni makinede önce `node mdk-figma.mjs kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti). Koşturucular Node'dadır (Windows'ta da çalışır); Mac'te eski `bash <ad>.sh` yönlendiricileri de durur. Kapılar ve `test/hepsi.sh` bash ister: Windows'ta Git Bash (`MDK_BASH` ile yol verilebilir); opencode/cursor'un `.cmd` sarmalayıcısı değil gerçek `.exe` yolu `MDK_OPENCODE`/`MDK_CURSOR` ile verilmeli. Windows'ta henüz gerçek koşu yapılmadı.
-- **Push öncesi:** tam `bash test/hepsi.sh` yeşil olmalı (~3 dk).
+- **İzleme:** `node mdk-panel.mjs start . 4747`, `node mdk-figma.mjs start` (Figma aktarıcısı; yeni makinede önce `node mdk-figma.mjs kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti). Koşturucular Node'dadır (Windows'ta da çalışır); Mac'te eski `bash <ad>.sh` yönlendiricileri de durur. Testler de Node'dadır (`test/*.test.mjs`, ortak yardımcı `test/yardim.mjs`; sahte opencode/cursor/bun `.mjs`). Kapı komutları kabukta koşar: bash varsa bash (Windows'ta Git Bash, `MDK_BASH`), yoksa cmd; bu yüzden yeni kapıları `node …` ile yaz (`test -f` yerine `node -e "…existsSync…"`). opencode/cursor'un `.cmd` sarmalayıcısı değil gerçek `.exe` yolu `MDK_OPENCODE`/`MDK_CURSOR` ile verilmeli. Windows'ta henüz gerçek koşu yapılmadı.
+- **Push öncesi:** tam `node test/hepsi.mjs` yeşil olmalı (~3 dk). iOS testleri (`test/ios-*.test.mjs`) yalnız macOS'ta ve kendi adımının kapısında koşar.
 
 ## Koşturucunun zorladıkları (kural metnine güvenme, bunlar izinde)
 - Kod görevinde `PLAN.md`, `test/*`, `kapi/*`, `*.test.*` yazılamaz; kapı görevinde yalnız eksik kapı dosyası yazılır.
-- `test/hepsi.sh`, tam `mdk-adim.test.sh` (adımın kendi kapısında geçmiyorsa), `git push`, `git stash`, `sudo` koşulamaz.
+- `test/hepsi.mjs`, tam `mdk-adim.test.mjs` (adımın kendi kapısında geçmiyorsa), `git push`, `git stash`, `sudo` koşulamaz.
 - Kabukla dolanma hâlâ mümkün; koşu sonrası kurcalama tespiti bu yüzden duruyor.
 - Ortam: `DENEME` (2), `SURE` (600), `ILK` (75), `ONCE=<model>`, `MDK_SADE=1` (deneysel, token azaltmadı), `MDK_CLAUDE_KURAL=1` (yalıtımı kapatır), `MDK_ONKONTROL_YOK=1`.
 
 ## Tuzaklar
-- Kırmızı bir kapıyı ilgili adımdan önce commit etme; `hepsi.sh` yalnız bitmemiş adımların kapı dosyalarını atlar. Var olan test dosyasına vaka eklerken varsayılan listeye koyma, adım bitince ekle.
+- Kırmızı bir kapıyı ilgili adımdan önce commit etme; `hepsi.mjs` yalnız bitmemiş adımların kapı dosyalarını atlar. Var olan test dosyasına vaka eklerken varsayılan listeye koyma, adım bitince ekle.
 - Yürütücü "test mantıksız" derse (SORUN.md) haklı olabilir: kapı sahibi kapıyı düzeltir, kod teste uydurulmaz.
 - İlk kez kullanılan kapıyı gerçek ortamda (koşturucu içinden) bir kez dene.
 - UI işinde yalnız kapıya güvenme: gerçek tarayıcıda ekran görüntüsü al; canlı paneli yeni kodla yeniden başlat (`node mdk-panel.mjs stop . 4747 && node mdk-panel.mjs start . 4747`).

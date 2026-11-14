@@ -19,7 +19,7 @@ description: YALNIZCA yeni bir Faz (büyük mimari/ekran kararı) başlarken Faz
 Her adımın kapısı çalıştırılabilir olsun (çıkış kodu 0).
 - **Kapıları OpenCode Üretir (Claude Elle Yazmaz):**
   - Claude `PLAN.md`'ye yalnız adımın `Ne:` açıklamasını (hedef `dosya:satır-aralığı` ile) ve `- Kapı:` komutunu yazar; test dosyasını elle yazmaz.
-  - `mdk-adim.mjs <no>` çalıştığında test dosyası (`*.test.mjs`, `test/*.test.sh`, `kapi/*`) diskte yoksa önce PLAN başındaki `Görev kapi:` modelleriyle test dosyasını üretir, sözdizimini ve mevcut kodda KIRMIZI olduğunu doğrular (kod yazılmadan yeşil ya da sözdizimi bozuk kapı reddedilir), ardından `Görev kod:` modeliyle kodu yazdırır. Adım kapısı geçince hızlı regresyon (`HEPSI_HIZLI=1 test/hepsi.sh`) da koşar; kırılırsa deneme başarısızdır.
+  - `mdk-adim.mjs <no>` çalıştığında test dosyası (`*.test.mjs`, `kapi/*`) diskte yoksa önce PLAN başındaki `Görev kapi:` modelleriyle test dosyasını üretir, sözdizimini ve mevcut kodda KIRMIZI olduğunu doğrular (kod yazılmadan yeşil ya da sözdizimi bozuk kapı reddedilir), ardından `Görev kod:` modeliyle kodu yazdırır. Adım kapısı geçince hızlı regresyon (`HEPSI_HIZLI=1 node test/hepsi.mjs`) da koşar; kırılırsa deneme başarısızdır.
   - `Kapı:` metnini davranış üzerinden yaz (hangi girdi → hangi çıktı; başarı, hata, sınır durumu). "dosyada şu metin geçer" türü iddia zayıf kapıdır: koşturucu `UYARI: zayıf kapı` basarsa `Kapı:` metnini düzelt.
   - Küçük/mekanik adımlarda ayrı test dosyası açmak yerine tek satırlık `node -e "import assert from 'node:assert/strict'; ..."` kapısı veya mevcut test dosyası kullanılır.
 - **Adım Boyutu ("Dikey Özellik Dilimi" Kuralı):**

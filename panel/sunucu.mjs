@@ -210,9 +210,11 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
-  // POST /api/test: kök dizinde bash test/hepsi.sh koşar, sonucu döndürür
+  // POST /api/test: kök dizinde test/hepsi.mjs (yoksa bash test/hepsi.sh) koşar, sonucu döndürür
   const testAl = (yanit) => {
-    const cocuk = spawn('bash', ['test/hepsi.sh'], { cwd: kok });
+    const cocuk = existsSync(join(kok, 'test', 'hepsi.mjs'))
+      ? spawn(process.execPath, ['test/hepsi.mjs'], { cwd: kok })
+      : spawn('bash', ['test/hepsi.sh'], { cwd: kok });
     let cikti = '';
     const ekle = (parca) => {
       cikti += parca;

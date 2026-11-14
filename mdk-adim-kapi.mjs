@@ -19,7 +19,7 @@ export function temizOrtam(ek = {}) {
 export function izinYapilandirmasi(tur, kapilar, eksik = [], sade = false) {
   const kapiMetni = kapilar.join(' ');
   const kabuk = { '*': 'allow', 'sudo *': 'deny', 'git push*': 'deny', 'git stash*': 'deny' };
-  for (const b of ['test/hepsi.sh', 'mdk-adim.test.sh']) if (!kapiMetni.includes(b)) kabuk[`*${b}*`] = 'deny';
+  for (const b of ['test/hepsi.sh', 'test/hepsi.mjs', 'mdk-adim.test.sh', 'mdk-adim.test.mjs']) if (!kapiMetni.includes(b)) kabuk[`*${b}*`] = 'deny';
   const edit = tur === 'kapi' ? { '*': 'deny' } : { '*': 'allow', 'PLAN.md': 'deny', 'test/*': 'deny', 'kapi/*': 'deny', '*.test.*': 'deny' };
   if (tur === 'kapi') for (const f of eksik.filter(Boolean)) edit[f] = 'allow';
   const c = { permission: { edit, bash: kabuk, shell: kabuk, external_directory: 'deny' } }; // shell, external_directory: v2 adları
@@ -46,9 +46,11 @@ export function bashYolu() {
 const bashVar = () => bashYolu() !== null;
 export function kabukKos(komut, { env, cwd, cikti } = {}) {
   const b = bashYolu();
-  if (!b) return { ok: false, kod: 127, metin: 'bash bulunamadı: Git for Windows kur ya da MDK_BASH ile bash.exe yolunu ver\n', cikti };
-  const r = spawnSync(b, ['-c', komut], { env, cwd, encoding: 'utf8', maxBuffer: 256 << 20 });
-  const metin = (r.stdout || '') + (r.stderr || '') + (r.error ? `${b}: ${r.error.message}\n` : '');
+  // bash yoksa (Windows, Git Bash kurulu değil) cmd: yalnız `node …` / `&&` kapıları çalışır, bash sözdizimi çalışmaz
+  const r = b
+    ? spawnSync(b, ['-c', komut], { env, cwd, encoding: 'utf8', maxBuffer: 256 << 20 })
+    : spawnSync(komut, { env, cwd, encoding: 'utf8', shell: true, maxBuffer: 256 << 20 });
+  const metin = (r.stdout || '') + (r.stderr || '') + (r.error ? `${b || 'cmd'}: ${r.error.message}\n` : '') + (!b && r.status !== 0 ? 'not: bash bulunamadı, kapı cmd ile koştu (Git Bash kur ya da MDK_BASH ver)\n' : '');
   return { ok: r.status === 0, kod: r.status, metin, cikti };
 }
 

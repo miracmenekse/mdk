@@ -93,15 +93,20 @@ if (/^\s*- Etki:/m.test(blok) && !/^\s*- Onay: evet\b/m.test(blok)) { yaz(`adım
 // Epic çözüm onayı: tartışması olan Epic'in çözümü onaylanmadıysa adım koşmaz
 const epik = epicBlogu(plan, N);
 if (/^- Tartışma:/m.test(epik) && !/^- Onay: evet/m.test(epik)) { yaz(`adım ${N}: Epic çözüm onayı bekliyor (panelden onayla; node mdk-epic.mjs karar <no> onay)`); process.exit(5); }
-// ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (hızlı kip: mdk-adim.test.sh atlanır)
-const REGRESYON = existsSync('test/hepsi.sh') && !e.MDK_ONKONTROL_YOK;
-const regresyon = () => kabukKos('bash test/hepsi.sh', { env: temizOrtam({ HEPSI_HIZLI: '1' }) });
+// ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (hızlı kip: uzun koşturucu testleri atlanır; eski projelerde test/hepsi.sh)
+const HEPSI = existsSync('test/hepsi.mjs') ? 'test/hepsi.mjs' : existsSync('test/hepsi.sh') ? 'test/hepsi.sh' : '';
+const REGRESYON = !!HEPSI && !e.MDK_ONKONTROL_YOK;
+const regresyon = () => {
+  if (HEPSI.endsWith('.sh')) return kabukKos('bash test/hepsi.sh', { env: temizOrtam({ HEPSI_HIZLI: '1' }) });
+  const r = spawnSync(process.execPath, [HEPSI], { env: temizOrtam({ HEPSI_HIZLI: '1' }), encoding: 'utf8', maxBuffer: 256 << 20 });
+  return { ok: r.status === 0, metin: (r.stdout || '') + (r.stderr || '') };
+};
 if (REGRESYON) {
   yazDurum('', 0, 'regresyon');
   const r = regresyon();
   if (!r.ok) {
     yazDurum('', 0, 'regresyon_kirmizi');
-    yaz(`adım ${N} başlamadı: test/hepsi.sh HEAD'de kırmızı (kapıyı düzelt):`);
+    yaz(`adım ${N} başlamadı: ${HEPSI} HEAD'de kırmızı (kapıyı düzelt):`);
     const s = kirp(r.metin).split('\n');
     for (const l of s.filter((x) => x.includes('BAŞARISIZ'))) yaz(l);
     yaz(s.slice(-5).join('\n'));

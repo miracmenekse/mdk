@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
 const WIN = process.platform === 'win32';
+// komut bir .mjs/.js betiğiyse (testlerdeki sahte opencode/cursor/bun) node ile başlatılır: Windows'ta da çalışır
+export const komutHazirla = (komut, args = []) => (/\.(mjs|cjs|js)$/i.test(komut) ? [process.execPath, [komut, ...args]] : [komut, args]);
 const satirlar = (m) => m.split('\n');
 const oku = (yol) => { try { return readFileSync(yol, 'utf8'); } catch { return ''; } };
 
@@ -87,7 +89,7 @@ let SQLITE = null;
 try { SQLITE = (await import('node:sqlite')).DatabaseSync; } catch {}
 function db() { try { return SQLITE ? new SQLITE(dbYolu(), { readOnly: true }) : null; } catch { return null; } }
 
-const kes = (oc, sid) => { try { spawnSync(oc, ['api', 'POST', `/api/session/${sid}/interrupt`], { stdio: 'ignore', shell: WIN, timeout: 15000 }); } catch {} };
+const kes = (oc, sid) => { try { const [k, a] = komutHazirla(oc, ['api', 'POST', `/api/session/${sid}/interrupt`]); spawnSync(k, a, { stdio: 'ignore', timeout: 15000 }); } catch {} };
 
 // kesilen oturumu arka plan servisinde de durdurur (yoksa çalışmaya devam eder)
 export function oturumKapat(oc, log, baslik) {
@@ -136,7 +138,8 @@ export async function kos({ komut, args = [], cwd, env, log, ilk = 75, sure = 60
   try {
     // Windows: shell:false şart. cmd.exe istem metnini (çok satır, tırnak, & | > %) bozar; .cmd/.bat sarmalayıcısı
     // shell'siz başlatılamaz → aşağıdaki hata yolu "command not found" yazar, koşturucu ortam hatası (çıkış 4) verir.
-    c = spawn(komut, args, { cwd, env: env || process.env, detached: !WIN, stdio: ['ignore', out, err], windowsHide: true, shell: false });
+    const [k, a] = komutHazirla(komut, args);
+    c = spawn(k, a, { cwd, env: env || process.env, detached: !WIN, stdio: ['ignore', out, err], windowsHide: true, shell: false });
   } catch (e) {
     writeSync(err, `${komut}: command not found (${e.message})\n`);
   }

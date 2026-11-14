@@ -38,7 +38,7 @@ if (existsSync(oc)) {
     for (const r of q.all()) {
       if (r.id && /^ses_/.test(r.id) && r.ty && r.ty !== 'idle') {
         try {
-          spawnSync(oc, ['api', 'POST', `/api/session/${r.id}/interrupt`], { stdio: 'ignore' });
+          const k = /\.(mjs|cjs|js)$/i.test(oc) ? [process.execPath, [oc]] : [oc, []]; spawnSync(k[0], [...k[1], 'api', 'POST', `/api/session/${r.id}/interrupt`], { stdio: 'ignore' });
         } catch {}
       }
     }

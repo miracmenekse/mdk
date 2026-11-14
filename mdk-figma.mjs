@@ -24,7 +24,9 @@ const calisiyor = () => { const p = pidOku(); return p > 0 && canli(p); };
 const sonSatirlar = (yol, n) => { try { return readFileSync(yol, 'utf8').replace(/\n+$/, '').split('\n').slice(-n).join('\n'); } catch { return ''; } };
 const hata = (m, kod = 1) => { console.error(m); process.exit(kod); };
 // git/bun çağrısı: çıktı kullanıcıya akar; başarısızsa false
-const kos = (komut, args, ek = {}) => spawnSync(komut, args, { stdio: 'inherit', shell: WIN && komut === BUN, ...ek }).status === 0;
+const betik = (k) => /\.(mjs|cjs|js)$/i.test(k);
+const hazirla = (k, a) => (betik(k) ? [process.execPath, [k, ...a]] : [k, a]);
+const kos = (komut, args, ek = {}) => { const [k, a] = hazirla(komut, args); return spawnSync(k, a, { stdio: 'inherit', shell: WIN && komut === BUN && !betik(komut), ...ek }).status === 0; };
 
 function eklenti(hedefArg) {
   const hedef = resolve(hedefArg || join(EV, 'talk-to-figma-eklenti'));
@@ -60,7 +62,8 @@ switch (process.argv[2] || '') {
     const fd = openSync(LOG, 'w');
     let cocuk;
     try {
-      cocuk = spawn(BUN, ['run', 'src/socket.ts'], { cwd: TTF, detached: true, stdio: ['ignore', fd, fd], shell: WIN, windowsHide: true });
+      const [k, a] = hazirla(BUN, ['run', 'src/socket.ts']);
+      cocuk = spawn(k, a, { cwd: TTF, detached: true, stdio: ['ignore', fd, fd], shell: WIN && !betik(BUN), windowsHide: true });
     } finally { closeSync(fd); }
     cocuk.on('error', () => {});
     const pid = cocuk.pid;
