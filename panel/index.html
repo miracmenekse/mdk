@@ -176,8 +176,18 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .persona-yorum input, #persona-ekle input { font: inherit; font-size: 13px; padding: 7px 10px; border: 1px solid var(--cizgi); border-radius: 8px; background: var(--kart); color: var(--metin); min-width: 0; }
 .persona-yorum input { flex: 1; }
 .persona-yorum button, #persona-ekle button { font: inherit; font-size: 13px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; white-space: nowrap; }
-#persona-ekle { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-#persona-ekle input { flex: 1; min-width: 160px; }
+#persona-ekle { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+#persona-ekle .persona-form-baslik { grid-column: 1 / -1; margin: 0; font-size: 14px; }
+#persona-ekle .persona-alan { display: flex; flex-direction: column; gap: 2px; }
+#persona-ekle .etiket { font-size: 12px; font-weight: 600; color: var(--metin); }
+#persona-ekle .ipucu { font-size: 11px; color: var(--soluk); }
+#persona-ekle input { min-width: 0; width: 100%; box-sizing: border-box; }
+#persona-ekle .persona-hata { grid-column: 1 / -1; }
+#persona-ekle button[type="submit"] { grid-column: 1 / -1; justify-self: start; }
+.persona-geri { display: none; align-items: center; gap: 10px; margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--rozet-karar-z); color: var(--rozet-karar-m); font-size: 13px; }
+.persona-geri.acik { display: flex; }
+.persona-geri button { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: inherit; text-decoration: underline; cursor: pointer; margin-left: auto; }
+#sekme-persona :focus-visible { outline: 2px solid var(--vurgu); outline-offset: 2px; }
 
 /* Depo: elle test tetikleme */
 #test-panel { margin-top: 16px; }
@@ -490,13 +500,28 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <div role="tabpanel" id="sekme-persona" hidden>
   <h2>Persona takımı</h2>
   <p id="persona-durum" class="persona-durum" role="status"></p>
+  <div id="persona-geri" class="persona-geri" role="status"></div>
   <p class="persona-aciklama">Bu proje için fikir üreten takım. Yeni özellikte personalar reasoning yapar; çıktıları adım detayında görünür. Personayı sil, ekle ya da geri bildirim yaz.</p>
   <section id="persona-takim"></section>
   <form id="persona-ekle">
-    <input name="ad" type="text" maxlength="60" placeholder="rol adı (ör. Güvenlik)" required>
-    <input name="optimize" type="text" maxlength="200" placeholder="optimize eder…" required>
-    <input name="korluk" type="text" maxlength="200" placeholder="körlüğü…">
-    <input name="soru" type="text" maxlength="300" placeholder="sorusu…">
+    <h3 class="persona-form-baslik">Yeni persona</h3>
+    <label class="persona-alan">
+      <span class="etiket">Ad</span><span class="ipucu">rolün kısa adı</span>
+      <input name="ad" type="text" maxlength="60" placeholder="ör. Güvenlik Denetçisi" required>
+    </label>
+    <label class="persona-alan">
+      <span class="etiket">Optimize eder</span><span class="ipucu">en çok neyi gözetir</span>
+      <input name="optimize" type="text" maxlength="400" placeholder="ör. veri kaybı ve yetki riskini azaltmak" required>
+    </label>
+    <label class="persona-alan">
+      <span class="etiket">Körlüğü</span><span class="ipucu">bilerek neyi kaçırır</span>
+      <input name="korluk" type="text" maxlength="400" placeholder="ör. kullanım kolaylığını">
+    </label>
+    <label class="persona-alan">
+      <span class="etiket">Sorusu</span><span class="ipucu">her işe soracağı tek soru</span>
+      <input name="soru" type="text" maxlength="400" placeholder="ör. Yanlış giderse geri alınır mı?">
+    </label>
+    <p class="persona-hata" role="alert"></p>
     <button type="submit">Persona ekle</button>
   </form>
   </div>
@@ -512,7 +537,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
 <script type="module">
 import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
-import { adCakisir } from '/persona.mjs';
+import { adCakisir, personaSil, personaGeriEkle } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -998,7 +1023,7 @@ async function personaKaydet(yeni) {
     return false;
   }
 }
-personaTakimEl.addEventListener('click', (e) => {
+personaTakimEl.addEventListener('click', async (e) => {
   const duzenle = e.target.closest('.persona-duzenle');
   if (duzenle) {
     duzenlenen = Number(duzenle.dataset.index);
@@ -1015,11 +1040,42 @@ personaTakimEl.addEventListener('click', (e) => {
   }
   const b = e.target.closest('.persona-sil');
   if (!b) return;
-  const i = Number(b.dataset.index);
-  const liste = (sonPersonaTakim.personalar || []).slice();
-  liste.splice(i, 1);
-  personaKaydet({ ...sonPersonaTakim, personalar: liste });
+  const sonuc = personaSil(sonPersonaTakim, Number(b.dataset.index));
+  if (!sonuc) return;
+  const tamam = await personaKaydet(sonuc.takim);
+  if (tamam) geriCubuguGoster(sonuc.geri);
 });
+let geriDurum = null;
+let geriZamanlayici = null;
+const personaGeriEl = document.getElementById('persona-geri');
+function geriCubuguGizle() {
+  if (geriZamanlayici) clearTimeout(geriZamanlayici);
+  geriZamanlayici = null;
+  geriDurum = null;
+  personaGeriEl.classList.remove('acik');
+  personaGeriEl.textContent = '';
+}
+function geriCubuguGoster(geri) {
+  geriDurum = geri;
+  personaGeriEl.textContent = '';
+  const metin = document.createElement('span');
+  metin.textContent = `"${geri.persona.ad}" silindi.`;
+  const dugme = document.createElement('button');
+  dugme.type = 'button';
+  dugme.textContent = 'Geri al';
+  dugme.addEventListener('click', personaGeriAl);
+  personaGeriEl.append(metin, dugme);
+  personaGeriEl.classList.add('acik');
+  if (geriZamanlayici) clearTimeout(geriZamanlayici);
+  geriZamanlayici = setTimeout(geriCubuguGizle, 8000);
+}
+async function personaGeriAl() {
+  if (!geriDurum) return;
+  const yeni = personaGeriEkle(sonPersonaTakim, geriDurum);
+  geriCubuguGizle();
+  if (!yeni) return;
+  await personaKaydet(yeni);
+}
 personaTakimEl.addEventListener('submit', async (e) => {
   const duzenleForm = e.target.closest('.persona-duzenle-form');
   if (duzenleForm) {
@@ -1053,13 +1109,19 @@ personaTakimEl.addEventListener('submit', async (e) => {
     j === i ? { ...p, yorumlar: [...(p.yorumlar || []), { metin, ts: Date.now() }] } : p);
   personaKaydet({ ...sonPersonaTakim, personalar: liste });
 });
-personaEkleEl.addEventListener('submit', (e) => {
+personaEkleEl.addEventListener('submit', async (e) => {
   e.preventDefault();
   const g = (n) => personaEkleEl.querySelector(`[name="${n}"]`).value.trim();
   const yeni = { ad: g('ad'), optimize: g('optimize'), korluk: g('korluk'), soru: g('soru') };
-  if (!yeni.ad) return;
-  personaKaydet({ ...sonPersonaTakim, personalar: [...(sonPersonaTakim.personalar || []), yeni] });
-  personaEkleEl.reset();
+  const hataEl = personaEkleEl.querySelector('.persona-hata');
+  if (hataEl) hataEl.textContent = '';
+  if (adCakisir(sonPersonaTakim, yeni.ad)) {
+    if (hataEl) hataEl.textContent = `"${yeni.ad}" adı takımda zaten var.`;
+    return;
+  }
+  if (!yeni.ad || !yeni.optimize) return;
+  const tamam = await personaKaydet({ ...sonPersonaTakim, personalar: [...(sonPersonaTakim.personalar || []), yeni] });
+  if (tamam) personaEkleEl.reset();
 });
 const suzgecEl = document.getElementById('ara-suzgec');
 let araVeri = null;

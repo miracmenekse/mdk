@@ -64,3 +64,27 @@ export function adCakisir(takim, ad, haric = -1) {
   const anahtar = kucult(ad);
   return liste.some((p, i) => i !== haric && kucult(p?.ad) === anahtar);
 }
+
+// Verilen indeksteki personayı çıkarır; girdi takımı değiştirmez.
+// Geri almaya yarayan `{ persona, index }` bilgisini de döndürür. Geçersiz indekste null.
+export function personaSil(takim, i) {
+  const liste = takim?.personalar;
+  if (!Array.isArray(liste) || !Number.isInteger(i) || i < 0 || i >= liste.length) return null;
+  const kopya = liste.slice();
+  const [persona] = kopya.splice(i, 1);
+  return { takim: { ...takim, personalar: kopya }, geri: { persona, index: i } };
+}
+
+// Silinen personayı eski indeksine (liste kısaldıysa sona) geri ekler.
+// Aynı ad takımda hâlâ varsa null döner; girdi takım değişmez.
+export function personaGeriEkle(takim, geri) {
+  const liste = takim?.personalar;
+  const persona = geri?.persona;
+  if (!Array.isArray(liste) || !persona) return null;
+  if (adCakisir(takim, persona.ad)) return null;
+  const kopya = liste.slice();
+  const index = geri.index;
+  const i = Number.isInteger(index) && index >= 0 && index <= kopya.length ? index : kopya.length;
+  kopya.splice(i, 0, persona);
+  return { ...takim, personalar: kopya };
+}

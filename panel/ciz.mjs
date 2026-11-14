@@ -272,7 +272,7 @@ export function personaBalonlarHtml(ozet) {
 // gövdede optimize eder / körlüğü / sorusu alanları. duzenlenen indeksi yerinde düzenleme formu gösterir.
 export function personaTakimHtml(takim, duzenlenen = -1) {
   const liste = (takim && takim.personalar) || [];
-  if (liste.length === 0) return '<span class="bos">persona takımı yok</span>';
+  if (liste.length === 0) return '<span class="bos">henüz persona yok — aşağıdaki formdan ekle</span>';
   const renkler = ['persona-a', 'persona-b', 'persona-c', 'persona-d'];
   return liste.map((p, i) => {
     const yorumlar = (p.yorumlar || [])
