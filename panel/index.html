@@ -353,6 +353,19 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .akis-tablo .cubuk.belirsiz span { opacity: .55; }
 .akis-tablo .yuzde { font-size: 12px; color: var(--soluk); margin-left: 6px; font-variant-numeric: tabular-nums; }
 
+/* Geliştirme sekmesi: Epic satırı + akordiyon gövdesi */
+.epic-satir { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 4px; border-bottom: 1px solid var(--cizgi); cursor: pointer; }
+.epic-satir:hover { background: var(--zemin); }
+.epic-satir .epic-ad { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.epic-satir .epic-ilerleme { color: var(--soluk); font-size: 13px; font-variant-numeric: tabular-nums; }
+.rozet.epic-analiz { background: var(--rozet-karar-z); color: var(--rozet-karar-m); }
+.rozet.epic-tasarim { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
+.rozet.epic-gelistirme { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
+.rozet.epic-tamamlandi { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.epic-detay { font: inherit; font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
+.epic-detay.uyari { border-color: var(--rozet-eskale-m); background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
+.epic-govde { margin-left: 18px; margin-bottom: 10px; }
+
 /* adım detay drawer + overlay */
 #drawer-overlay { position: fixed; inset: 0; background: rgba(17, 20, 24, .38); z-index: 40; }
 #drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 92vw); background: var(--kart); border-left: 1px solid var(--cizgi); box-shadow: -8px 0 28px rgba(0, 0, 0, .18); z-index: 41; overflow-y: auto; }
@@ -412,7 +425,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <h2>Şu an</h2>
   <section id="simdi" class="kart"><span class="bos">boşta</span></section>
 
-  <h2>Adımlar</h2>
+  <h2>Epic'ler</h2>
   <section id="kategoriler"></section>
   </div>
 
@@ -473,7 +486,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, drawerHtml, drawerImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -538,6 +551,7 @@ sekmeSec();
 let sonSimdi = null;
 let sonD = null;   // son SSE verisi; araştırma gelince KPI kartlarını yeniden çizmek için
 let sonPlan = null;
+let epicAcik = {};   // Epic sırası → açık mı (kullanıcı tercihi)
 let zamanlayici = null;
 
 // --- adım detay drawer (v3: satıra tıkla → yan panel) ---
@@ -617,9 +631,30 @@ function drawerKapat() {
   drawerZaman = null;
 }
 
+// Epic satırı: o anki görünen durumun tersine çevir, yeniden çiz
+function epicDegistir(epic) {
+  const sira = epic.dataset.epic;
+  epicAcik[sira] = epic.getAttribute('aria-expanded') !== 'true';
+  planCiz();
+}
+
 kategorilerEl.addEventListener('click', (e) => {
+  // .epic-detay tıklaması burada işlenmez (ayrı adımda bağlanacak)
+  if (e.target.closest('.epic-detay')) return;
   const satir = e.target.closest('[data-adim]');
-  if (satir) drawerAc(Number(satir.dataset.adim));
+  if (satir) {
+    drawerAc(Number(satir.dataset.adim));
+    return;
+  }
+  const epic = e.target.closest('.epic-satir');
+  if (epic) epicDegistir(epic);
+});
+kategorilerEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const epic = e.target.closest('.epic-satir');
+  if (!epic) return;
+  e.preventDefault();
+  epicDegistir(epic);
 });
 drawerEl.addEventListener('click', (e) => {
   if (e.target.closest('#drawer-kapat')) drawerKapat();
@@ -701,7 +736,7 @@ function suAnCiz() {
 
 function planCiz() {
   if (!sonPlan) return;
-  kategorilerEl.innerHTML = akisTablosuHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler, sonD?.etki || []);
+  kategorilerEl.innerHTML = gelistirmeHtml(sonPlan.plan, sonSimdi, sonPlan.gecmis, sonPlan.incelemeler, sonD?.etki || [], sonD?.epikler || [], epicAcik);
 }
 
 function ciz(d) {

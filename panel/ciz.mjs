@@ -297,42 +297,107 @@ export function personaTakimHtml(takim) {
 
 // v3 Akış düz ADIMLAR tablosu: Adım / İlerleme / Durum. Her satır data-adim=<no> (tıklanabilir,
 // drawer'ı açar). Gruplu kategori / deneme-genişletme / "sadece sorunlu" süzgeci YOK (planHtml ayrı).
+function storySatiriHtml(a, g, simdi, etki) {
+  const asama = adimAsama(a, simdi, etki);
+  const calisiyorMu = asama.sinif === 'calisiyor';
+  const gercek = g ? (g.denemeler || []).filter((x) => !denemeDegilMi(x)) : [];
+  const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
+  const mp = [];
+  if (calisiyorMu && simdi) {
+    if (simdi.model) mp.push(esc(simdi.model));
+    if (simdi.deneme != null) mp.push(`${esc(simdi.deneme)}. deneme`);
+  } else if (rep) {
+    if (rep.model) mp.push(esc(rep.model));
+    if (gercek.length) mp.push(`${gercek.length} deneme`);
+    if (rep.sure_sn != null) mp.push(`${esc(rep.sure_sn)} sn`);
+    if (rep.token != null) mp.push(`${Math.round(rep.token).toLocaleString('tr-TR')} token`);
+  }
+  const meta = mp.length ? `<div class="meta">${mp.join(' · ')}</div>` : '';
+  const yuzde = asama.yuzde;
+  const secili = calisiyorMu ? ' secili' : '';
+  return `<tr class="adim-satir ${asama.sinif}${secili}" data-adim="${esc(a.no)}" tabindex="0">` +
+    `<td class="ad"><span class="no">${esc(a.no)}</span> ${esc(a.baslik)}${meta}</td>` +
+    `<td class="ilerleme"><div class="cubuk"><span style="width:${yuzde}%"></span></div><span class="yuzde">%${yuzde}</span></td>` +
+    `<td class="durum">${rozet(asama.sinif, asama.etiket)}</td>` +
+    '</tr>';
+}
+
 export function akisTablosuHtml(plan, simdi, gecmis, incelemeler, etki = []) {
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
   const satirlar = [];
   for (const k of (plan && plan.kategoriler) || []) {
     for (const a of k.adimlar) {
-      const g = gecmisMap.get(a.no);
-      const asama = adimAsama(a, simdi, (etki || []).find((e) => e.no === a.no));
-      const calisiyorMu = asama.sinif === 'calisiyor';
-      const gercek = g ? (g.denemeler || []).filter((x) => !denemeDegilMi(x)) : [];
-      const rep = gercek.find((x) => x.gecti === true) || gercek[gercek.length - 1] || null;
-      const mp = [];
-      if (calisiyorMu && simdi) {
-        if (simdi.model) mp.push(esc(simdi.model));
-        if (simdi.deneme != null) mp.push(`${esc(simdi.deneme)}. deneme`);
-      } else if (rep) {
-        if (rep.model) mp.push(esc(rep.model));
-        if (gercek.length) mp.push(`${gercek.length} deneme`);
-        if (rep.sure_sn != null) mp.push(`${esc(rep.sure_sn)} sn`);
-        if (rep.token != null) mp.push(`${Math.round(rep.token).toLocaleString('tr-TR')} token`);
-      }
-      const meta = mp.length ? `<div class="meta">${mp.join(' · ')}</div>` : '';
-      const yuzde = asama.yuzde;
-      const secili = calisiyorMu ? ' secili' : '';
-      satirlar.push(
-        `<tr class="adim-satir ${asama.sinif}${secili}" data-adim="${esc(a.no)}" tabindex="0">` +
-        `<td class="ad"><span class="no">${esc(a.no)}</span> ${esc(a.baslik)}${meta}</td>` +
-        `<td class="ilerleme"><div class="cubuk"><span style="width:${yuzde}%"></span></div><span class="yuzde">%${yuzde}</span></td>` +
-        `<td class="durum">${rozet(asama.sinif, asama.etiket)}</td>` +
-        '</tr>',
-      );
+      satirlar.push(storySatiriHtml(a, gecmisMap.get(a.no), simdi, (etki || []).find((e) => e.no === a.no)));
     }
   }
   return (
     '<table class="akis-tablo"><thead><tr><th class="ad">Adım</th><th class="ilerleme">İlerleme</th><th class="durum">Durum</th></tr></thead>' +
     `<tbody>${satirlar.reverse().join('')}</tbody></table>`
   );
+}
+
+const EPIC_ETIKET = { analiz: 'Analiz', tasarim: 'Tasarım', gelistirme: 'Geliştirme', tamamlandi: 'Tamamlandı' };
+
+// Geliştirme sekmesi: her kategori bir Epic satırı; açık Epic'in altında yalnız kendi
+// story'lerini gösteren tablo (yeni adım üstte). Açık/kapalı tercihi acik[sira] ile.
+export function gelistirmeHtml(plan, simdi, gecmis, incelemeler, etki = [], epikler = [], acik = {}) {
+  if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
+  const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));
+  const etkiList = etki || [];
+  const epikList = epikler || [];
+  const ogeler = plan.kategoriler.map((kat, sira) => {
+    const adimlar = kat.adimlar || [];
+    const biten = adimlar.filter((a) => a.bitti).length;
+    const kayit = epikList.find((e) => e.ad === kat.ad);
+    let statu;
+    if (kayit?.statu) statu = kayit.statu;
+    else if (adimlar.length && biten === adimlar.length) statu = 'tamamlandi';
+    else if (adimlar.length) statu = 'gelistirme';
+    else statu = 'analiz';
+    const acikMi = typeof acik[sira] === 'boolean' ? acik[sira] : statu !== 'tamamlandi';
+    return { kat, sira, adimlar, biten, kayit, statu, acikMi };
+  });
+  // açık işi olan Epic'ler önce, tamamlananlar sonra; her grupta dosyada sonra gelen üstte
+  const sirali = [
+    ...ogeler.filter((x) => x.statu !== 'tamamlandi').sort((a, b) => b.sira - a.sira),
+    ...ogeler.filter((x) => x.statu === 'tamamlandi').sort((a, b) => b.sira - a.sira),
+  ];
+  let html = '';
+  for (const x of sirali) {
+    let dugme = '';
+    if (x.kat.no != null && x.kat.no !== '') {
+      const tartismaBitti = x.kayit?.tartisma?.durum === 'bitti' && !x.kayit.onay && x.statu !== 'tamamlandi';
+      const bekleyen = x.adimlar.filter((a) => etkiList.some((e) => e.no === a.no && !e.bitti && !e.onay)).length;
+      let sinif = 'epic-detay';
+      let metin = 'Detay';
+      if (tartismaBitti) {
+        sinif += ' uyari';
+        metin = 'Detay · çözüm onayı bekliyor';
+      } else if (bekleyen > 0) {
+        sinif += ' uyari';
+        metin = `Detay · ${bekleyen} story karar bekliyor`;
+      }
+      dugme = `<button type="button" class="${sinif}" data-epic-no="${esc(x.kat.no)}">${esc(metin)}</button>`;
+    }
+    html += `<div class="epic-satir" data-epic="${x.sira}" tabindex="0" aria-expanded="${x.acikMi ? 'true' : 'false'}">` +
+      `<span class="epic-ad">${esc(x.kat.ad)}</span>` +
+      `<span class="epic-ilerleme">${esc(x.biten)} / ${esc(x.adimlar.length)}</span>` +
+      `<span class="rozet epic-${esc(x.statu)}">${esc(EPIC_ETIKET[x.statu] || x.statu)}</span>` +
+      dugme +
+      '</div>';
+    if (!x.acikMi) continue;
+    html += '<div class="epic-govde">';
+    if (x.adimlar.length === 0) {
+      html += '<p class="bos">henüz story yok</p>';
+    } else {
+      const satirlar = [...x.adimlar].reverse()
+        .map((a) => storySatiriHtml(a, gecmisMap.get(a.no), simdi, etkiList.find((e) => e.no === a.no)));
+      html += '<table class="akis-tablo"><thead><tr><th class="ad">Story</th><th class="ilerleme">İlerleme</th><th class="durum">Durum</th></tr></thead>' +
+        `<tbody>${satirlar.join('')}</tbody></table>`;
+    }
+    html += '</div>';
+  }
+  return html;
 }
 
 // adım detay drawer'ı (kart=sekme tasarımı): başlık (ADIM no + ad + kapat), durum satırı,
@@ -553,7 +618,7 @@ export function kpiHtml(snap, ara) {
   };
   let kartlar = '';
   if (depo?.var) kartlar += kart('depo', 'Depo', ileri ?? '—', 'bekleyen commit', degisik);
-  kartlar += kart('akis', 'Akış', biten, 'biten adım', sorunluAdim);
+  kartlar += kart('akis', 'Geliştirme', biten, 'biten story', sorunluAdim);
   kartlar += kart('modeller', 'Modeller', modeller.length || '—', 'etkin model', sorunluModel);
   kartlar += kart('arastirma', 'Araştırma', adaylar ?? '—', 'araştırma notu', 0);
   const pSay = (snap?.personaTakim?.personalar || []).length;
