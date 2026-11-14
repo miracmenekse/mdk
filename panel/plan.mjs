@@ -20,7 +20,9 @@ export function parse(text) {
     const satir = ham.trimEnd();
     const kat = satir.match(/^##\s+(.*)$/);
     if (kat) {
-      kategori = { ad: kat[1].trim(), adimlar: [] };
+      const ad = kat[1].trim();
+      const nm = ad.match(/^(?:Epic|Faz)\s+(\d+(?:\.\d+)?)\b/);
+      kategori = { ad, no: nm ? nm[1] : null, durum: null, tartisma: null, etki: null, figma: null, onay: false, adimlar: [] };
       sonuc.kategoriler.push(kategori);
       adim = null;
       continue;
@@ -42,7 +44,7 @@ export function parse(text) {
         figma: null,
       };
       if (!kategori) {
-        kategori = { ad: '', adimlar: [] };
+        kategori = { ad: '', no: null, durum: null, tartisma: null, etki: null, figma: null, onay: false, adimlar: [] };
         sonuc.kategoriler.push(kategori);
       }
       kategori.adimlar.push(adim);
@@ -50,14 +52,35 @@ export function parse(text) {
     }
 
     const onay = satir.match(/^\s*-\s+Onay:\s*evet\b/i);
-    if (onay && adim) {
-      adim.onay = true;
+    if (onay) {
+      if (adim) adim.onay = true;
+      else if (kategori) kategori.onay = true;
       continue;
     }
 
-    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma):\s*(.*)$/);
-    if (alan && adim) {
+    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma|Durum|Tartışma):\s*(.*)$/);
+    if (alan) {
       const [, anahtar, deger] = alan;
+      if (!adim) {
+        // kategori alanları yalnız ilk adımdan önce geçerlidir
+        if (kategori) {
+          if (anahtar === 'Durum') {
+            const y = deger.trim();
+            kategori.durum = ['analiz', 'tasarim', 'gelistirme'].includes(y) ? y : null;
+          } else if (anahtar === 'Tartışma') {
+            const y = deger.trim();
+            kategori.tartisma = y.startsWith('epic/') && !y.includes('..') ? y : null;
+          } else if (anahtar === 'Etki') {
+            kategori.etki = deger.trim() || null;
+          } else if (anahtar === 'Figma') {
+            const y = deger.trim();
+            kategori.figma = /^https:\/\/(www\.)?figma\.com\//.test(y) ? y : null;
+          }
+        }
+        continue;
+      }
+      // adım altındaki Durum/Tartışma yok sayılır
+      if (anahtar === 'Durum' || anahtar === 'Tartışma') continue;
       if (anahtar === 'Kapı') adim.kapilar.push(temizle(deger));
       else if (anahtar === 'Yürütücü') adim.yurutucu = deger.trim() || null;
       else if (anahtar === 'Etki') adim.etki = deger.trim() || null;
@@ -89,6 +112,15 @@ export function parse(text) {
       a.kapi = a.kapilar[0] ?? null;
     }
   }
-  sonuc.kategoriler = sonuc.kategoriler.filter((k) => k.adimlar.length > 0);
+  sonuc.kategoriler = sonuc.kategoriler.filter((k) => k.adimlar.length > 0 || k.durum !== null);
   return sonuc;
+}
+
+export function epicDurum(kat) {
+  if (!kat || typeof kat !== 'object') return 'analiz';
+  const adimlar = Array.isArray(kat.adimlar) ? kat.adimlar : [];
+  if (adimlar.length > 0 && adimlar.every((a) => a && a.bitti)) return 'tamamlandi';
+  if (kat.durum) return kat.durum;
+  if (adimlar.length > 0) return 'gelistirme';
+  return 'analiz';
 }

@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
-import { parse } from './plan.mjs';
+import { parse, epicDurum } from './plan.mjs';
 import { tahmin } from './tahmin.mjs';
 import { gecmis } from './gecmis.mjs';
 import { telemetri } from './telemetri.mjs';
@@ -11,7 +11,7 @@ import { claudeKullanim } from './claude.mjs';
 import { kararlar } from './karar.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -155,8 +155,11 @@ export function snapshot(dir) {
   }
 
   // adım başına dosyada en sonda görülen karar geçerlidir
+  const tumKararlar = kararlar(dir);
   const sonKarar = new Map();
-  for (const k of kararlar(dir)) sonKarar.set(k.no, k);
+  for (const k of tumKararlar) sonKarar.set(k.no, k);
+  const sonEpicKarar = new Map();
+  for (const k of tumKararlar) if (k.epic !== undefined && k.epic !== null) sonEpicKarar.set(k.epic, k);
 
   try {
     const pid = Number(readFileSync(join(dir, 'etki', '.karar-izleyici'), 'utf8').trim());
@@ -173,6 +176,33 @@ export function snapshot(dir) {
   }
 
   if (sonuc.plan) {
+    for (const k of sonuc.plan.kategoriler) {
+      let tartisma = null;
+      if (k.tartisma) {
+        let durum = null;
+        try {
+          const t = JSON.parse(readFileSync(join(dir, k.tartisma, 'tartisma.json'), 'utf8'));
+          durum = t && typeof t === 'object' && 'durum' in t ? t.durum : null;
+        } catch {
+          durum = null; // dosya yok ya da bozuk
+        }
+        tartisma = { yol: k.tartisma, durum };
+      }
+      const karar = k.no !== null ? sonEpicKarar.get(k.no) ?? null : null;
+      sonuc.epikler.push({
+        no: k.no,
+        ad: k.ad,
+        statu: epicDurum(k),
+        biten: k.adimlar.filter((a) => a.bitti).length,
+        toplam: k.adimlar.length,
+        tartisma,
+        etki: k.etki ?? null,
+        figma: k.figma ?? null,
+        onay: k.onay === true,
+        karar,
+        alindi: karar !== null && karar.ts <= isaret,
+      });
+    }
     for (const k of sonuc.plan.kategoriler) {
       for (const a of k.adimlar) {
         if (!a.etki) continue;
