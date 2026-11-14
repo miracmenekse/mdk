@@ -457,6 +457,157 @@ export function drawerHtml(adim, etkiKartiHtml) {
   );
 }
 
+// çözüm metni: `## başlık` → h4, `- `/`* `/`1. ` satırları → ul/li, diğer satırlar → p.
+function cozumHtml(metin) {
+  const satirlar = String(metin).split('\n');
+  let html = '';
+  let liste = false;
+  const listeKapat = () => {
+    if (liste) {
+      html += '</ul>';
+      liste = false;
+    }
+  };
+  for (const ham of satirlar) {
+    const satir = ham.trim();
+    if (!satir) {
+      listeKapat();
+      continue;
+    }
+    const baslik = satir.match(/^##\s+(.+)$/);
+    if (baslik) {
+      listeKapat();
+      html += `<h4>${esc(baslik[1])}</h4>`;
+      continue;
+    }
+    const madde = satir.match(/^(?:[-*]|\d+\.)\s+(.*)$/);
+    if (madde) {
+      if (!liste) {
+        html += '<ul>';
+        liste = true;
+      }
+      html += `<li>${esc(madde[1])}</li>`;
+      continue;
+    }
+    listeKapat();
+    html += `<p>${esc(satir)}</p>`;
+  }
+  listeKapat();
+  return html;
+}
+
+// Epic tartışma turundaki bir mesajı persona balonu olarak çizer; renk personanın
+// tartisma.personalar içindeki sırasına göre (aynı persona her turda aynı renk).
+function epicBalon(mesaj, personalar) {
+  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  const ad = mesaj?.persona ?? '—';
+  const sira = Math.max(0, (personalar || []).findIndex((p) => p.ad === ad));
+  const renk = renkler[sira % renkler.length];
+  const govde = esc(mesaj?.metin ?? '').replace(/\n+/g, '<br>');
+  return `<div class="persona-balon ${renk}">` +
+    `<span class="avatar">${esc(basHarf(ad))}</span>` +
+    `<div class="icerik"><span class="rol">${esc(ad)}</span>` +
+    `<p class="metin">${govde}</p></div></div>`;
+}
+
+// Epic detay çekmecesi: TARTIŞMA, ÇÖZÜM, UI/UX ETKİSİ, KARAR.
+export function epicDrawerHtml(epik, tartisma, izleyici = false) {
+  const e = epik || {};
+  const statu = e.statu || 'analiz';
+  const personalar = tartisma?.personalar || [];
+  const turlar = Array.isArray(tartisma?.turlar) ? tartisma.turlar : [];
+  let html = '<div class="drawer-ic">' +
+    '<div class="drawer-bas">' +
+    `<div><span class="etiket">EPIC</span> <b>${esc(e.no ?? '—')}</b></div>` +
+    '<button type="button" id="drawer-kapat" aria-label="kapat">×</button>' +
+    '</div>' +
+    `<h2 class="drawer-baslik">${esc(e.ad || '—')}</h2>` +
+    `<div class="drawer-durum">${rozet('epic-' + statu, EPIC_ETIKET[statu] || statu)}</div>`;
+
+  // (1) TARTIŞMA
+  html += '<h3 class="drawer-bolum">TARTIŞMA</h3>';
+  if (!tartisma) {
+    html += '<p class="bos">bu Epic için persona tartışması yok</p>';
+  } else {
+    if (tartisma.durum === 'suruyor') html += '<p class="not">tartışma sürüyor…</p>';
+    else if (tartisma.durum === 'yetersiz') html += '<p class="hata">tartışma tamamlanamadı (yeterli yanıt yok)</p>';
+    if (tartisma.neden) html += `<p class="not">${esc(tartisma.neden)}</p>`;
+    for (const tur of turlar) {
+      html += `<h4>Tur ${esc(tur?.tur ?? '—')} · ${esc(tur?.ad ?? '—')}</h4>`;
+      for (const mesaj of (tur?.mesajlar || [])) html += epicBalon(mesaj, personalar);
+    }
+  }
+
+  // (2) ÇÖZÜM
+  html += '<h3 class="drawer-bolum">ÇÖZÜM</h3>';
+  html += tartisma?.cozum?.metin
+    ? cozumHtml(tartisma.cozum.metin)
+    : '<p class="bos">henüz çözüm yok</p>';
+
+  // (3) UI/UX ETKİSİ
+  html += '<h3 class="drawer-bolum">UI/UX ETKİSİ</h3>';
+  if (e.etki) {
+    const src = '/dosya?yol=' + encodeURIComponent(e.etki);
+    const once = esc(src) + '&goster=once';
+    const sonra = esc(src) + '&goster=sonra';
+    html += '<div class="kroki">' +
+      '<div><div class="etiket">önce</div>' +
+      `<button type="button" class="buyut" data-src="${once}" aria-label="önce taslağını büyüt"></button>` +
+      `<iframe loading="lazy" src="${once}"></iframe></div>` +
+      '<div><div class="etiket">sonra</div>' +
+      `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
+      `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
+      '</div>';
+  } else {
+    html += '<p class="bos">taslak yok</p>';
+  }
+  if (e.figma) html += figmaBilgi(e);
+  if (statu !== 'tamamlandi') {
+    html += `<form class="epic-karar" data-epic="${esc(e.no)}">` +
+      '<button type="submit" name="tur" value="figma">Figma\'da çiz</button>' +
+      '</form>';
+  }
+
+  // (4) KARAR
+  if (statu !== 'tamamlandi') {
+    html += '<h3 class="drawer-bolum">KARAR</h3>';
+    if (e.onay) {
+      html += '<p class="karar-durum">çözüm onaylandı</p>';
+    } else if (tartisma?.durum === 'bitti') {
+      html += `<form class="epic-karar" data-epic="${esc(e.no)}">` +
+        '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
+        '<button type="submit" name="tur" value="onay">Çözümü onayla</button>' +
+        '<button type="submit" name="tur" value="red">Reddet</button>' +
+        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
+        `<p class="karar-durum">${kararDurum(e, izleyici)}</p>` +
+        '</form>';
+    } else {
+      html += '<p class="bos">karar için önce tartışma bitmeli</p>';
+    }
+  }
+
+  return html + '</div>';
+}
+
+// Açık Epic çekmecesinin canlı yenileme imzası; başlık (ad) imzayı değiştirmez.
+export function epicImza(epik, tartisma) {
+  const e = epik || {};
+  const t = tartisma || {};
+  const turlar = Array.isArray(t.turlar) ? t.turlar : [];
+  const mesajSayisi = turlar.reduce((n, tur) => n + (Array.isArray(tur?.mesajlar) ? tur.mesajlar.length : 0), 0);
+  return JSON.stringify([
+    e.statu ?? null,
+    e.onay ?? null,
+    e.figma ?? null,
+    e.etki ?? null,
+    e.karar?.ts ?? null,
+    e.alindi ?? null,
+    t.durum ?? null,
+    mesajSayisi,
+    t.cozum?.metin?.length ?? null,
+  ]);
+}
+
 export function planHtml(plan, simdi, gecmis, incelemeler, acik = {}, secenek = {}) {
   if (!plan || !Array.isArray(plan.kategoriler)) return '<span class="bos">PLAN.md bulunamadı</span>';
   const gecmisMap = new Map((gecmis || []).map((g) => [g.no, g]));

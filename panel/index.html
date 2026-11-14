@@ -383,6 +383,11 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 #drawer .ilerleme span { display: block; height: 100%; background: var(--vurgu); }
 #drawer .yuzde { font-size: 12px; color: var(--soluk); }
 .drawer-bolum { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--soluk); margin: 20px 0 10px; text-transform: uppercase; }
+.drawer-ic h4 { font-size: 13px; margin: 14px 0 6px; }
+.epic-karar { margin: 10px 0 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
+.epic-karar textarea { flex: 1 1 100%; font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); resize: vertical; }
+.epic-karar button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
+.epic-karar button:disabled { opacity: .5; cursor: default; }
 #drawer .bos { color: var(--bos); font-style: italic; font-size: 13px; }
 
 /* persona düşünceleri balonları */
@@ -486,7 +491,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
 const simdiEl = document.getElementById('simdi');
@@ -558,6 +563,9 @@ let zamanlayici = null;
 const drawerEl = document.getElementById('drawer');
 const drawerOverlayEl = document.getElementById('drawer-overlay');
 let drawerAdim = null;   // açık drawer'ın adım no'su
+let drawerEpic = null;   // açık drawer'ın epic no'su (drawer kapatınca null)
+let drawerEpicTartisma = null; // çekmecedeki epic'in son çekilen tartışma verisi
+let drawerEpicSonImza = null;  // epic çekmecesinin en son çizilen veri imzası
 let drawerZaman = null;  // çalışan adımda geçen süre sayacı
 let drawerSonImza = null; // açık drawer'ın en son çizilen veri imzası
 
@@ -600,6 +608,9 @@ function drawerSureGuncelle() {
 
 async function drawerAc(no) {
   drawerAdim = no;
+  drawerEpic = null;
+  drawerEpicTartisma = null;
+  drawerEpicSonImza = null;
   const aObj = drawerAdimNesnesi(no);
   const etkiE = (sonD?.etki || []).find((x) => x.no === no);
   drawerEl.innerHTML = drawerHtml(aObj, etkiE ? etkiKartiHtml(etkiE, sonD?.kararIzleyici) : null);
@@ -621,11 +632,38 @@ async function drawerAc(no) {
   if (drawerAdim === no) drawerSonImza = drawerImza(aObj, etkiE);
 }
 
+// Epic çekmecesi: /api/epic?no= ile tam tartışma verisini çekip drawer'ı çizer.
+async function epicDrawerAc(no) {
+  drawerAdim = null;
+  drawerEpic = no;
+  clearInterval(drawerZaman);
+  drawerZaman = null;
+  const epik = (sonD?.epikler || []).find((e) => e.no === no) || null;
+  let tartisma = null;
+  try {
+    const j = await (await fetch('/api/epic?no=' + encodeURIComponent(no))).json();
+    tartisma = j.tartisma ?? null;
+  } catch {
+    tartisma = null;
+  }
+  if (drawerEpic !== no) return;
+  const kayit = epik || { no, ad: '', statu: 'analiz' };
+  drawerEpicTartisma = tartisma;
+  drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici);
+  drawerEl.hidden = false;
+  drawerOverlayEl.hidden = false;
+  document.body.classList.add('drawer-acik');
+  drawerEpicSonImza = epicImza(kayit, tartisma);
+}
+
 function drawerKapat() {
   drawerEl.hidden = true;
   drawerOverlayEl.hidden = true;
   document.body.classList.remove('drawer-acik');
   drawerAdim = null;
+  drawerEpic = null;
+  drawerEpicTartisma = null;
+  drawerEpicSonImza = null;
   drawerSonImza = null;
   clearInterval(drawerZaman);
   drawerZaman = null;
@@ -639,8 +677,11 @@ function epicDegistir(epic) {
 }
 
 kategorilerEl.addEventListener('click', (e) => {
-  // .epic-detay tıklaması burada işlenmez (ayrı adımda bağlanacak)
-  if (e.target.closest('.epic-detay')) return;
+  const detay = e.target.closest('.epic-detay');
+  if (detay) {
+    epicDrawerAc(detay.dataset.epicNo);
+    return;
+  }
   const satir = e.target.closest('[data-adim]');
   if (satir) {
     drawerAc(Number(satir.dataset.adim));
@@ -722,6 +763,49 @@ drawerEl.addEventListener('submit', async (e) => {
   }
 });
 
+// Epic karar formu: figma (metinsiz) ile onay/red/yorum aynı uca gider.
+drawerEl.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form.epic-karar');
+  if (!form) return;
+  e.preventDefault();
+  const tur = e.submitter.value;
+  const epic = form.dataset.epic;
+  const textarea = form.querySelector('textarea');
+  const dugmeler = form.querySelectorAll('button');
+  dugmeler.forEach((b) => { b.disabled = true; });
+  // form drawer kapanınca kaybolabilir: o an açık olanı bul
+  const canli = () => drawerEl.querySelector(`form.epic-karar[data-epic="${epic}"]`) || form;
+  const durumYaz = (metin, hata = false) => {
+    const d = canli().querySelector('.karar-durum');
+    if (!d) return;
+    d.textContent = metin;
+    d.classList.toggle('hata', hata);
+  };
+  durumYaz('gönderiliyor…');
+  try {
+    const yanit = await fetch('/api/karar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ epic, tur, metin: textarea ? textarea.value : '' }),
+    });
+    const f = canli();
+    if (yanit.ok) {
+      const ta = f.querySelector('textarea');
+      if (ta) ta.value = '';
+      durumYaz('gönderildi');
+    } else {
+      // gövde JSON değilse (ör. 413 boş gövde) HTTP kodu yazılır
+      let hata = 'HTTP ' + yanit.status;
+      try { hata = (await yanit.json()).hata || hata; } catch {}
+      durumYaz(hata, true);
+    }
+  } catch {
+    durumYaz('panel sunucusuna ulaşılamadı', true);
+  } finally {
+    canli().querySelectorAll('button').forEach((b) => { b.disabled = false; });
+  }
+});
+
 // sayaç yalnızca durum 'calisiyor' ya da 'regresyon' iken akar
 function suAnCiz() {
   clearInterval(zamanlayici);
@@ -770,6 +854,26 @@ function ciz(d) {
     const yeniImza = drawerImza(adimAcik, etkiAcik);
     const not = drawerEl.querySelector('textarea[name=metin]');
     if (yeniImza !== drawerSonImza && (!not || not.value === '')) drawerAc(drawerAdim);
+  }
+  // açık epic çekmecesi: tartışma/çözüm/karar değişince, not yazılmıyorsa yeniden çiz
+  if (drawerEpic != null) {
+    const no = drawerEpic;
+    const epik = (d.epikler || []).find((e) => e.no === no) || null;
+    fetch('/api/epic?no=' + encodeURIComponent(no))
+      .then((y) => y.json())
+      .then((j) => {
+        if (drawerEpic !== no) return;
+        const tartisma = j.tartisma ?? null;
+        const kayit = epik || { no, ad: '', statu: 'analiz' };
+        const yeniImza = epicImza(kayit, tartisma);
+        const not = drawerEl.querySelector('textarea[name=metin]');
+        if (yeniImza !== drawerEpicSonImza && (!not || not.value === '')) {
+          drawerEpicTartisma = tartisma;
+          drawerEpicSonImza = yeniImza;
+          drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, d.kararIzleyici);
+        }
+      })
+      .catch(() => {});
   }
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   kapiUretimEl.innerHTML = kapiUretimHtml(d.kapiUretim);
