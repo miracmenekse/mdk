@@ -7,10 +7,10 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 ## Kim neyi okur
 - **Claude (planlayan):** bu dosya + `~/.claude/CLAUDE.md` + `ba-pm-bakis` becerisi.
 - **Yürütücü (opencode/cursor):** `yurutucu-kurallar.md` (koşturucu isteme ekler) + PLAN başındaki `Kurallar` bloğu + adım metni. Bu dosyayı ve `~/.claude/skills`'i GÖRMEZ (`OPENCODE_DISABLE_CLAUDE_CODE=1`). Yürütücünün bilmesi gereken proje bilgisi varsa proje köküne `AGENTS.md` yaz, buraya değil.
-- **Kural kaynakları tek yerde:** genel kurallar `esit/` altında, `bash mdk-esitle.sh` onları `~/.config/opencode` ve `~/.claude`'a kurar. Kuralı hedefte değil `esit/`'te değiştir. Model adlarını hiçbir kural dosyasına yazma: tek kaynak PLAN.md başındaki `Görev <tür>:` satırları.
+- **Kural kaynakları tek yerde:** genel kurallar `esit/` altında, `node mdk-esitle.mjs` onları `~/.config/opencode` ve `~/.claude`'a kurar. Kuralı hedefte değil `esit/`'te değiştir. Model adlarını hiçbir kural dosyasına yazma: tek kaynak PLAN.md başındaki `Görev <tür>:` satırları.
 
 ## Süreç
-- **Adlar:** arayüzde Faz = **Epic**, Adım = **Story**. Dosya biçimi ve koşturucu aynı (`- [ ] N.`, `mdk-adim.sh <no>`). Epic statüsü: Analiz → Tasarım → Geliştirme → Tamamlandı (tüm story'ler bitince kendiliğinden).
+- **Adlar:** arayüzde Faz = **Epic**, Adım = **Story**. Dosya biçimi ve koşturucu aynı (`- [ ] N.`, `mdk-adim.mjs <no>`). Epic statüsü: Analiz → Tasarım → Geliştirme → Tamamlandı (tüm story'ler bitince kendiliğinden).
 - **Epic akışının sahibi `mdk-epic.mjs`** (kural değil kod; yanlış sırayı reddeder, kendi değişikliğini commit eder). Sıradaki hamleyi tahmin etme: `node mdk-epic.mjs durum`.
   - İş gelince: işi bir dosyaya yaz, `node mdk-epic.mjs ac "<ad>" <dosya>` → Epic no.
   - Kullanıcı tartışma istemediyse (varsayılan): story'leri yaz, `node mdk-epic.mjs gelistir <no>`, koştur.
@@ -19,16 +19,16 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
   - `epic <no> onay` gelince: `node mdk-epic.mjs karar <no> onay` → story'leri yaz → `gelistir <no>` → koştur.
 - **Yalın Kip (varsayılan):** kullanıcının doğrudan tarif ettiği işte ve Faz içi adımlarda persona turu, benchmark, etki krokisi yok. `ba-pm-bakis` yalnız yeni Faz başında 1 kez ya da kullanıcı isteyince.
 - **Adım = dikey dilim:** 1–3 dosya, ~60–250 satır, 1 kapı. `Ne:` satırına hedef `dosya:satır-aralığı` yaz. Yeni adımları son numaradan devam ettir.
-- **Çalıştırma:** planı commit et (temiz ağaç şart), `./mdk-adim.sh <no>`. Sırayla şunları yapar:
+- **Çalıştırma:** planı commit et (temiz ağaç şart), `node mdk-adim.mjs <no>`. Sırayla şunları yapar:
   1. Ön regresyon (`HEPSI_HIZLI=1 test/hepsi.sh`); kırmızıysa çıkış 4.
   2. Kapı dosyası diskte yoksa `Görev kapi:` modeline yazdırır. Kabul şartı: yalnız istenen dosya, sözdizimi temiz, kod yazılmadan kırmızı. `UYARI: zayıf kapı` basarsa `Kapı:` metnini davranışa göre netleştir.
   3. `Görev <tür>:` modelleriyle kodu yazdırır (adımda `- Görev:` yoksa `kod`; adımdaki `- Modeller:` önce gelir).
   4. Adım kapısı + **kapı sonrası hızlı regresyon**; biri kırmızıysa deneme başarısız, çıktı sonraki denemeye ipucu.
   5. Modeller tükenirse `Görev eskale:`; o da tükenirse çıkış 2 → ancak o zaman `kodcu`.
 - **Çıkış kodları:** 0 geçti · 2 eskale · 3 adım opencode'un değil · 4 ön koşul (kirli ağaç, kırmızı regresyon, kapı üretilemedi, ortam hatası) · 5 taslak ya da Epic çözüm onayı bekliyor · 6 sağlayıcı sessiz/kota · 8 modeller kilitli.
-- **Paralel:** ayrı dosyalara dokunan adımlar `./mdk-paralel.sh <no> <no>...` (çıkış 9 = çakışma).
-- **İnceleme:** yalnız `- İncele: evet` olan adımda ya da Faz sonunda `./mdk-incele.sh <no>`; diff'i yalnız uyum < 80 ise kendin oku.
-- **İzleme:** `bash mdk-panel.sh start . 4747`, `bash mdk-figma.sh start` (Figma aktarıcısı; yeni makinede önce `bash mdk-figma.sh kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti).
+- **Paralel:** ayrı dosyalara dokunan adımlar `node mdk-paralel.mjs <no> <no>...` (çıkış 9 = çakışma).
+- **İnceleme:** yalnız `- İncele: evet` olan adımda ya da Faz sonunda `node mdk-incele.mjs <no>`; diff'i yalnız uyum < 80 ise kendin oku.
+- **İzleme:** `node mdk-panel.mjs start . 4747`, `node mdk-figma.mjs start` (Figma aktarıcısı; yeni makinede önce `node mdk-figma.mjs kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti). Koşturucular Node'dadır (Windows'ta da çalışır); Mac'te eski `bash <ad>.sh` yönlendiricileri de durur. Test betikleri (`test/*.sh`, `test/hepsi.sh`) hâlâ bash'tir (Windows'ta Git Bash).
 - **Push öncesi:** tam `bash test/hepsi.sh` yeşil olmalı (~3 dk).
 
 ## Koşturucunun zorladıkları (kural metnine güvenme, bunlar izinde)
@@ -41,7 +41,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - Kırmızı bir kapıyı ilgili adımdan önce commit etme; `hepsi.sh` yalnız bitmemiş adımların kapı dosyalarını atlar. Var olan test dosyasına vaka eklerken varsayılan listeye koyma, adım bitince ekle.
 - Yürütücü "test mantıksız" derse (SORUN.md) haklı olabilir: kapı sahibi kapıyı düzeltir, kod teste uydurulmaz.
 - İlk kez kullanılan kapıyı gerçek ortamda (koşturucu içinden) bir kez dene.
-- UI işinde yalnız kapıya güvenme: gerçek tarayıcıda ekran görüntüsü al; canlı paneli yeni kodla yeniden başlat (`bash mdk-panel.sh stop . 4747 && bash mdk-panel.sh start . 4747`).
+- UI işinde yalnız kapıya güvenme: gerçek tarayıcıda ekran görüntüsü al; canlı paneli yeni kodla yeniden başlat (`node mdk-panel.mjs stop . 4747 && node mdk-panel.mjs start . 4747`).
 - `opencode run` stdin kapalı çalışmalı. Süreç durdururken `pkill -f` kullanma, PID ile öldür.
 - Ücretsiz kota dolunca OpenCode sessizce bekler (`yanit_yok`, çıkış 6); paralel koşu kotayı çabuk bitirir. Ücretsiz model listesi değişkendir.
 - Panel yalnız `127.0.0.1`'e bağlanır. PLAN.md'ye panel yalnız `Görev` satırını yazar; adımları yalnız Claude yazar.
@@ -50,8 +50,8 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 ## Panelden karar (etki taslağı onayı)
 - Oturum başında ve taslak yazınca: `node karar-bekle.mjs --bir-kez`, sonra Monitor ile `node karar-bekle.mjs` (`timeout_ms` 1800000).
 - `adım <no> onay` iki aşamalıdır; aşamayı adımda `- Figma:` satırının varlığı belirler:
-  1. **Taslak onayı** (adımda `- Figma:` yok): Figma'daki panel tasarımının ("mdk paneli", `ov6dUo0vLvaZXGgBout9L2`) ilgili çerçevesini **Talk to Figma** ile kopyalayıp değişikliği kopyada yap, eskiyle yan yana koy (kotasız): `bash mdk-figma.sh durum` (gerekirse `start`), kullanıcıdan Figma'da "Talk to Figma (MDK, analitiksiz)" eklentisini açıp Connect demesini ve kanal adını iste, `join_channel`. Çerçeveler otomatik yerleşimli: koordinat değil sıra önemli (`set_parent` + `index`); var olan başlığı `clone_node` ile kopyalayıp metnini değiştir; Türkçe büyük harfli başlığı doğrudan büyük yaz (UPPER dönüşümü "İ"yi bozar). Sonucu `export_node_as_image` ile kontrol et. Adıma `- Figma: <değişen çerçevenin node-id'li url'i>` yaz, commit et. Panel "Figma güncellendi · Figma'da aç" gösterir, düğme "Adımı onayla" olur. Resmi Figma MCP (`use_figma`) Starter+View'da ayda 20 çağrı: yalnız Talk to Figma çalışmıyorsa kullan; o da yoksa `generate_figma_design` (HTML yakalama, kotadan muaf) ile yeni sayfa.
-  2. **Adım onayı** (adımda `- Figma:` var): adıma `- Onay: evet`, commit, `./mdk-adim.sh <no>`.
+  1. **Taslak onayı** (adımda `- Figma:` yok): Figma'daki panel tasarımının ("mdk paneli", `ov6dUo0vLvaZXGgBout9L2`) ilgili çerçevesini **Talk to Figma** ile kopyalayıp değişikliği kopyada yap, eskiyle yan yana koy (kotasız): `node mdk-figma.mjs durum` (gerekirse `start`), kullanıcıdan Figma'da "Talk to Figma (MDK, analitiksiz)" eklentisini açıp Connect demesini ve kanal adını iste, `join_channel`. Çerçeveler otomatik yerleşimli: koordinat değil sıra önemli (`set_parent` + `index`); var olan başlığı `clone_node` ile kopyalayıp metnini değiştir; Türkçe büyük harfli başlığı doğrudan büyük yaz (UPPER dönüşümü "İ"yi bozar). Sonucu `export_node_as_image` ile kontrol et. Adıma `- Figma: <değişen çerçevenin node-id'li url'i>` yaz, commit et. Panel "Figma güncellendi · Figma'da aç" gösterir, düğme "Adımı onayla" olur. Resmi Figma MCP (`use_figma`) Starter+View'da ayda 20 çağrı: yalnız Talk to Figma çalışmıyorsa kullan; o da yoksa `generate_figma_design` (HTML yakalama, kotadan muaf) ile yeni sayfa.
+  2. **Adım onayı** (adımda `- Figma:` var): adıma `- Onay: evet`, commit, `node mdk-adim.mjs <no>`.
 - **Epic kararları** (`epic <no> <tür>`; panelde Epic satırındaki Detay çekmecesinden gelir):
   - `onay` → yukarıdaki akış. `red: <not>` / `yorum: <not>` → notu `epic/<no>/is.md`'ye ekle; yeniden tartıştır ya da yanıtla; onay sayılmaz.
   - `figma` ("Figma'da çiz") → Talk to Figma ile ilgili çerçeveyi/sayfayı `clone_node` ile kopyala, **orijinale dokunma**, değişikliği kopyada yap, solda eski sağda yeni yan yana yerleştir; `node mdk-epic.mjs figma <no> <url>`. Story düzeyindeki taslak onayında da artık orijinal güncellenmez, aynı kopya kuralı geçerlidir.

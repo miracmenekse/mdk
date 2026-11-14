@@ -1,4 +1,4 @@
-# Yürütücü kuralları (mdk-adim.sh her isteme ekler; tek kaynak bu dosya)
+# Yürütücü kuralları (mdk-adim.mjs her isteme ekler; tek kaynak bu dosya)
 
 Planı Claude yazar, sen yalnızca verilen adımı uygularsın.
 

@@ -1,6 +1,6 @@
 // Kapı denetleyici: PLAN.md'deki bitmemiş opencode adımlarının kapılarını kontrol eder.
 // Kullanım: node kapi-denetle.mjs [PLAN.md]
-//          node kapi-denetle.mjs --dosya <kapı.test.mjs>   (üretilmiş kapı zayıf mı; mdk-adim.sh kapı üretiminden sonra çağırır, yalnız uyarır)
+//          node kapi-denetle.mjs --dosya <kapı.test.mjs>   (üretilmiş kapı zayıf mı; mdk-adim.mjs kapı üretiminden sonra çağırır, yalnız uyarır)
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
