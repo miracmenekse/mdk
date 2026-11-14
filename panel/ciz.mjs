@@ -254,7 +254,7 @@ export function personaBalonlarHtml(ozet) {
     }
   }
   if (bloklar.length === 0) return '<p class="bos">bu adım için persona turu yok</p>';
-  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  const renkler = ['persona-a', 'persona-b', 'persona-c', 'persona-d'];
   return bloklar
     .map((b, i) => {
       const govde = esc(b.govde.join('\n').trim()).replace(/\n+/g, '<br>');
@@ -273,7 +273,7 @@ export function personaBalonlarHtml(ozet) {
 export function personaTakimHtml(takim) {
   const liste = (takim && takim.personalar) || [];
   if (liste.length === 0) return '<span class="bos">persona takımı yok</span>';
-  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  const renkler = ['persona-a', 'persona-b', 'persona-c', 'persona-d'];
   return liste.map((p, i) => {
     const yorumlar = (p.yorumlar || [])
       .map((y) => `<div class="persona-not">${escMetin(typeof y === 'string' ? y : y.metin || '')}</div>`)
@@ -499,7 +499,7 @@ function cozumHtml(metin) {
 // Epic tartışma turundaki bir mesajı persona balonu olarak çizer; renk personanın
 // tartisma.personalar içindeki sırasına göre (aynı persona her turda aynı renk).
 function epicBalon(mesaj, personalar) {
-  const renkler = ['persona-a', 'persona-b', 'persona-c'];
+  const renkler = ['persona-a', 'persona-b', 'persona-c', 'persona-d'];
   const ad = mesaj?.persona ?? '—';
   const sira = Math.max(0, (personalar || []).findIndex((p) => p.ad === ad));
   const renk = renkler[sira % renkler.length];
