@@ -681,6 +681,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
 
 ## Epic 23 — Persona ekleme ve güncelleme
 - Durum: analiz
+- Tartışma: epic/23
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
