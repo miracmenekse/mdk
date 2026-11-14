@@ -31,6 +31,9 @@ Her adımın kapısı çalıştırılabilir olsun (çıkış kodu 0).
   - Varsayılan yürütücü her zaman `opencode`'dur. `mdk-adim.sh` içinde `Görev kod:` modelleri geçemezse betik otomatik olarak PLAN başındaki `Görev eskale:` modellerini dener; `kodcu`ya (Haiku) yalnız çıkış 2 dönerse gidilir.
   - Yalnız `mdk-adim.sh`'in süreç öldürme/reset çekirdeğine dokunan adımlar `kodcu`/Claude'undur; diğer tüm kod ve test adımları `opencode`'da koşar.
 
+## 2.5 Epic tartışması (kullanıcı "tartıştır / personalara sor" dediğinde)
+Bir işin kapsamı ve çözümü tartışılacaksa kart turu yerine Epic tartışması: `node ~/mdk/mdk-epic.mjs tartis <no>` (proje takımı `persona/takim.json`; üç tur: değerlendirme, tartışma, uzlaşı). Çıktı panelde Epic çekmecesinde görünür ve tahmini story listesi içerir. Çözümü kendin sına; kullanıcı panelden onaylamadan story yazma. Aşağıdaki kart turu (`persona-tur.sh`) tek bir tasarım kararında seçenek üretmek içindir.
+
 ## 3. UI / akış kararında seçenek üret (Yalnız Faz başında veya `- Persona: sor` istendiğinde)
 Karar büyük bir Faz kararıysa veya kullanıcı "personalara sor / alternatif üret" dediyse:
 1. `personalar.md`'den (yoksa `~/mdk/personalar.md`) iş türüne göre alan seç: `proje-gelistirme`, `sunum`, `arastirma`; uymuyorsa aynı kart biçiminde yeni alan taslağı yaz. Alandan 3 kart seç, en az biri karşı çıkan (seçim kuralı dosyada). Dosyayı değiştirince `node persona-denetle.mjs` (mdk kökünde) ile biçimi denetle.

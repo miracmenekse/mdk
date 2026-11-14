@@ -10,7 +10,7 @@ const h1 = drawerHtml(
   { no: 92, baslik: 'Panelde ön regresyon durumu', durum: 'calisiyor', model: 'opencode-go/glm-5.3-flash', deneme: 2, ts: 1793530000, yuzde: 55, calisiyor: true, simdiMs: 1793530000000 + 723000 },
   etkiHtml,
 );
-assert.ok(h1.includes('ADIM') && h1.includes('92'), 'başlıkta ADIM no');
+assert.ok(h1.includes('STORY') && h1.includes('92'), 'başlıkta STORY no');
 assert.ok(h1.includes('Panelde ön regresyon durumu'), 'adım adı');
 assert.ok(h1.includes('id="drawer-kapat"'), 'kapat düğmesi');
 assert.ok(h1.includes('PERSONA DÜŞÜNCELERİ'), 'persona bölüm başlığı');

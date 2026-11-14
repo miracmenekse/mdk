@@ -443,7 +443,7 @@ export function drawerHtml(adim, etkiKartiHtml) {
   return (
     '<div class="drawer-ic">' +
     '<div class="drawer-bas">' +
-    `<div><span class="etiket">ADIM</span> <b>${esc(a.no ?? '—')}</b></div>` +
+    `<div><span class="etiket">STORY</span> <b>${esc(a.no ?? '—')}</b></div>` +
     '<button type="button" id="drawer-kapat" aria-label="kapat">×</button>' +
     '</div>' +
     `<h2 class="drawer-baslik">${esc(a.baslik || '—')}</h2>` +
