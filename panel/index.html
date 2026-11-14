@@ -145,6 +145,8 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .karar-seridi:hover { border-color: #ea580c; }
 /* Persona takımı sekmesi */
 .persona-aciklama { font-size: 13px; color: var(--soluk); margin: 0 0 14px; max-width: 760px; }
+.persona-durum { font-size: 12px; color: var(--soluk); margin: 0 0 10px; }
+.persona-durum.hata { color: var(--maliyet); }
 #persona-takim { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
 .persona-kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; padding: 14px; }
 .persona-kart .persona-bas { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -472,6 +474,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
   <div role="tabpanel" id="sekme-persona" hidden>
   <h2>Persona takımı</h2>
+  <p id="persona-durum" class="persona-durum" role="status"></p>
   <p class="persona-aciklama">Bu proje için fikir üreten takım. Yeni özellikte personalar reasoning yapar; çıktıları adım detayında görünür. Personayı sil, ekle ya da geri bildirim yaz.</p>
   <section id="persona-takim"></section>
   <form id="persona-ekle">
@@ -951,11 +954,32 @@ const personaEkleEl = document.getElementById('persona-ekle');
 let sonPersonaTakim = { personalar: [] };
 function personaCiz() { personaTakimEl.innerHTML = personaTakimHtml(sonPersonaTakim); }
 async function personaKaydet(yeni) {
+  const onceki = sonPersonaTakim;
   sonPersonaTakim = yeni;
   personaCiz();
+  const durumEl = document.getElementById('persona-durum');
+  durumEl.className = 'persona-durum';
+  durumEl.textContent = 'kaydediliyor…';
   try {
-    await fetch('/api/persona-takim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(yeni) });
-  } catch {}
+    const yanit = await fetch('/api/persona-takim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(yeni) });
+    if (yanit.status === 200) {
+      durumEl.textContent = '✓ kaydedildi';
+      return true;
+    }
+    let mesaj = '';
+    try { mesaj = (await yanit.json()).hata || ''; } catch {}
+    sonPersonaTakim = onceki;
+    personaCiz();
+    durumEl.className = 'persona-durum hata';
+    durumEl.textContent = mesaj;
+    return false;
+  } catch {
+    sonPersonaTakim = onceki;
+    personaCiz();
+    durumEl.className = 'persona-durum hata';
+    durumEl.textContent = 'panel sunucusuna ulaşılamadı';
+    return false;
+  }
 }
 personaTakimEl.addEventListener('click', (e) => {
   const b = e.target.closest('.persona-sil');

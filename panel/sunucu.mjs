@@ -11,6 +11,7 @@ import { parse, epicDurum } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
 import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
+import { takimDenetle } from './persona.mjs';
 
 const IP = '127.0.0.1';
 
@@ -275,9 +276,15 @@ export async function baslat(dir, port, { calistir } = {}) {
         return;
       }
 
+      const sonuc = takimDenetle(girdi);
+      if (!sonuc.tamam) {
+        hata(yanit, 400, sonuc.hata);
+        return;
+      }
+
       try {
         mkdirSync(join(kok, 'persona'), { recursive: true });
-        writeFileSync(join(kok, 'persona', 'takim.json'), JSON.stringify(girdi, null, 2) + '\n');
+        writeFileSync(join(kok, 'persona', 'takim.json'), JSON.stringify(sonuc.takim, null, 2) + '\n');
       } catch {
         hata(yanit, 500, 'takım kaydedilemedi');
         return;
@@ -568,9 +575,9 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
-    if (pathname === '/ciz.mjs') {
-      // yalnızca çizim modülü; diğer panel dosyaları sunulmaz
-      const dosya = join(fileURLToPath(new URL('.', import.meta.url)), 'ciz.mjs');
+    if (pathname === '/ciz.mjs' || pathname === '/persona.mjs') {
+      // yalnızca çizim ve persona modülleri; diğer panel dosyaları sunulmaz
+      const dosya = join(fileURLToPath(new URL('.', import.meta.url)), pathname.slice(1));
       if (existsSync(dosya)) {
         yanit.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
         yanit.end(readFileSync(dosya));
