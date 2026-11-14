@@ -668,7 +668,7 @@ Kullanıcı tarifi (Yalın Kip). Arayüzde Faz = Epic, Adım = Story. İş chat'
   - Kapı: `node panel/drawer-ciz.test.mjs`
 
 ## Epic 22 — Persona takımı yeniden tasarımı
-- Durum: analiz
+- Durum: gelistirme
 Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 3 persona (Ürün Sahibi, Mühendis, Eleştirmen) silinir; yerine MDK'ya özgü 4 persona gelir. `personalar.md` düşünme kartları değişmez.
 - [x] 143. Yeni persona takımı: Bilişsel Yük Bekçisi, Geliştirme Yöneticisi, Ürün Yöneticisi, UI/UX Uzmanı
   - Yürütücü: claude
