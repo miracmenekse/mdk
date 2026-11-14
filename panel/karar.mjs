@@ -8,12 +8,23 @@ export function kararEkle(kok, girdi, simdi = Date.now()) {
     throw new Error('karar bir nesne olmalı');
   }
 
-  const { no, tur } = girdi;
-  if (!Number.isInteger(no) || no <= 0) {
+  const { no, epic, tur } = girdi;
+  const noVar = no !== undefined;
+  const epicVar = epic !== undefined;
+  if (noVar && epicVar) {
+    throw new Error("no ile epic ikisi birden olamaz");
+  }
+  if (!noVar && !epicVar) {
+    throw new Error('no ya da epic gerekli');
+  }
+  if (noVar && (!Number.isInteger(no) || no <= 0)) {
     throw new Error('no pozitif tam sayı olmalı');
   }
-  if (!TURLER.includes(tur)) {
-    throw new Error("tur 'onay', 'red' ya da 'yorum' olmalı");
+  if (epicVar && (typeof epic !== 'string' || !/^[0-9.]{1,20}$/.test(epic))) {
+    throw new Error('epic 1-20 karakter ve yalnız rakam/nokta olmalı');
+  }
+  if (typeof tur !== 'string' || !(TURLER.includes(tur) || (epicVar && tur === 'figma'))) {
+    throw new Error("tur 'onay', 'red', 'yorum' ya da epic ile 'figma' olmalı");
   }
 
   let metin = '';
@@ -30,7 +41,7 @@ export function kararEkle(kok, girdi, simdi = Date.now()) {
     throw new Error(`${tur} için metin gerekli`);
   }
 
-  const karar = { ts: simdi, no, tur, metin };
+  const karar = noVar ? { ts: simdi, no, tur, metin } : { ts: simdi, epic, tur, metin };
   const dizin = join(kok, 'etki');
   mkdirSync(dizin, { recursive: true });
   appendFileSync(join(dizin, 'kararlar.jsonl'), JSON.stringify(karar) + '\n');

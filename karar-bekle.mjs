@@ -30,9 +30,10 @@ function tara() {
     if (!(karar.ts > isaret)) continue;
     if (karar.ts > enBuyuk) enBuyuk = karar.ts;
     const metin = typeof karar.metin === 'string' ? karar.metin.replace(/\r?\n/g, ' ') : '';
-    process.stdout.write(metin === ''
-      ? `adım ${karar.no} ${karar.tur}\n`
-      : `adım ${karar.no} ${karar.tur}: ${metin}\n`);
+    const bas = karar.epic !== undefined
+      ? `epic ${karar.epic} ${karar.tur}`
+      : `adım ${karar.no} ${karar.tur}`;
+    process.stdout.write(metin === '' ? `${bas}\n` : `${bas}: ${metin}\n`);
   }
   if (enBuyuk > isaret) {
     mkdirSync(etki, { recursive: true });

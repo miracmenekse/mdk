@@ -7,7 +7,7 @@ import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
-import { parse } from './plan.mjs';
+import { parse, epicDurum } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
 import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
@@ -165,15 +165,27 @@ export async function baslat(dir, port, { calistir } = {}) {
         hata(yanit, 404, 'PLAN.md okunamadı');
         return;
       }
-      let adim = null;
-      for (const kategori of plan.kategoriler) {
-        for (const a of kategori.adimlar) {
-          if (a.no === girdi?.no) adim = a;
+      if (girdi?.epic !== undefined) {
+        // epic kararı: adım araması yerine planda o no'lu kategori aranır
+        let kategori = null;
+        for (const k of plan.kategoriler) {
+          if (k.no === girdi.epic) kategori = k;
         }
-      }
-      if (!adim || !adim.etki || adim.bitti) {
-        hata(yanit, 404, 'adım yok, etki taşımıyor ya da bitmiş');
-        return;
+        if (!kategori || epicDurum(kategori) === 'tamamlandi') {
+          hata(yanit, 404, 'Epic yok ya da tamamlanmış');
+          return;
+        }
+      } else {
+        let adim = null;
+        for (const kategori of plan.kategoriler) {
+          for (const a of kategori.adimlar) {
+            if (a.no === girdi?.no) adim = a;
+          }
+        }
+        if (!adim || !adim.etki || adim.bitti) {
+          hata(yanit, 404, 'adım yok, etki taşımıyor ya da bitmiş');
+          return;
+        }
       }
 
       let karar;
@@ -439,6 +451,51 @@ export async function baslat(dir, port, { calistir } = {}) {
       }
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       yanit.end(JSON.stringify({ adim: no, ozet: readFileSync(tam, 'utf8') }));
+      return;
+    }
+
+    if (pathname === '/api/epic') {
+      // ?no=<epic> : o epic'in `- Tartışma:` yolundaki tartisma.json
+      const no = new URL(istek.url, 'http://x').searchParams.get('no');
+      let kategori = null;
+      try {
+        const plan = parse(readFileSync(join(kok, 'PLAN.md'), 'utf8'));
+        for (const k of plan.kategoriler) {
+          if (k.no === no && k.tartisma) kategori = k;
+        }
+      } catch {
+        // PLAN.md okunamazsa tartisma null kalır
+      }
+      let tartisma = null;
+      if (kategori) {
+        // yol güvenliği (/api/persona ile aynı): mutlak/".." yok, realpath kök içinde
+        const yol = kategori.tartisma;
+        if (isAbsolute(yol) || yol.split(/[\\/]/).includes('..')) {
+          yanit.writeHead(400).end('geçersiz yol');
+          return;
+        }
+        let tam;
+        try {
+          tam = realpathSync(join(kok, yol, 'tartisma.json'));
+        } catch {
+          // dosya yoksa tartisma null kalır
+          tam = null;
+        }
+        if (tam) {
+          const kokGercek = realpathSync(kok);
+          if (tam !== kokGercek && !tam.startsWith(kokGercek + sep)) {
+            yanit.writeHead(400).end('geçersiz yol');
+            return;
+          }
+          try {
+            tartisma = JSON.parse(readFileSync(tam, 'utf8'));
+          } catch {
+            tartisma = null;
+          }
+        }
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ no, tartisma }));
       return;
     }
 
