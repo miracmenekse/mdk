@@ -684,6 +684,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
 - Tartışma: epic/23
 - Etki: etki/persona-duzenle.html
 - Onay: evet
+- Figma: https://www.figma.com/design/ov6dUo0vLvaZXGgBout9L2?node-id=87-2
 
 ## Epic 24 — Çekmecede çözüme ve krokiye yorum
 - Durum: gelistirme
