@@ -774,7 +774,7 @@ drawerEl.addEventListener('submit', async (e) => {
   const epic = form.dataset.epic;
   const textarea = form.querySelector('textarea');
   let metin = textarea ? textarea.value : '';
-  if (form.dataset.onek && metin) metin = form.dataset.onek + metin;
+  if (form.dataset.onek && metin.trim()) metin = form.dataset.onek + metin.trim();
   const dugmeler = form.querySelectorAll('button');
   dugmeler.forEach((b) => { b.disabled = true; });
   // form drawer kapanınca kaybolabilir: o an açık olanı bul
