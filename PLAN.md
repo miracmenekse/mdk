@@ -749,6 +749,9 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). Ortak kalıp (her story'de geç
   - Ne: koşturucu çağrıları `bash <ad>.sh`/`./<ad>.sh` yerine `node <ad>.mjs` olur (test betikleri ve `test/hepsi.sh` hariç): `CLAUDE.md`, `esit/gorev-dagitimi.md`, `esit/AGENTS.md`, `esit/ba-pm-bakis.SKILL.md`, `yurutucu-kurallar.md`, `kapi-denetle.mjs:3` yorumu. Tarihçe dosyaları (`docs/gunluk.md`, `PLAN-ARSIV.md`, `personalar.md` karar günlüğü) ve PLAN.md'deki eski adımlar değişmez. `.sh` yönlendiricilerin Mac'te durmaya devam ettiğini CLAUDE.md "İzleme" satırına bir cümleyle yaz.
   - Kapı: `node -e "const fs=require('fs'),A=require('assert');for(const f of ['CLAUDE.md','esit/gorev-dagitimi.md','esit/AGENTS.md','esit/ba-pm-bakis.SKILL.md','yurutucu-kurallar.md']){const s=fs.readFileSync(f,'utf8');A.ok(!/(mdk-adim|mdk-paralel|mdk-incele|persona-tur|mdk-panel|mdk-figma|mdk-esitle)\.sh/.test(s),f)};A.ok(fs.readFileSync('CLAUDE.md','utf8').includes('node mdk-adim.mjs'))"`
 
+## Epic 26 — Test betiklerinin Node'a taşınması
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
