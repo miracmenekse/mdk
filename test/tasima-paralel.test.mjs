@@ -5,6 +5,7 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, w
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+if (process.platform === 'win32') { console.log('atlandı (win32): POSIX vekil testi'); process.exit(0); }
 
 const KOK = resolve(fileURLToPath(import.meta.url), '..', '..');
 const PARALEL = join(KOK, 'mdk-paralel.mjs');

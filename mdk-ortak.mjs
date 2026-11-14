@@ -134,7 +134,9 @@ export async function kos({ komut, args = [], cwd, env, log, ilk = 75, sure = 60
   const t0 = Date.now();
   let c;
   try {
-    c = spawn(komut, args, { cwd, env: env || process.env, detached: !WIN, stdio: ['ignore', out, err], windowsHide: true, shell: WIN && !/\.(exe|com)$/i.test(komut) });
+    // Windows: shell:false şart. cmd.exe istem metnini (çok satır, tırnak, & | > %) bozar; .cmd/.bat sarmalayıcısı
+    // shell'siz başlatılamaz → aşağıdaki hata yolu "command not found" yazar, koşturucu ortam hatası (çıkış 4) verir.
+    c = spawn(komut, args, { cwd, env: env || process.env, detached: !WIN, stdio: ['ignore', out, err], windowsHide: true, shell: false });
   } catch (e) {
     writeSync(err, `${komut}: command not found (${e.message})\n`);
   }
@@ -142,7 +144,7 @@ export async function kos({ komut, args = [], cwd, env, log, ilk = 75, sure = 60
   if (!c) return { kod: 127, neden: null, pid: 0 };
   const bitis = new Promise((coz) => {
     c.on('exit', (k, s) => { kod = k ?? (s ? 128 : 1); bitti = true; coz(); });
-    c.on('error', (e) => { try { const f = openSync(log + '.err', 'a'); writeSync(f, `${komut}: command not found (${e.code || e.message})\n`); closeSync(f); } catch {} kod = 127; bitti = true; coz(); });
+    c.on('error', (e) => { try { const f = openSync(log + '.err', 'a'); writeSync(f, `${komut}: command not found (${e.code || e.message})${WIN ? ' — Windows: .cmd sarmalayıcısı yerine gerçek .exe yolunu MDK_OPENCODE / MDK_CURSOR ile ver' : ''}\n`); closeSync(f); } catch {} kod = 127; bitti = true; coz(); });
   });
   while (!bitti) {
     await Promise.race([bitis, uyu(poll)]);

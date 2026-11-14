@@ -35,13 +35,20 @@ export function eksikKapilar(kapilar, kok = '.') {
   return [...hepsi].sort().filter((f) => !existsSync(join(kok, f)));
 }
 
-const bashVar = () => !WIN || spawnSync('bash', ['-c', 'exit 0'], { stdio: 'ignore' }).status === 0;
-// kapı ve regresyon komutu kabukta koşar: POSIX'te bash -c; Windows'ta bash (Git Bash) varsa o, yoksa cmd
+// kapı ve regresyon komutları bash sözdizimindedir. POSIX'te bash; Windows'ta MDK_BASH ya da Git Bash'in
+// varsayılan yolu (System32\bash.exe WSL başlatıcısıdır, kullanılmaz). Bulunamazsa açık hata (cmd'ye düşülmez).
+export function bashYolu() {
+  if (process.env.MDK_BASH) return process.env.MDK_BASH;
+  if (!WIN) return 'bash';
+  for (const p of [join(process.env.ProgramFiles || 'C:\\Program Files', 'Git', 'bin', 'bash.exe'), join(process.env.LOCALAPPDATA || '', 'Programs', 'Git', 'bin', 'bash.exe')]) if (existsSync(p)) return p;
+  return null;
+}
+const bashVar = () => bashYolu() !== null;
 export function kabukKos(komut, { env, cwd, cikti } = {}) {
-  const r = bashVar()
-    ? spawnSync('bash', ['-c', komut], { env, cwd, encoding: 'utf8', maxBuffer: 256 << 20 })
-    : spawnSync(komut, { env, cwd, encoding: 'utf8', shell: true, maxBuffer: 256 << 20 });
-  const metin = (r.stdout || '') + (r.stderr || '');
+  const b = bashYolu();
+  if (!b) return { ok: false, kod: 127, metin: 'bash bulunamadı: Git for Windows kur ya da MDK_BASH ile bash.exe yolunu ver\n', cikti };
+  const r = spawnSync(b, ['-c', komut], { env, cwd, encoding: 'utf8', maxBuffer: 256 << 20 });
+  const metin = (r.stdout || '') + (r.stderr || '') + (r.error ? `${b}: ${r.error.message}\n` : '');
   return { ok: r.status === 0, kod: r.status, metin, cikti };
 }
 
@@ -84,7 +91,7 @@ ${blok}`;
           for (const tf of eksik) {
             let ok = true;
             if (tf.endsWith('.mjs')) ok = spawnSync(process.execPath, ['--check', tf], { stdio: 'ignore' }).status === 0;
-            else if (tf.endsWith('.sh') && bashVar()) ok = spawnSync('bash', ['-n', tf], { stdio: 'ignore' }).status === 0;
+            else if (tf.endsWith('.sh') && bashVar()) ok = spawnSync(bashYolu(), ['-n', tf], { stdio: 'ignore' }).status === 0;
             if (!ok) kneden = 'kapi_sozdizimi';
           }
           if (!kneden) {

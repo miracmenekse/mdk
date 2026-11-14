@@ -28,7 +28,7 @@ Bu dosya yalnız **güncel kuralları** tutar ve kısa kalır. Ölçümler, kara
 - **Çıkış kodları:** 0 geçti · 2 eskale · 3 adım opencode'un değil · 4 ön koşul (kirli ağaç, kırmızı regresyon, kapı üretilemedi, ortam hatası) · 5 taslak ya da Epic çözüm onayı bekliyor · 6 sağlayıcı sessiz/kota · 8 modeller kilitli.
 - **Paralel:** ayrı dosyalara dokunan adımlar `node mdk-paralel.mjs <no> <no>...` (çıkış 9 = çakışma).
 - **İnceleme:** yalnız `- İncele: evet` olan adımda ya da Faz sonunda `node mdk-incele.mjs <no>`; diff'i yalnız uyum < 80 ise kendin oku.
-- **İzleme:** `node mdk-panel.mjs start . 4747`, `node mdk-figma.mjs start` (Figma aktarıcısı; yeni makinede önce `node mdk-figma.mjs kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti). Koşturucular Node'dadır (Windows'ta da çalışır); Mac'te eski `bash <ad>.sh` yönlendiricileri de durur. Test betikleri (`test/*.sh`, `test/hepsi.sh`) hâlâ bash'tir (Windows'ta Git Bash).
+- **İzleme:** `node mdk-panel.mjs start . 4747`, `node mdk-figma.mjs start` (Figma aktarıcısı; yeni makinede önce `node mdk-figma.mjs kur`), `node izle.mjs`, `node karsilastir.mjs` (model tablosu + kapı üretim özeti). Koşturucular Node'dadır (Windows'ta da çalışır); Mac'te eski `bash <ad>.sh` yönlendiricileri de durur. Kapılar ve `test/hepsi.sh` bash ister: Windows'ta Git Bash (`MDK_BASH` ile yol verilebilir); opencode/cursor'un `.cmd` sarmalayıcısı değil gerçek `.exe` yolu `MDK_OPENCODE`/`MDK_CURSOR` ile verilmeli. Windows'ta henüz gerçek koşu yapılmadı.
 - **Push öncesi:** tam `bash test/hepsi.sh` yeşil olmalı (~3 dk).
 
 ## Koşturucunun zorladıkları (kural metnine güvenme, bunlar izinde)

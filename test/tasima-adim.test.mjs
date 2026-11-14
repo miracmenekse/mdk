@@ -6,6 +6,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, sy
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+if (process.platform === 'win32') { console.log('atlandı (win32): POSIX vekil testi'); process.exit(0); }
 
 const KOK = resolve(fileURLToPath(import.meta.url), '..', '..');
 const ADIM = join(KOK, 'mdk-adim.mjs');

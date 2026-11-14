@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:net';
+if (process.platform === 'win32') { console.log('atlandı (win32): POSIX vekil testi'); process.exit(0); }
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 const ESITLE = join(ROOT, 'mdk-esitle.mjs');

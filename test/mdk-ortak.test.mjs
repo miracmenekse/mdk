@@ -10,6 +10,7 @@ import {
   olaylariTopla, metinAyikla, oturumKimligi, oturumKapat, zombiTemizle,
   agacOldur, kos, kilitAl, kilitBirak,
 } from '../mdk-ortak.mjs';
+if (process.platform === 'win32') { console.log('atlandı (win32): POSIX vekil testi'); process.exit(0); }
 
 const PLAN = `Yürütücü: opencode
 Modeller: m/a
