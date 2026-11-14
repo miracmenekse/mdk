@@ -680,7 +680,7 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
   - Kapı: `node -e "import('./panel/ciz.mjs').then(m=>{const A=require('assert');const h=m.personaTakimHtml({personalar:[{ad:'A'},{ad:'B'},{ad:'C'},{ad:'D'},{ad:'E'}]});A.ok(h.includes('persona-kart persona-d'));A.ok(h.includes('persona-kart persona-a\" data-index=\"4\"'));const b=m.personaBalonlarHtml('## A\n\nx\n\n## B\n\nx\n\n## C\n\nx\n\n## D\n\nx');A.ok(b.includes('persona-balon persona-d'));const c=require('fs').readFileSync('panel/index.html','utf8');A.ok(c.includes('.persona-d .avatar'));A.ok(/data-theme=\"light\"\]\) \.persona-d \.metin/.test(c))})"`
 
 ## Epic 23 — Persona ekleme ve güncelleme
-- Durum: tasarim
+- Durum: gelistirme
 - Tartışma: epic/23
 - Etki: etki/persona-duzenle.html
 - Onay: evet
