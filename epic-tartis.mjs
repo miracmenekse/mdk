@@ -68,9 +68,9 @@ async function ana() {
   try {
     const plan = readFileSync('PLAN.md', 'utf8');
     const satir = (etiket) => {
-      let m = '';
-      for (const s of plan.split('\n')) { const i = s.indexOf(etiket); if (i >= 0) m = s.slice(s.indexOf(':', i) + 1); }
-      return m;
+      // yalnız satır başındaki ilk eşleşme: adım metinlerinde geçen aynı etiket ayar satırı değildir
+      const s = plan.split('\n').find((x) => x.startsWith(etiket));
+      return s ? s.slice(etiket.length) : '';
     };
     modeller = (satir('Görev persona:') || satir('Modeller:')).split(',').map((s) => s.trim()).filter(Boolean);
   } catch {}

@@ -38,7 +38,7 @@ if (!bos) console.log(JSON.stringify({ type: 'text', part: { text: 'YANIT ' + n 
 function hazirla(dir, isIcerik) {
   mkdirSync(join(dir, 'persona'), { recursive: true });
   mkdirSync(join(dir, 'epic', '7'), { recursive: true });
-  writeFileSync(join(dir, 'PLAN.md'), 'Görev persona: m/bir, m/iki\n');
+  writeFileSync(join(dir, 'PLAN.md'), 'Görev persona: m/bir, m/iki\n\n- [ ] 1. İş\n  - Ne: metinde geçen `Görev persona: x/yanlis, y/yanlis` ayar satırı değildir\n');
   writeFileSync(join(dir, 'persona', 'takim.json'), JSON.stringify({ personalar: PERSONALAR }, null, 2));
   if (isIcerik !== null) writeFileSync(join(dir, 'epic', '7', 'is.md'), isIcerik);
   fakeYaz(dir);
@@ -73,6 +73,8 @@ function cagrilari(dir) {
   assert.equal(tj.personalar.length, 3);
   assert.deepEqual(tj.personalar.map(function (p) { return p.ad; }), PERSONALAR.map(function (p) { return p.ad; }));
   assert.equal(tj.is.trim(), 'is icerigi 7');
+  // modeller yalnız satır başındaki ayar satırından; adım metninde geçen etiket sayılmaz
+  for (const c of cagrilari(d)) assert.ok(['m/bir', 'm/iki'].includes(c.model), 'beklenmeyen model: ' + c.model);
   const calls = cagrilari(d);
   assert.equal(calls.length, 7, '7 çağrı olmalı');
   const tur1Metinler = tj.turlar[0].mesajlar.map(function (m) { return m.metin; });
