@@ -58,10 +58,11 @@ c_eskale() {
   kontrol '[ "$(paste -sd, "$T/modeller.log")" = m/a,m/b ]'
 }
 c_donmus() {
-  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo "echo KOTU (((" >> mdk-adim.sh; echo x > cikti.txt; }'
-  cp "$RUNNER" mdk-adim.sh; commit0; RUN=./mdk-adim.sh kos
+  # adım 156: koşturucu Node'da; model koşu sırasında koşturucu modüllerini bozsa da donmuş kopya etkilenmez
+  setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo "KOTU (((" >> mdk-adim.mjs; echo "KOTU (((" >> mdk-ortak.mjs; echo "KOTU (((" >> mdk-adim-kapi.mjs; echo x > cikti.txt; }'
+  for f in mdk-adim.sh mdk-adim.mjs mdk-ortak.mjs mdk-adim-kapi.mjs; do cp "$(dirname "$RUNNER")/$f" .; done; commit0; RUN=./mdk-adim.sh kos
   kontrol '[ "$KOD" = 0 ]'
-  kontrol '[ -f .mdk-log/mdk-adim.run.sh ]'
+  kontrol '[ -f .mdk-log/donmus/mdk-adim.mjs ] && ! grep -q KOTU .mdk-log/donmus/mdk-ortak.mjs'
 }
 c_kurcalama() {
   setup "$(plan m/a '  - Kapı: `node x.test.mjs`')" 'davran(){ echo "process.exit(0)" > x.test.mjs; }'
@@ -135,7 +136,7 @@ c_kota() {
   kontrol '[ "$SN" -lt 15 ]'
   kontrol '[ "$(neden_listesi)" = kota,- ]'
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`')" 'davran(){ echo x > cikti.txt; }'; commit0; kos
-  kontrol 'grep -q -- "--print-logs" "$RUNNER"'   # gerçek opencode hatayı yalnız böyle stderr'e yazar (seviye: v1 --log-level, v2 OPENCODE_LOG_LEVEL)
+  kontrol 'grep -q -- "--print-logs" "$(dirname "$RUNNER")/mdk-adim.mjs"'   # gerçek opencode hatayı yalnız böyle stderr'e yazar (seviye: v1 --log-level, v2 OPENCODE_LOG_LEVEL)
 }
 c_butce() {
   setup "$(plan m/a '  - Kapı: `test -f cikti.txt`
