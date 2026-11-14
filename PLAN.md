@@ -679,6 +679,9 @@ Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 
   - Ne: `panel/ciz.mjs:257,276,502`: üç `renkler` dizisinin sonuna `'persona-d'` ekle (`['persona-a', 'persona-b', 'persona-c', 'persona-d']`). `panel/index.html:401`: `.persona-c` satırının altına `.persona-d .avatar { background: #d97706; } .persona-d .metin { background: #fdf3e3; color: #6b3d06; }`; `panel/index.html:406`: koyu tema bloğunda `.persona-c .metin` satırının altına `  :root:not([data-theme="light"]) .persona-d .metin { background: #3a2a12; color: #f6dfbd; }`.
   - Kapı: `node -e "import('./panel/ciz.mjs').then(m=>{const A=require('assert');const h=m.personaTakimHtml({personalar:[{ad:'A'},{ad:'B'},{ad:'C'},{ad:'D'},{ad:'E'}]});A.ok(h.includes('persona-kart persona-d'));A.ok(h.includes('persona-kart persona-a\" data-index=\"4\"'));const b=m.personaBalonlarHtml('## A\n\nx\n\n## B\n\nx\n\n## C\n\nx\n\n## D\n\nx');A.ok(b.includes('persona-balon persona-d'));const c=require('fs').readFileSync('panel/index.html','utf8');A.ok(c.includes('.persona-d .avatar'));A.ok(/data-theme=\"light\"\]\) \.persona-d \.metin/.test(c))})"`
 
+## Epic 23 — Persona ekleme ve güncelleme
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
