@@ -14,7 +14,7 @@ const yaz = (s) => writeSync(1, s + '\n');
 function bekleyenler() {
   const bitti = new Set(), acik = new Set(); let k = null;
   let t = ''; try { t = readFileSync('PLAN.md', 'utf8'); } catch {}
-  for (const l of t.split('\n')) {
+  for (const l of t.split(/\r?\n/)) {
     const a = l.match(/^- \[([ x])\] \d+\./); if (a) { k = a[1] === 'x' ? bitti : acik; continue; }
     if (/^#/.test(l)) { k = null; continue; }
     const m = k && l.match(/^\s*- Kapı: `(.*)`/);

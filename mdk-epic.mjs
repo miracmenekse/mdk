@@ -56,7 +56,7 @@ function findEpicHeadingIndex(lines, no) {
 const ALAN_RE = /^\s*-\s+(Durum|Tartışma|Etki|Figma|Onay):/;
 
 function setField(text, no, field, value) {
-  const lines = String(text).split('\n');
+  const lines = String(text).split(/\r?\n/);
   const idx = findEpicHeadingIndex(lines, no);
   if (idx < 0) throw new Error('Epic yok');
   let end = lines.length;
@@ -106,7 +106,7 @@ if (komut === 'ac') {
   }
   const no = maxNo + 1;
 
-  const lines = plan.split('\n');
+  const lines = plan.split(/\r?\n/);
   const sonrakiIdx = lines.findIndex((l) => /^##\s+Sonraki iyileştirmeler\s*$/.test(l.trim()));
   let yeniPlan;
   if (sonrakiIdx !== -1) {

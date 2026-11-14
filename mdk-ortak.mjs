@@ -8,7 +8,7 @@ import { spawn, spawnSync } from 'node:child_process';
 const WIN = process.platform === 'win32';
 // komut bir .mjs/.js betiğiyse (testlerdeki sahte opencode/cursor/bun) node ile başlatılır: Windows'ta da çalışır
 export const komutHazirla = (komut, args = []) => (/\.(mjs|cjs|js)$/i.test(komut) ? [process.execPath, [komut, ...args]] : [komut, args]);
-const satirlar = (m) => m.split('\n');
+const satirlar = (m) => m.split(/\r?\n/);
 const oku = (yol) => { try { return readFileSync(yol, 'utf8'); } catch { return ''; } };
 
 // adım bloğu: "- [ ]/[x] N." satırından bir sonraki adım ya da "## " satırına kadar

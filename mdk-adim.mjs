@@ -52,7 +52,7 @@ const DENEY = e.MDK_DENEY || null;
 let plan = oku(PLAN);
 const blok = kirp(adimBlogu(plan, N));
 if (!blok) { yaz(`adım ${N} bulunamadı`); process.exit(4); }
-const ilkSatir = blok.split('\n')[0];
+const ilkSatir = blok.split(/\r?\n/)[0];
 const baslik = ilkSatir.replace(/^- \[.\] [0-9]+\.\s*/, '');
 if (/^- \[x\]/.test(ilkSatir)) { yaz(`adım ${N} zaten bitmiş`); process.exit(0); }
 
@@ -137,7 +137,7 @@ const SADE_IPUCU = SADE ? 'Verimlilik: dosyaları baştan sona okuma: önce grep
 if (e.MDK_CLAUDE_KURAL !== '1') e.OPENCODE_DISABLE_CLAUDE_CODE = '1';
 const KURALLAR = kirp(oku(join(SELF, 'yurutucu-kurallar.md')));
 // PLAN başındaki "Kurallar (tüm adımlar için):" bloğu; model PLAN.md'yi açmadan görsün
-const PROJE_KURAL = (() => { const c = []; let on = false; for (const l of plan.split('\n')) { if (/^Kurallar/.test(l)) on = true; if (on && /^\s*$/.test(l)) break; if (on) c.push(l); } return kirp(c.join('\n')); })();
+const PROJE_KURAL = (() => { const c = []; let on = false; for (const l of plan.split(/\r?\n/)) { if (/^Kurallar/.test(l)) on = true; if (on && /^\s*$/.test(l)) break; if (on) c.push(l); } return kirp(c.join('\n')); })();
 
 // Cursor CLI (cursor/<model>): --force yok, izin listesi proje .cursor/cli.json'da; dosya her denemede yeniden yazılır, git'ten gizlenir
 const CURSOR_IZIN = '{"permissions":{"allow":["Read(**)","Write(**)","Shell(bash)","Shell(sh)","Shell(node)","Shell(npm)","Shell(npx)","Shell(git)","Shell(grep)","Shell(sed)","Shell(awk)","Shell(cat)","Shell(ls)","Shell(head)","Shell(tail)","Shell(wc)","Shell(find)","Shell(sort)","Shell(diff)","Shell(mkdir)","Shell(cp)","Shell(mv)","Shell(rm)","Shell(touch)","Shell(chmod)","Shell(echo)","Shell(test)","Shell(python3)"],"deny":["Shell(sudo)","Shell(git push)"]}}';

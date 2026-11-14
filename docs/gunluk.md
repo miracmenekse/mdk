@@ -85,3 +85,8 @@ Bash koşturucular (`mdk-adim`, `mdk-paralel`, `mdk-incele`, `persona-tur`, `mdk
 
 ## 2026-11-14: Epic 26 — test betikleri Node'a
 Kullanıcı "geri kalanı da dönüştür" dedi; Claude elle yazdı. `test/hepsi.mjs` (paralel 8 + süre/süreç hassas testler sırayla; hızlı kip ~18 sn, tam ~2,5 dk), `test/yardim.mjs` ortak yardımcı; sahte opencode/cursor/bun artık `.mjs` ve koşturucular `.mjs` komutu node ile başlatır (Windows'ta shebang/`.cmd` gerekmez). Test kapıları `test -f` yerine `node -e "…existsSync…"`: Windows'ta bash yoksa kapı cmd ile koşar. Bulgu: Node koşturucusunun kilit almaya kadar açılışı ~1-1,5 sn (bash'te <1 sn); kilit testleri sabit 1 sn yerine kilit dosyasını bekler, paralel testi <8 sn. Hızlı kipte uzun koşturucu testleri (mdk-adim, mdk-hiz, paralel, persona, incele, epic-onay) atlanır; tam koşuda hepsi koşar (eskiden persona/paralel/incele/epic-onay regresyonda hiç yoktu). iOS testleri `.mjs` oldu ama `ios/` ana dalda olmadığı için denenmedi. Panel test-api hâlâ eski `hepsi.sh` yedeğini sınar (başka projeler için).
+
+### Windows hazırlığı (Epic 26 sonrası)
+- `.gitattributes` (`* text=auto eol=lf`): Git for Windows'un `core.autocrlf=true` varsayılanı CRLF çıkarıyordu; CRLF'li `personalar.md` ile persona-tur "alan yok" (çıkış 2) veriyordu (Mac'te yeniden üretildi). Satır bölmeleri de `/\r?\n/` oldu (persona-tur, mdk-ortak, mdk-epic, epic-tartis, mdk-adim, hepsi.mjs).
+- Panel testleri (test-api, uzak-test-engel) artık `test/hepsi.mjs` sahtesi kullanıyor; `hepsi.sh` yedeği yalnız POSIX'te sınanıyor. `/api/test` süre sınırı 180 → 600 sn (tam regresyon ~2.5 dk).
+- PC'de ilk adım: `git pull`, sonra `git rm -rq --cached . && git reset -q --hard` (dosyaları LF'e yeniden yazar), sonra `node test/hepsi.mjs`.

@@ -12,7 +12,7 @@ const iz = join(d, 'kostu-5521');
 writeFileSync(join(d, 'PLAN.md'), 'Yürütücü: opencode\n\n## K\n- [ ] 1. İş\n  - Kapı: `true`\n');
 writeFileSync(join(d, '.mdk-uzak.json'), JSON.stringify({ host: H, kullanici: 'k@x.y' }));
 mkdirSync(join(d, 'test'));
-writeFileSync(join(d, 'test', 'hepsi.sh'), `#!/usr/bin/env bash\ntouch "${iz}"\necho "hepsi ok"\n`);
+writeFileSync(join(d, 'test', 'hepsi.mjs'), `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(iz)}, '');\nconsole.log('hepsi ok');\n`);
 const s = await baslat(d, 0);
 const gonder = (basliklar) => new Promise((coz, ret) => {
   const r = request({ host: '127.0.0.1', port: s.port, path: '/api/test', method: 'POST', headers: basliklar }, (y) => {

@@ -225,7 +225,7 @@ export async function baslat(dir, port, { calistir } = {}) {
     const saat = setTimeout(() => {
       cocuk.kill('SIGKILL');
       cikti += '\n(süre doldu)';
-    }, 180000);
+    }, 600000); // tam regresyon Mac'te ~2.5 dk; Windows'ta süreç açmak daha yavaş
     saat.unref();
     let bitti = false;
     const bitir = (gecti) => {

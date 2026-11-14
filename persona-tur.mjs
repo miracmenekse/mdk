@@ -22,7 +22,7 @@ const ILK = Number(process.env.PERSONA_ILK || 60);    // sessiz model erken atla
 
 if (!existsSync(SORU)) hata(`soru dosyası yok: ${SORU}`);
 if (!existsSync(PERSONALAR)) hata(`personalar dosyası yok: ${PERSONALAR}`);
-const pmetin = readFileSync(PERSONALAR, 'utf8').split('\n');
+const pmetin = readFileSync(PERSONALAR, 'utf8').split(/\r?\n/);
 
 // başlık bloğu: "## <bölüm>" altındaki "### <başlık>" satırından sonraki ### ya da ## başlığına kadar; onek: başlık önekle eşleşir
 function blok(b, k, onek = false) {
