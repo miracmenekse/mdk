@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Kullanım (proje kökünde): mdk-adim.sh <adım-no> [plan-dosyası]
 # PLAN.md adımını ücretsiz modellerden başlayarak OpenCode'a yaptırır, "Kapı" komutuyla doğrular.
-# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak onayı bekliyor | 6 sağlayıcı yanıt vermiyor | 8 modeller kilitli (tavan doldu)
+# Çıkış: 0 geçti | 2 eskale (modeller tükendi, kodcu/Claude devralsın) | 3 bu adım opencode'un değil | 4 ön koşul | 5 taslak ya da Epic çözüm onayı bekliyor | 6 sağlayıcı yanıt vermiyor | 8 modeller kilitli (tavan doldu)
 set -uo pipefail
 # donmuş kopya: bir adım mdk-adim.sh'i değiştirse ya da git geri alsa da çalışan betik etkilenmez
 export MDK_SELF_DIR="${MDK_SELF_DIR:-$(cd "$(dirname "$0")" && pwd)}"
@@ -93,6 +93,16 @@ yaz_durum() { D_ADIM=$N D_BASLIK=$baslik D_MODEL=${1:-} D_DENEME=${2:-0} D_DURUM
 # taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
 if grep -q '^\s*- Etki:' <<<"$blok" && ! grep -q '^\s*- Onay: evet\b' <<<"$blok"; then
   echo "adım $N taslak onayı bekliyor: PLAN.md'ye \"- Onay: evet\" ekle"; exit 5
+fi
+# Epic çözüm onayı: tartışması olan Epic'in çözümü onaylanmadıysa adım koşmaz
+epik=$(awk -v n="$N" '
+  $0 ~ "^- \\[[ x]\\] "n"\\." {exit}
+  /^## / {b=""; on=1; next}
+  on && /^- \[/ {on=0}
+  on {b = b $0 "\n"}
+  END {printf "%s", b}' "$PLAN")
+if grep -q '^- Tartışma:' <<<"$epik" && ! grep -q '^- Onay: evet' <<<"$epik"; then
+  echo "adım $N: Epic çözüm onayı bekliyor (panelden onayla; node mdk-epic.mjs karar <no> onay)"; exit 5
 fi
 # ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (adım 70: 7 deneme boşa gitti)
 # hızlı kip (HEPSI_HIZLI=1): mdk-adim.test.sh atlanır; kırmızıda durum.json "regresyon_kirmizi", kırmızı satırları çıktıda
