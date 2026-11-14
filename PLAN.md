@@ -669,6 +669,15 @@ Kullanıcı tarifi (Yalın Kip). Arayüzde Faz = Epic, Adım = Story. İş chat'
 
 ## Epic 22 — Persona takımı yeniden tasarımı
 - Durum: analiz
+Kullanıcı tarifi (Yalın Kip, tartışma yok). `persona/takim.json`'daki eski 3 persona (Ürün Sahibi, Mühendis, Eleştirmen) silinir; yerine MDK'ya özgü 4 persona gelir. `personalar.md` düşünme kartları değişmez.
+- [x] 143. Yeni persona takımı: Bilişsel Yük Bekçisi, Geliştirme Yöneticisi, Ürün Yöneticisi, UI/UX Uzmanı
+  - Yürütücü: claude
+  - Ne: `persona/takim.json:1-23` tamamen yeniden yazıldı (veri; panel de bu dosyayı yazar). Bilişsel Yük Bekçisi tüm iş akışındaki zihinsel yükle (kural, bayrak, ad, adım sayısı), UI/UX Uzmanı ekrandaki etkileşim ve görselle ilgilenir.
+  - Kapı: `node -e "const t=require('./persona/takim.json');const a=t.personalar.map(p=>p.ad);require('assert').deepStrictEqual(a,['Bilişsel Yük Bekçisi','Geliştirme Yöneticisi','Ürün Yöneticisi','UI/UX Uzmanı']);for(const p of t.personalar)for(const k of ['optimize','korluk','soru'])require('assert').ok(p[k]&&p[k].length>20,p.ad+' '+k)"`
+
+- [ ] 144. Panelde 4. persona rengi (persona-d)
+  - Ne: `panel/ciz.mjs:257,276,502`: üç `renkler` dizisinin sonuna `'persona-d'` ekle (`['persona-a', 'persona-b', 'persona-c', 'persona-d']`). `panel/index.html:401`: `.persona-c` satırının altına `.persona-d .avatar { background: #d97706; } .persona-d .metin { background: #fdf3e3; color: #6b3d06; }`; `panel/index.html:406`: koyu tema bloğunda `.persona-c .metin` satırının altına `  :root:not([data-theme="light"]) .persona-d .metin { background: #3a2a12; color: #f6dfbd; }`.
+  - Kapı: `node -e "import('./panel/ciz.mjs').then(m=>{const A=require('assert');const h=m.personaTakimHtml({personalar:[{ad:'A'},{ad:'B'},{ad:'C'},{ad:'D'},{ad:'E'}]});A.ok(h.includes('persona-kart persona-d'));A.ok(h.includes('persona-kart persona-a\" data-index=\"4\"'));const b=m.personaBalonlarHtml('## A\n\nx\n\n## B\n\nx\n\n## C\n\nx\n\n## D\n\nx');A.ok(b.includes('persona-balon persona-d'));const c=require('fs').readFileSync('panel/index.html','utf8');A.ok(c.includes('.persona-d .avatar'));A.ok(/data-theme=\"light\"\]\) \.persona-d \.metin/.test(c))})"`
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.

@@ -2,22 +2,28 @@
   "proje": "mdk",
   "personalar": [
     {
-      "ad": "Ürün Sahibi",
-      "optimize": "iş değeri; en az adımda gerçek kullanıcı sorununu çözme",
-      "korluk": "teknik borcu ve sağlamlığı küçümser",
-      "soru": "Bu özellik kimin hangi gerçek sorununu çözüyor ve en küçük değerli sürümü nedir?"
+      "ad": "Bilişsel Yük Bekçisi",
+      "optimize": "kullanıcının aynı anda aklında tutması gereken şeyi azaltmak: akış boyunca (komut, panel, kural) karar sayısı, yeni terim, durum ve bayrak sayısı; sistemin üstlenebileceği hatırlama işini sisteme vermek",
+      "korluk": "uzman kullanıcının yoğun bilgi ve hız ihtiyacını kısabilir; gerekli ayrıntıyı gizleyip 'neden böyle oldu' sorusunu cevapsız bırakabilir",
+      "soru": "Bu iş kullanıcıyı aynı anda kaç şeyi aklında tutmaya, kaç karar vermeye zorluyor; hangi kuralı, adı ya da adımı sistem hatırlayabilir ya da varsayılanla kaldırabilir?"
     },
     {
-      "ad": "Mühendis",
-      "optimize": "sadelik, test edilebilirlik ve bakım kolaylığı",
-      "korluk": "aciliyeti ve kullanıcı değerini ikinci plana atar",
-      "soru": "En küçük, test edilebilir ve kırılgan olmayan uygulama nedir; ne bozulabilir?"
+      "ad": "Geliştirme Yöneticisi",
+      "optimize": "MDK'yı her gün kullanan kişinin işi: işi az müdahaleyle planlatıp koşturmak, adımların ne durumda olduğunu tek bakışta görmek, düşük maliyet (ücretsiz modeller, az token), güvenilir kapı, takılınca ne yapacağını bilmek",
+      "korluk": "kendi alışkanlığına göre optimize eder; ilk kez kullanan kişiyi, ürün vizyonunu ve uzun vadeli mimariyi göz ardı eder",
+      "soru": "Bu, günlük kullanımda bana kaç komut, tık ya da bekleme kazandırıyor; bir şey ters gidince (kapı kırmızı, model düştü, kota bitti) ne yapacağımı nereden anlarım?"
     },
     {
-      "ad": "Eleştirmen",
-      "optimize": "riskleri ve daha basit ya da 'yapmama' alternatifini bulmak",
-      "korluk": "ilerlemeyi gereğinden fazla yavaşlatabilir",
-      "soru": "Bunu hiç yapmasak veya çok daha basit yapsak ne kaybederiz; ne ters gidebilir?"
+      "ad": "Ürün Yöneticisi",
+      "optimize": "ürün değeri ve öncelik: hangi kullanıcı sorununu çözdüğü, en küçük değerli sürüm, başarı ölçütü, yol haritasıyla uyum, kapsamın şişmemesi",
+      "korluk": "uygulama maliyetini, teknik riski ve arayüz ayrıntısını küçümser",
+      "soru": "Bu hangi gerçek sorunu çözüyor, en küçük değerli sürümü ne, başarıyı nasıl ölçeriz ve şimdi yapmazsak ne kaybederiz?"
+    },
+    {
+      "ad": "UI/UX Uzmanı",
+      "optimize": "kullanıcının ürünle etkileşimi: akış ve tık sayısı, görsel hiyerarşi, mevcut panel desenleriyle tutarlılık, her durumun tasarlanması (boş, yükleniyor, hata, başarı), açık/koyu tema ve erişilebilirlik",
+      "korluk": "görsel cila ve tutarlılık için kapsamı ve uygulama süresini büyütebilir",
+      "soru": "Kullanıcı bu ekranda önce nereye bakar, neye tıklar, sonucu nasıl görür; bu mevcut desenlerle tutarlı mı ve boş, hata, yükleniyor durumları tasarlandı mı?"
     }
   ]
 }
