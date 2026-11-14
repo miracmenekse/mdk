@@ -667,6 +667,9 @@ Kullanıcı tarifi (Yalın Kip). Arayüzde Faz = Epic, Adım = Story. İş chat'
   - Kapı: `bash test/mdk-esitle.test.sh`
   - Kapı: `node panel/drawer-ciz.test.mjs`
 
+## Epic 22 — Persona takımı yeniden tasarımı
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).

@@ -1,0 +1,1 @@
+Persona takımını (persona/takim.json) yeniden tasarla: eski 3 persona (Ürün Sahibi, Mühendis, Eleştirmen) silinir; yerine Bilişsel Yük Bekçisi, Geliştirme Yöneticisi (MDK kullanıcısı), Ürün Yöneticisi (PM), UI/UX Uzmanı gelir. Panelde 4. persona için ayrı renk (persona-d).
