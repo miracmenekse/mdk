@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const BURASI = dirname(fileURLToPath(import.meta.url));
-const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs', 'mdk-hata.mjs', 'mdk-denetim.mjs'];
+const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs', 'mdk-hata.mjs', 'mdk-denetim.mjs', 'mdk-ana.mjs'];
 // donmuş kopya: bir adım koşturucuyu değiştirse ya da git geri alsa da çalışan koşturucu etkilenmez
 if (!process.env.MDK_DONMUS) {
   const asil = process.env.MDK_SELF_DIR || BURASI, d = join('.mdk-log', 'donmus');
@@ -72,15 +72,23 @@ const gorevSatir = planSatiri(plan, `Görev ${gorev}`);
 if (gorevSatir === null && gorev !== 'kod') {
   yaz(`tanımsız görev türü: ${gorev} (geçerli: ${[...plan.matchAll(/^Görev ([^:]+):/gm)].map((m) => m[1]).join(' ')})`); process.exit(4);
 }
-// model listesi: adım > Görev <tür> > dosya Modeller
-const modline = (blok.match(/^\s*- Modeller: (.*)/m) || [])[1] || gorevSatir || planSatiri(plan, 'Modeller') || '';
+// ana yürütücü: Epic'in "- Ana:" satırı ya da MDK_ANA; yurutuculer.json yoksa eski davranış
+const anaM = await import('./mdk-ana.mjs').catch(() => null);
+const anaTanim = anaM ? anaM.anaOku(e.MDK_YURUTUCULER || join(SELF, 'yurutuculer.json')) : null;
+let ANA = null;
+if (anaTanim && anaTanim.liste.length) {
+  try { ANA = anaM.anaSec(anaTanim, { plan, adimNo: Number(N) }); } catch (err) { yaz(err.message); process.exit(4); }
+}
+const anaGorev = (t) => (ANA && anaM.gorevModelleri(ANA, t)?.join(', ')) || '';
+// model listesi: adım > ana yürütücünün Görev <tür>'ü > Görev <tür> > dosya Modeller
+const modline = (blok.match(/^\s*- Modeller: (.*)/m) || [])[1] || anaGorev(gorev) || gorevSatir || planSatiri(plan, 'Modeller') || '';
 let MODELLER = modelListesi(modline);
 if (!MODELLER.length) { yaz('Modeller satırı yok (adım, Görev ya da PLAN)'); process.exit(4); }
 // ONCE=<model>: listede varsa bu çalıştırmada önce o denenir
 if (e.ONCE && MODELLER.includes(e.ONCE)) MODELLER = [e.ONCE, ...MODELLER.filter((x) => x !== e.ONCE)];
 // otomatik eskale modelleri: Görev kod/vb. modelleri gerçek hatayla tükenirse kodcu öncesi Görev eskale: denenir
 let ESKALE = [];
-if (gorev !== 'eskale' && !/^\s*- Modeller:/m.test(blok)) ESKALE = modelListesi(planSatiri(plan, 'Görev eskale') || '').filter((m) => !MODELLER.includes(m));
+if (gorev !== 'eskale' && !/^\s*- Modeller:/m.test(blok)) ESKALE = modelListesi(anaGorev('eskale') || planSatiri(plan, 'Görev eskale') || '').filter((m) => !MODELLER.includes(m));
 // token bütçesi (model başına): adım satırı önceliklidir, yoksa dosya başındaki Bütçe
 const bm = blok.match(/^\s*- Bütçe: ([0-9]+)/m) || plan.match(/^Bütçe: ([0-9]+)/m);
 const butce = bm ? Number(bm[1]) : null;
@@ -171,6 +179,10 @@ async function calistir(cm, bas, ist, log, bd) {
   if (cm.startsWith('cursor/')) {
     yurm = 'cursor'; cursorIzin();
     komut = e.MDK_CURSOR || 'cursor-agent'; args = ['-p', '--output-format', 'stream-json', '--trust', '--model', cm.slice(7), ist]; env = temizOrtam();
+  } else if (cm.startsWith('agy/')) {
+    // Antigravity: planlayıcı CLI'si (-p); varsayılan modelde --model verilmez, ana yürütücünün agy_ek'i eklenir
+    yurm = 'agy'; const ad = cm.slice(4);
+    komut = e.MDK_AGY || 'agy'; args = ['-p', ...(ad === 'varsayilan' ? [] : ['--model', ad]), ...((ANA && ANA.agy_ek) || []), ist]; env = temizOrtam();
   } else {
     yurm = 'opencode'; komut = OC; args = ['run', '-m', cm, '--title', bas, '--format', 'json', '--print-logs', ist]; env = temizOrtam({ OPENCODE_LOG_LEVEL: 'error' });
   }
@@ -183,6 +195,7 @@ async function calistir(cm, bas, ist, log, bd) {
   let neden = r.neden || '';
   if (!neden && yurm === 'opencode' && kotaVar(log)) neden = 'kota'; // hızlı kota çıkışı: süreç POLL dolmadan çıkabilir
   if (!neden && yurm === 'cursor' && /usage limit|rate limit|upgrade to|quota/i.test(oku(log + '.err'))) neden = 'kota'; // tahmin; gerçek mesaj görülünce daralt
+  if (!neden && yurm === 'agy' && /quota|rate limit|RESOURCE_EXHAUSTED|429/i.test(oku(log + '.err') + oku(log))) neden = 'kota'; // Antigravity kota mesajı
   if (!neden && yurm === 'opencode') { // günlükteki hata olayından tür çıkar; bilinmeyen akışı değiştirmez
     const h = gunlukHatasi(log);
     if (h && SAGLAYICI_TURLER.includes(h.tur)) neden = h.tur;
@@ -266,7 +279,7 @@ while (aday.length) {
       for (const l of git('diff', '--cached', '--numstat').stdout.split('\n').filter(Boolean)) { const [a, b] = l.split('\t'); ek += Number(a) || 0; sil += Number(b) || 0; dos++; }
       const o = olaylariTopla(log); harcanan += o.etkin;
       const boyutSonuc = neden ? null : boyutDenetle({ dosya: dos, satir: ek + sil });
-      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
+      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
       if (!neden) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
         git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');
