@@ -9,6 +9,7 @@ import { gecmis } from './gecmis.mjs';
 import { telemetri } from './telemetri.mjs';
 import { claudeKullanim } from './claude.mjs';
 import { kararlar } from './karar.mjs';
+import { iletiBul } from '../mdk-hata.mjs';
 
 export function snapshot(dir) {
   const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
@@ -40,6 +41,15 @@ export function snapshot(dir) {
       .filter(Boolean);
   } catch {
     satirlar = [];
+  }
+
+  // sade akış durumlarında açıklama yok; diğerlerinde nedene göre sade ileti + öneri
+  const SADE_DURUMLAR = ['calisiyor', 'regresyon', 'persona', 'kapi_yaziliyor', 'gecti'];
+  if (sonuc.simdi && !SADE_DURUMLAR.includes(sonuc.simdi.durum)) {
+    const sonKayit = [...satirlar].reverse().find((s) => s.adim === sonuc.simdi.adim);
+    const neden = sonuc.simdi.neden ?? sonKayit?.neden;
+    const aciklama = iletiBul(sonuc.simdi.durum, neden);
+    if (aciklama) sonuc.simdi.aciklama = aciklama;
   }
 
   // kapı üretim satırları (tur=kapi): model başına ayrı özet; model/adım istatistiğine, geçmişe ve matrise girmez

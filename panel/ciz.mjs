@@ -2,7 +2,7 @@
 // Tüm kullanıcı metni esc ile kaçışlanır.
 
 const ROZETLER = { bitti: 'bitti', calisiyor: 'çalışıyor', bekliyor: 'bekliyor', eskale: 'eskale' };
-const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor', regresyon: 'ön regresyon koşuyor', regresyon_kirmizi: 'ön regresyon kırmızı' };
+const DURUM_ETIKET = { calisiyor: 'çalışıyor', gecti: 'geçti', eskale: 'eskale', bitti: 'bitti', bekliyor: 'bekliyor', saglayici: 'sağlayıcı yanıt vermiyor', regresyon: 'ön regresyon koşuyor', regresyon_kirmizi: 'ön regresyon kırmızı', kilit: 'modeller kilitli', kapi_hata: 'kapı üretilemedi', ortam_hatasi: 'ortam hatası', kapi_yaziliyor: 'kapı yazılıyor', persona: 'persona turu' };
 const GUVEN = { dusuk: 'düşük', orta: 'orta', yuksek: 'yüksek' };
 // model tablosu veri güveni: [simge + metin, açıklama]
 const VERI = {
@@ -110,7 +110,10 @@ export function suAnHtml(simdi, simdiMs) {
     `<div class="alan"><span class="etiket">deneme</span><b>${esc(simdi.deneme ?? '—')}</b></div>` +
     `<div class="alan"><span class="etiket">durum</span><b>${esc(DURUM_ETIKET[durum] || durum)}</b></div>` +
     son +
-    '</div>';
+    '</div>' +
+    (simdi.aciklama
+      ? `<div class="aciklama"><b>${esc(simdi.aciklama.ileti)}</b><span>${esc(simdi.aciklama.oneri)}</span></div>`
+      : '');
 }
 
 export const SORUNLU_INCELEMELER = ['kismen', 'uyumsuz'];
