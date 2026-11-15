@@ -273,6 +273,12 @@ while (aday.length) {
         kilitBirak(kilit);
         // hakem: story geçtikten sonra kendiliğinden çalışır (uyarı, bağlayıcı değil)
         if (planSatiri(plan, 'Görev hakem') !== null && /^\s*-\s*Kabul:/m.test(blok) && e.MDK_HAKEM !== '0' && existsSync(join(SELF, 'mdk-hakem.mjs'))) {
+          // MDK_HAKEM_ARKA=1: hakem arka planda koşar, koşturucu beklemez (hüküm hakem.jsonl'a ve panele düşer)
+          if (e.MDK_HAKEM_ARKA === '1') {
+            const { spawn } = await import('node:child_process');
+            spawn(process.execPath, [join(SELF, 'mdk-hakem.mjs'), N, PLAN], { stdio: 'ignore', detached: true, env: temizOrtam() }).unref();
+            yaz('hakem: arka planda koşuyor (hüküm panelde story kartında görünür)');
+          } else {
           const hr = spawnSync(process.execPath, [join(SELF, 'mdk-hakem.mjs'), N, PLAN], { stdio: 'ignore', env: temizOrtam({ ILK: e.MDK_HAKEM_ILK || '60', SURE: e.MDK_HAKEM_SURE || '180' }), timeout: Number(e.MDK_HAKEM_TAVAN || 420) * 1000 }); // hakem uyarıdır: koşuyu en çok 7 dk bekletir
           if (hr.status === 0) {
             const satirlar = oku('hakem.jsonl').trim().split(/\n/).filter(Boolean);
@@ -287,6 +293,8 @@ while (aday.length) {
             }
           } else if (hr.status === 2 || hr.status === 4) {
             yaz('hakem: hüküm alınamadı');
+          }
+          else if (hr.status === null) yaz('hakem: süre doldu, hüküm alınamadı');
           }
         }
         if (/^\s*-\s+(İncele|Incele):\s*evet\b/im.test(blok) && existsSync(join(SELF, 'mdk-incele.mjs'))) {
