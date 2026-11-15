@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const BURASI = dirname(fileURLToPath(import.meta.url));
-const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs', 'mdk-hata.mjs'];
+const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs', 'mdk-hata.mjs', 'mdk-denetim.mjs'];
 // donmuş kopya: bir adım koşturucuyu değiştirse ya da git geri alsa da çalışan koşturucu etkilenmez
 if (!process.env.MDK_DONMUS) {
   const asil = process.env.MDK_SELF_DIR || BURASI, d = join('.mdk-log', 'donmus');
@@ -24,6 +24,9 @@ const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = awa
 // donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
 const { gunlukHatasi, iletiBul, bekleMs } = hata;
+// mdk-denetim.mjs yoksa (ör. eski bir depo) kapı ipucu son baytlara, boyut denetimi kapalıya düşer
+const denetim = await import('./mdk-denetim.mjs').catch(() => ({ hataOzeti: (m, n = 1500) => kirp(String(m || '').slice(-n)), boyutDenetle: () => null }));
+const { hataOzeti, boyutDenetle } = denetim;
 
 // pipe'a yazılan çıktı process.exit'te kesilmesin: eşzamanlı yaz
 const yaz = (s) => writeSync(1, s + '\n');
@@ -257,7 +260,8 @@ while (aday.length) {
       let ek = 0, sil = 0, dos = 0;
       for (const l of git('diff', '--cached', '--numstat').stdout.split('\n').filter(Boolean)) { const [a, b] = l.split('\t'); ek += Number(a) || 0; sil += Number(b) || 0; dos++; }
       const o = olaylariTopla(log); harcanan += o.etkin;
-      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, neden: neden || null });
+      const boyutSonuc = neden ? null : boyutDenetle({ dosya: dos, satir: ek + sil });
+      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
       if (!neden) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
         git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');
@@ -265,6 +269,7 @@ while (aday.length) {
         if (/^\s*-\s+(İncele|Incele):\s*evet\b/im.test(blok) && existsSync(join(SELF, 'mdk-incele.mjs'))) {
           spawnSync(process.execPath, [join(SELF, 'mdk-incele.mjs'), N, PLAN], { stdio: 'inherit', env: temizOrtam() });
         }
+        if (boyutSonuc) yaz(`UYARI: story boyutu: ${boyutSonuc.ileti}`);
         yaz(`adım ${N} geçti (${m}, deneme ${d})`); process.exit(0);
       }
       if (GECICI_TURLER.includes(neden)) {
@@ -281,7 +286,7 @@ while (aday.length) {
         yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden})`);
         break; // geçici tekrar sınırı doldu: kota gibi sıradaki modele geç
       }
-      if (neden === 'kapi' || neden === 'kurcalama') ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısının sonu:\n${sonBayt(kapiLog, 1500)}`;
+      if (neden === 'kapi' || neden === 'kurcalama') ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısından başarısız iddia:\n${hataOzeti(oku(kapiLog), 1500)}`;
       else if (neden === 'regresyon') {
         const basarisiz = oku(kapiLog).split('\n').filter((l) => l.includes('BAŞARISIZ')).slice(0, 5).join('\n');
         ipucu = `Önceki deneme adım kapısını geçti ama regresyonu bozdu (başka bir test kırıldı). O davranışı koruyarak adımı yeniden yap; kırılan testi değiştirme. Çıktının sonu:\n${basarisiz}\n${sonBayt(kapiLog, 1200)}`;
