@@ -1,12 +1,12 @@
 // Kayıt aracı: deneme sonucunu ya da Claude incelemesini metrikler.jsonl'a ekler.
 // Kullanım:
-//   node mdk-kayit.mjs <adım> --yurutucu kodcu|claude|opencode --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]
+//   node mdk-kayit.mjs <adım> --yurutucu <ad> --model <ad> --gecti true|false [--sure <sn>] [--token <n>] [--deneme <n>] [--neden <metin>] [--dizin <d>]
 //   node mdk-kayit.mjs <adım> --inceleme uyumlu|kismen|uyumsuz [--not "<metin>"] [--dizin <d>]
 
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const YURUTUCULER = ['kodcu', 'claude', 'opencode'];
+const YURUTUCU_DESEN = /^[a-z][a-z0-9-]{1,30}$/; // ana yürütücü adı: küçük harfle başlar, yeni adlar da kabul edilir
 const INCELEMELER = ['uyumlu', 'kismen', 'uyumsuz'];
 
 function kullanim(mesaj) {
@@ -37,7 +37,7 @@ if (opt.inceleme !== undefined) {
   if (!INCELEMELER.includes(opt.inceleme)) kullanim(`--inceleme şunlardan biri olmalı: ${INCELEMELER.join(', ')}`);
   satir = { tur: 'inceleme', ts, adim, inceleme: opt.inceleme, not: opt.not ?? null };
 } else {
-  if (!YURUTUCULER.includes(opt.yurutucu)) kullanim(`--yurutucu şunlardan biri olmalı: ${YURUTUCULER.join(', ')}`);
+  if (!YURUTUCU_DESEN.test(opt.yurutucu ?? '')) kullanim('--yurutucu küçük harfli bir ad olmalı');
   if (!opt.model) kullanim('--model eksik');
   if (opt.gecti !== 'true' && opt.gecti !== 'false') kullanim('--gecti true ya da false olmalı');
   satir = {

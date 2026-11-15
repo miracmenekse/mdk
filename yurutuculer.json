@@ -1,0 +1,19 @@
+{
+  "varsayilan": "claude",
+  "liste": [
+    {
+      "ad": "claude",
+      "baslik": "Claude Code + OpenCode",
+      "planlayici": ["claude", "-p", "{istem}"],
+      "roller": { "kodcu": "claude/haiku", "tasarimci": "claude/sonnet" }
+    },
+    {
+      "ad": "antigravity",
+      "baslik": "Antigravity",
+      "planlayici": ["agy", "-p", "{istem}"],
+      "agy_ek": [],
+      "roller": { "kodcu": "agy/varsayilan", "tasarimci": "agy/varsayilan" },
+      "gorevler": { "kod": ["agy/varsayilan"], "kapi": ["agy/varsayilan"], "eskale": ["agy/varsayilan"] }
+    }
+  ]
+}

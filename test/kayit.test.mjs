@@ -45,7 +45,7 @@ for (const args of [
   ['3', '--dizin', d],
   ['x', '--inceleme', 'uyumlu', '--dizin', d],
   ['3', '--yurutucu', 'kodcu', '--model', 'sonnet', '--gecti', 'belki', '--dizin', d],
-  ['3', '--yurutucu', 'bilinmeyen', '--model', 'sonnet', '--gecti', 'true', '--dizin', d],
+  ['3', '--yurutucu', 'Bilinmeyen Ad', '--model', 'sonnet', '--gecti', 'true', '--dizin', d],
   ['3', '--yurutucu', 'kodcu', '--gecti', 'true', '--dizin', d],
 ]) {
   r = kos(args);
