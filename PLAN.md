@@ -803,6 +803,9 @@ Tartışma + Claude sınaması `epic/27/is.md`'de. Radar yeni sekme değil: Ara�
 ## Epic 28 — Sağlayıcı hataları: türüne göre davran, sade dille söyle
 - Durum: analiz
 
+## Epic 29 — Koşturucu denetimleri: story boyutu ve başarısız test özeti
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - **Daha sonra yapılacak (kullanıcı kararı, 2026-11-15; kullanıcı istemeden Epic açma).** Dayanak: `strateji/rapor/ozet-2026-11-15.md`.
   1. Kapıyı sade dille gösterip onaylatmak: story koşmadan önce "bu iş bitti sayılması için şunlar doğru olmalı" listesi panelde (kapıyı model yazıyor; en büyük iç risk).
