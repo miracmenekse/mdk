@@ -1,0 +1,22 @@
+{
+  "urun": "mdk: teknik olmayan ya da yarı teknik, bütçesi dar kişiler için; işi ekranlarla gösteren, ücretsiz modeller ve kişinin zaten ödediği aboneliklerle geliştiren, her adımı otomatik test kapısından geçiren yerel geliştirme aracı.",
+  "esik": { "sicramaYuzde": 20, "sicramaMutlak": 500, "durmusGun": 90 },
+  "izle": [
+    { "repo": "dyad-sh/dyad", "grup": "yerel uygulama üretici" },
+    { "repo": "stackblitz-labs/bolt.diy", "grup": "yerel uygulama üretici" },
+    { "repo": "github/spec-kit", "grup": "şartname güdümlü" },
+    { "repo": "Fission-AI/OpenSpec", "grup": "şartname güdümlü" },
+    { "repo": "gsd-build/get-shit-done", "grup": "şartname güdümlü" },
+    { "repo": "bmad-code-org/BMAD-METHOD", "grup": "şartname güdümlü" },
+    { "repo": "eyaltoledano/claude-task-master", "grup": "şartname güdümlü" },
+    { "repo": "ruvnet/ruflo", "grup": "orkestrasyon ve pano" },
+    { "repo": "code-yeongyu/oh-my-openagent", "grup": "orkestrasyon ve pano" },
+    { "repo": "BloopAI/vibe-kanban", "grup": "orkestrasyon ve pano" },
+    { "repo": "saltbo/agent-kanban", "grup": "orkestrasyon ve pano" },
+    { "repo": "DanWahlin/ai-agent-board", "grup": "orkestrasyon ve pano" },
+    { "repo": "augmentedmike/helloam-agentic-kanban", "grup": "orkestrasyon ve pano" },
+    { "repo": "agnusdei1207/opencode-orchestrator", "grup": "orkestrasyon ve pano" },
+    { "repo": "musistudio/claude-code-router", "grup": "maliyet yönlendirme" },
+    { "repo": "NicoGenti/opencode-orchestrator-kit", "grup": "maliyet yönlendirme" }
+  ]
+}
