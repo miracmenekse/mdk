@@ -45,3 +45,70 @@ export function boyutDenetle({ dosya = 0, satir = 0 } = {}) {
   }
   return null;
 }
+
+// Görev türü başına varsayılan bağlam bütçesi (okuma sınırı)
+export const BAGLAM_SINIR = {
+  kod: { dosya: 5, satir: 800 },
+  kapi: { dosya: 4, satir: 600 },
+  tasarim: { dosya: 6, satir: 1000 },
+  mekanik: { dosya: 3, satir: 400 },
+  eskale: { dosya: 8, satir: 1200 },
+};
+
+function sinirAyikla(metin) {
+  if (!metin) return null;
+  const m = String(metin).trim().match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (!m) return null;
+  const dosya = Number(m[1]), satir = Number(m[2]);
+  if (Number.isInteger(dosya) && dosya > 0 && Number.isInteger(satir) && satir > 0) {
+    return { dosya, satir };
+  }
+  return null;
+}
+
+export function baglamSiniri(gorev = 'kod', planMetni = '', adimBlok = '') {
+  // 1. adimBlok içindeki "- Bağlam sınırı: <D>/<S>"
+  if (adimBlok) {
+    const m = adimBlok.match(/^\s*-\s*Bağlam sınırı:\s*([^\r\n]+)/im);
+    if (m) {
+      const s = sinirAyikla(m[1]);
+      if (s) return s;
+    }
+  }
+
+  // 2. planMetni başındaki "Bağlam <gorev>: <D>/<S>"
+  if (planMetni) {
+    const gorevKacik = (gorev || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const mGorev = planMetni.match(new RegExp(`^\\s*Bağlam\\s+${gorevKacik}:\\s*([^\\r\\n]+)`, 'm'));
+    if (mGorev) {
+      const s = sinirAyikla(mGorev[1]);
+      if (s) return s;
+    }
+
+    // 3. planMetni başındaki "Bağlam sınırı: <D>/<S>"
+    const mGenel = planMetni.match(/^\s*Bağlam sınırı:\s*([^\r\n]+)/m);
+    if (mGenel) {
+      const s = sinirAyikla(mGenel[1]);
+      if (s) return s;
+    }
+  }
+
+  // 4. BAGLAM_SINIR[gorev] || BAGLAM_SINIR.kod
+  const varsayilan = BAGLAM_SINIR[gorev] || BAGLAM_SINIR.kod;
+  return { dosya: varsayilan.dosya, satir: varsayilan.satir };
+}
+
+export function baglamIpucu(sinir) {
+  const s = sinir || BAGLAM_SINIR.kod;
+  return 'Bağlam bütçesi: en çok ' + s.dosya + ' dosya ve toplam ' + s.satir + ' satır oku; hedef satır aralığını doğrudan aç.';
+}
+
+export function baglamDenetle({ okunanDosya = 0, okunanSatir = 0 } = {}, sinir = BAGLAM_SINIR.kod) {
+  if (okunanDosya > sinir.dosya || okunanSatir > sinir.satir) {
+    return {
+      asim: true,
+      ileti: `Bağlam bütçesi aşıldı: ${okunanDosya} dosya / ${okunanSatir} satır okundu (sınır ${sinir.dosya} dosya / ${sinir.satir} satır).`,
+    };
+  }
+  return { asim: false, ileti: null };
+}

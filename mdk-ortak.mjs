@@ -54,6 +54,8 @@ export function opencodeSec(dir) {
 // step_finish (v1), step_start (v2), cursor-agent assistant/result, agy stream-json olaylarından ölçüm
 export function olaylariTopla(log) {
   let token = 0, maliyet = 0, etkin = 0, ss = 0, sf = 0, agyIstek = 0; const cur = new Set();
+  const okunanDosyalar = new Set();
+  let okunanSatir = 0;
   for (const l of satirlar(oku(log))) {
     let x; try { x = JSON.parse(l); } catch { continue; }
     if (!x || typeof x !== 'object') continue;
@@ -77,8 +79,33 @@ export function olaylariTopla(log) {
       token += top;
       etkin += top - (u.cache_read_tokens || 0);
     }
+    if (x.type === 'tool_use' && x.part?.tool === 'read' && x.part?.state?.status === 'completed') {
+      const dosya = x.part.state.input?.filePath || x.part.state.input?.path;
+      if (dosya) okunanDosyalar.add(dosya);
+      const out = typeof x.part.state.output === 'string' ? x.part.state.output : '';
+      const cm = out.match(/<content>([\s\S]*?)<\/content>/);
+      if (cm) {
+        okunanSatir += cm[1] ? cm[1].split(/\r?\n/).length : 0;
+      } else if (out) {
+        okunanSatir += out.split(/\r?\n/).length;
+      }
+    }
+    if (x.event === 'step_update' && x.step_update?.state === 'DONE' && (x.step_update?.tool_name === 'read_file' || x.step_update?.tool_name === 'view_file')) {
+      const params = x.step_update.parameters || x.step_update.tool_info?.parameters;
+      const dosya = params?.Path || params?.AbsolutePath;
+      if (dosya) okunanDosyalar.add(dosya);
+      const sLine = params?.StartLine;
+      const eLine = params?.EndLine;
+      if (sLine !== undefined && eLine !== undefined && Number(eLine) >= Number(sLine)) {
+        okunanSatir += Number(eLine) - Number(sLine) + 1;
+      } else {
+        const out = x.step_update.tool_info?.output ?? x.step_update.output ?? '';
+        const m = String(out).match(/(\d+)\s+lines\b/i);
+        if (m) okunanSatir += Number(m[1]) || 0;
+      }
+    }
   }
-  return { token, maliyet, etkin, istek: Math.max(ss, sf) + cur.size + agyIstek };
+  return { token, maliyet, etkin, istek: Math.max(ss, sf) + cur.size + agyIstek, okunanDosya: okunanDosyalar.size, okunanSatir };
 }
 
 export function metinAyikla(log) {

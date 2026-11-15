@@ -25,8 +25,14 @@ const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = awa
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
 const { gunlukHatasi, iletiBul, bekleMs } = hata;
 // mdk-denetim.mjs yoksa (ör. eski bir depo) kapı ipucu son baytlara, boyut denetimi kapalıya düşer
-const denetim = await import('./mdk-denetim.mjs').catch(() => ({ hataOzeti: (m, n = 1500) => kirp(String(m || '').slice(-n)), boyutDenetle: () => null }));
-const { hataOzeti, boyutDenetle } = denetim;
+const denetim = await import('./mdk-denetim.mjs').catch(() => ({
+  hataOzeti: (m, n = 1500) => kirp(String(m || '').slice(-n)),
+  boyutDenetle: () => null,
+  baglamSiniri: () => ({ dosya: 5, satir: 800 }),
+  baglamIpucu: () => '',
+  baglamDenetle: () => ({ asim: false, ileti: null }),
+}));
+const { hataOzeti, boyutDenetle, baglamSiniri, baglamIpucu, baglamDenetle } = denetim;
 
 // pipe'a yazılan çıktı process.exit'te kesilmesin: eşzamanlı yaz
 const yaz = (s) => writeSync(1, s + '\n');
@@ -160,6 +166,8 @@ if (e.MDK_CLAUDE_KURAL !== '1') e.OPENCODE_DISABLE_CLAUDE_CODE = '1';
 const KURALLAR = kirp(oku(join(SELF, 'yurutucu-kurallar.md')));
 // PLAN başındaki "Kurallar (tüm adımlar için):" bloğu; model PLAN.md'yi açmadan görsün
 const PROJE_KURAL = (() => { const c = []; let on = false; for (const l of plan.split(/\r?\n/)) { if (/^Kurallar/.test(l)) on = true; if (on && /^\s*$/.test(l)) break; if (on) c.push(l); } return kirp(c.join('\n')); })();
+const BAGLAM_SINIR = baglamSiniri(gorev, plan, blok);
+const BAGLAM_IPUCU = baglamIpucu(BAGLAM_SINIR);
 const GRAF = grafDilimi({ sorgu: `${baslik} ${(blok.match(/^\s*- Ne:(.*)$/m) || [])[1] || ''}`.slice(0, 400) });
 const GRAF_IPUCU = GRAF ? `Graph bağlamı (graphify; ilgili dosya/fonksiyon ve satırlar; ipucudur, dosyayı okuyup doğrula):\n${GRAF}\n` : '';
 
@@ -258,7 +266,7 @@ while (aday.length) {
     while (d <= DENEME) {
       yazDurum(m, d, 'calisiyor');
       const log = join(LOGD, `adim${N}-${sn()}.jsonl`);
-      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${GRAF_IPUCU}${SADE_IPUCU}\n${ipucu}`;
+      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${BAGLAM_IPUCU}\n${GRAF_IPUCU}${SADE_IPUCU}\n${ipucu}`;
       const r = await calistir(m, `adim-${N}`, istem, log, true);
       let neden = r.neden;
       // 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
@@ -300,7 +308,8 @@ while (aday.length) {
       for (const l of git('diff', '--cached', '--numstat').stdout.split('\n').filter(Boolean)) { const [a, b] = l.split('\t'); ek += Number(a) || 0; sil += Number(b) || 0; dos++; }
       const o = olaylariTopla(log); harcanan += o.etkin;
       const boyutSonuc = neden ? null : boyutDenetle({ dosya: dos, satir: ek + sil });
-      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), graf: GRAF ? 1 : 0, maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
+      const baglamSonuc = baglamDenetle(o, BAGLAM_SINIR);
+      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), graf: GRAF ? 1 : 0, maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, okunan_dosya: o.okunanDosya || 0, okunan_satir: o.okunanSatir || 0, baglam_asim: baglamSonuc.asim, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
       if (!neden) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
         git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');
@@ -335,6 +344,7 @@ while (aday.length) {
           spawnSync(process.execPath, [join(SELF, 'mdk-incele.mjs'), N, PLAN], { stdio: 'inherit', env: temizOrtam() });
         }
         if (boyutSonuc) yaz(`UYARI: story boyutu: ${boyutSonuc.ileti}`);
+        if (baglamSonuc.asim) yaz(`UYARI: bağlam bütçesi: ${baglamSonuc.ileti}`);
         yaz(`adım ${N} geçti (${m}, deneme ${d})`); process.exit(0);
       }
       if (GECICI_TURLER.includes(neden)) {
