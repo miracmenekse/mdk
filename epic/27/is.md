@@ -20,3 +20,6 @@ Kullanıcı paneli açar → Pazar sekmesi → bu haftanın farkı en üstte. Bo
 - PLAN kuralı "ağ yok": radar betiği istisna, kuralda açıkça yazılmalı.
 - Ücretsiz model özetleri uydurabilir: sayılar yalnız API'den, model yalnız açıklama özetler.
 - Sekme sayısı artıyor (bilişsel yük): Pazar ayrı sekme mi, Geliştirme içinde bölüm mü — kroki ile karar.
+
+## Hedef kitle (karar, 2026-11-15)
+Yarı teknik, bütçesi dar kişi (öğrenci, serbest çalışan; terminal açabilir ama kod yazmaz). Radar ekranını okuyan kişi işin business tarafını yöneten kullanıcıdır; teknik depo ayrıntısı değil "bu benim ürünüm için ne anlama geliyor" sorusunun cevabını arar.
