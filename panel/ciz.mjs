@@ -432,6 +432,8 @@ export function drawerImza(adim, etki) {
   return JSON.stringify([
     a.persona ?? null,
     a.bitti ?? null,
+    a.kabul ?? null,
+    a.kabulOnay ?? null,
     e.figma ?? null,
     e.onay ?? null,
     e.bitti ?? null,
@@ -462,6 +464,17 @@ export function drawerHtml(adim, etkiKartiHtml) {
   const ilerleme = a.yuzde != null
     ? `<div class="ilerleme"><span style="width:${Math.max(0, Math.min(100, Number(a.yuzde) || 0))}%"></span></div><span class="yuzde">%${esc(a.yuzde)}</span>`
     : '';
+  const kabul = Array.isArray(a.kabul) ? a.kabul : [];
+  const kapilar = Array.isArray(a.kapilar) ? a.kapilar : [];
+  const kabulBolumu = '<h3 class="drawer-bolum">BU İŞ NE ZAMAN BİTMİŞ SAYILIR</h3>' +
+    (kabul.length
+      ? `<ul class="kabul">${kabul.map((olcut) => `<li>${esc(olcut)}</li>`).join('')}</ul>`
+      : '<p class="bos">kabul ölçütü yazılmamış</p>') +
+    (kapilar.length
+      ? '<details class="teknik"><summary>teknik ayrıntı</summary>' +
+        kapilar.map((k) => `<code>${esc(k)}</code>`).join('') +
+        '</details>'
+      : '');
   return (
     '<div class="drawer-ic">' +
     '<div class="drawer-bas">' +
@@ -471,6 +484,7 @@ export function drawerHtml(adim, etkiKartiHtml) {
     `<h2 class="drawer-baslik">${esc(a.baslik || '—')}</h2>` +
     `<div class="drawer-durum">${rozet(sinif, a.etiket)} ${meta}${gecen}</div>` +
     ilerleme +
+    kabulBolumu +
     '<h3 class="drawer-bolum">PERSONA DÜŞÜNCELERİ</h3>' +
     '<div id="drawer-persona"></div>' +
     '<h3 class="drawer-bolum">ETKİ</h3>' +

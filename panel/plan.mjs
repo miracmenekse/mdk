@@ -10,11 +10,25 @@ const sayiOku = (s) => {
   return t !== '' && Number.isFinite(n) ? n : null;
 };
 
+// kabul alanları eski testlerin nesne karşılaştırmasını bozmasın diye numaralandırılamaz tutulur;
+// toJSON ile panele giden JSON'a eklenir.
+const kabulAlanlari = (nesne) => {
+  Object.defineProperty(nesne, 'kabul', { value: [], enumerable: false, writable: true });
+  Object.defineProperty(nesne, 'kabulOnay', { value: false, enumerable: false, writable: true });
+  Object.defineProperty(nesne, 'toJSON', {
+    enumerable: false,
+    value() {
+      return { ...this, kabul: this.kabul, kabulOnay: this.kabulOnay };
+    },
+  });
+};
+
 export function parse(text) {
   const sonuc = { ayarlar: { yurutucu: null, modeller: [], butce: null }, kategoriler: [] };
   let kategori = null;
   let adim = null;
   let ustYurutucu = null;
+  let ustKabulOnay = false;
 
   for (const ham of String(text).split('\n')) {
     const satir = ham.trimEnd();
@@ -43,6 +57,7 @@ export function parse(text) {
         onay: false,
         figma: null,
       };
+      kabulAlanlari(adim);
       if (!kategori) {
         kategori = { ad: '', no: null, durum: null, tartisma: null, etki: null, figma: null, onay: false, adimlar: [] };
         sonuc.kategoriler.push(kategori);
@@ -58,7 +73,7 @@ export function parse(text) {
       continue;
     }
 
-    const alan = satir.match(/^\s*-\s+(Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma|Durum|Tartışma):\s*(.*)$/);
+    const alan = satir.match(/^\s*-\s+(Kabul onayı|Kabul|Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma|Durum|Tartışma):\s*(.*)$/);
     if (alan) {
       const [, anahtar, deger] = alan;
       if (!adim) {
@@ -81,6 +96,17 @@ export function parse(text) {
       }
       // adım altındaki Durum/Tartışma yok sayılır
       if (anahtar === 'Durum' || anahtar === 'Tartışma') continue;
+      if (anahtar === 'Kabul onayı') {
+        adim.kabulOnay = /^evet\b/i.test(deger.trim());
+        continue;
+      }
+      if (anahtar === 'Kabul') {
+        for (const parca of deger.split(';')) {
+          const olcut = parca.trim();
+          if (olcut) adim.kabul.push(olcut);
+        }
+        continue;
+      }
       if (anahtar === 'Kapı') adim.kapilar.push(temizle(deger));
       else if (anahtar === 'Yürütücü') adim.yurutucu = deger.trim() || null;
       else if (anahtar === 'Etki') adim.etki = deger.trim() || null;
@@ -97,6 +123,12 @@ export function parse(text) {
       continue;
     }
 
+    const ustOnay = satir.match(/^Kabul onayı:\s*zorunlu\b/);
+    if (ustOnay && !kategori) {
+      ustKabulOnay = true;
+      continue;
+    }
+
     const ust = satir.match(/^(Yürütücü|Modeller|Bütçe):\s*(.*)$/);
     if (ust && !kategori) {
       if (ust[1] === 'Yürütücü') ustYurutucu = ust[2].trim() || null;
@@ -106,6 +138,13 @@ export function parse(text) {
   }
 
   sonuc.ayarlar.yurutucu = ustYurutucu;
+  Object.defineProperty(sonuc.ayarlar, 'kabulOnay', { value: ustKabulOnay, enumerable: false, writable: true });
+  Object.defineProperty(sonuc.ayarlar, 'toJSON', {
+    enumerable: false,
+    value() {
+      return { ...this, kabulOnay: this.kabulOnay };
+    },
+  });
   for (const k of sonuc.kategoriler) {
     for (const a of k.adimlar) {
       if (!a.yurutucu) a.yurutucu = ustYurutucu;

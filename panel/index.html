@@ -438,6 +438,11 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .epic-karar button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
 .epic-karar button:disabled { opacity: .5; cursor: default; }
 #drawer .bos { color: var(--bos); font-style: italic; font-size: 13px; }
+#drawer ul.kabul { margin: 0 0 10px; padding-left: 20px; font-size: 13px; color: var(--metin); }
+#drawer ul.kabul li { margin: 2px 0; }
+#drawer .teknik { margin-top: 10px; font-size: 12px; color: var(--soluk); }
+#drawer .teknik summary { cursor: pointer; }
+#drawer .teknik code { display: block; margin: 6px 0 0; padding: 6px 8px; border-radius: 6px; background: var(--zemin); color: var(--metin); font-family: ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
 
 /* persona düşünceleri balonları */
 .persona-balon { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -656,6 +661,10 @@ function drawerAdimNesnesi(no) {
     no,
     persona: a?.persona ?? null,
     bitti: !!a?.bitti,
+    kabul: a?.kabul ?? [],
+    kabulOnay: !!a?.kabulOnay,
+    kapilar: a?.kapilar ?? [],
+    kabulZorunlu: !!sonPlan?.plan?.ayarlar?.kabulOnay,
     baslik: a?.baslik || (sonSimdi && sonSimdi.adim === no ? sonSimdi.baslik : '') || '—',
     durum: asama.sinif,
     sinif: asama.sinif,
