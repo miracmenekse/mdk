@@ -9,18 +9,21 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const BURASI = dirname(fileURLToPath(import.meta.url));
-const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs'];
+const MODULLER = ['mdk-adim.mjs', 'mdk-ortak.mjs', 'mdk-adim-kapi.mjs', 'mdk-hata.mjs'];
 // donmuş kopya: bir adım koşturucuyu değiştirse ya da git geri alsa da çalışan koşturucu etkilenmez
 if (!process.env.MDK_DONMUS) {
   const asil = process.env.MDK_SELF_DIR || BURASI, d = join('.mdk-log', 'donmus');
   mkdirSync(d, { recursive: true });
-  for (const f of MODULLER) copyFileSync(join(BURASI, f), join(d, f));
+  for (const f of MODULLER) if (existsSync(join(BURASI, f))) copyFileSync(join(BURASI, f), join(d, f));
   const r = spawnSync(process.execPath, [join(d, 'mdk-adim.mjs'), ...process.argv.slice(2)], { stdio: 'inherit', env: { ...process.env, MDK_DONMUS: '1', MDK_SELF_DIR: asil } });
   process.exit(r.status ?? 1);
 }
 
 const { adimBlogu, epicBlogu, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
 const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = await import('./mdk-adim-kapi.mjs');
+// donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
+const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
+const { gunlukHatasi, iletiBul, bekleMs } = hata;
 
 // pipe'a yazılan çıktı process.exit'te kesilmesin: eşzamanlı yaz
 const yaz = (s) => writeSync(1, s + '\n');
@@ -85,7 +88,7 @@ if (git('check-ignore', '-q', '.mdk-log').status !== 0) { yaz(".gitignore'a .mdk
 if (git('status', '--porcelain').stdout.trim()) { yaz('çalışma ağacı kirli; önce commit et'); process.exit(4); }
 let CP = git('rev-parse', 'HEAD').stdout.trim();
 const sifirla = () => { git('reset', '-q', '--hard', CP); git('clean', '-fdq'); };
-const yazDurum = (model, deneme, durum) => writeFileSync(DURUM, JSON.stringify({ adim: Number(N), baslik, model: model || '', deneme: Number(deneme || 0), durum, deney: DENEY, ts: Date.now() }));
+const yazDurum = (model, deneme, durum, neden) => writeFileSync(DURUM, JSON.stringify({ adim: Number(N), baslik, model: model || '', deneme: Number(deneme || 0), durum, ...(neden ? { neden } : {}), deney: DENEY, ts: Date.now() }));
 const yazMetrik = (o) => appendFileSync(METRIK, JSON.stringify(o) + '\n');
 
 // taslak onayı: etki taslağı olan adım, insan onayı yoksa opencode hiç çağrılmadan durur
@@ -147,6 +150,11 @@ function cursorIzin() {
   if (!oku(ex).split('\n').includes('.cursor/cli.json')) { mkdirSync(dirname(ex), { recursive: true }); appendFileSync(ex, '.cursor/cli.json\n'); }
 }
 const kotaVar = (log) => KOTA.test(oku(log + '.err')) || oku(log).split('\n').some((l) => /"type":"error"/.test(l) && KOTA.test(l.slice(l.indexOf('"type":"error"'))));
+// sağlayıcı sorunları: modele değil sağlayıcıya yazılır, eskale edilmez ve kalıcı olanlar sıradaki modele geçer
+const SAGLAYICI_TURLER = ['oran', 'sunucu', 'ag', 'kimlik', 'model_yok', 'kota'];
+const GECICI_TURLER = ['oran', 'sunucu', 'ag'];
+const GECICI_TEKRAR = Number(e.MDK_GECICI_TEKRAR ?? 2);
+const GECICI_BEKLE = Number(e.MDK_GECICI_BEKLE_MS || 5000);
 
 let harcanan = 0;
 // tek koşu (kapı üretimi ve adım aynı döngüyü kullanır): modeli başlatır, izler, gerekirse öldürür
@@ -167,6 +175,10 @@ async function calistir(cm, bas, ist, log, bd) {
   let neden = r.neden || '';
   if (!neden && yurm === 'opencode' && kotaVar(log)) neden = 'kota'; // hızlı kota çıkışı: süreç POLL dolmadan çıkabilir
   if (!neden && yurm === 'cursor' && /usage limit|rate limit|upgrade to|quota/i.test(oku(log + '.err'))) neden = 'kota'; // tahmin; gerçek mesaj görülünce daralt
+  if (!neden && yurm === 'opencode') { // günlükteki hata olayından tür çıkar; bilinmeyen akışı değiştirmez
+    const h = gunlukHatasi(log);
+    if (h && SAGLAYICI_TURLER.includes(h.tur)) neden = h.tur;
+  }
   if (neden && yurm === 'opencode') oturumKapat(OC, log, bas);
   return { neden, yurm, t0 };
 }
@@ -189,7 +201,7 @@ function kapiImza() {
 const kapiImzasi = kapiImza();
 const sonBayt = (yol, n) => { try { const b = readFileSync(yol); return kirp(b.subarray(Math.max(0, b.length - n)).toString('utf8')); } catch { return ''; } };
 
-let ipucu = '', SAGLAYICI = true, durdu = '', kotaGoruldu = false, sorunIcerik = '', eskaleDenendi = false;
+let ipucu = '', SAGLAYICI = true, durdu = '', kotaGoruldu = false, sorunIcerik = '', eskaleDenendi = false, saglayiciNeden = '';
 // model kilidi: paralel koşularda aynı model aynı anda denenmesin; süreç ölürse bayat kilit sonraki koşuda temizlenir
 const KILIT_DIR = e.MDK_KILIT || join(homedir(), '.cache', 'mdk', 'kilit'); mkdirSync(KILIT_DIR, { recursive: true });
 const KILIT_BEKLE = Number(e.MDK_KILIT_BEKLE || 30), KILIT_TAVAN = Number(e.MDK_KILIT_TAVAN || 600);
@@ -200,7 +212,8 @@ while (aday.length) {
     const kilit = kilitAl(KILIT_DIR, m);
     if (!kilit) { bekleyen.push(m); continue; } // kilitli model bu turda atlanır, deneme sayılmaz
     denendi = true; harcanan = 0; // bütçe model başına
-    for (let d = 1; d <= DENEME; d++) {
+    let geciciTekrar = 0, d = 1;
+    while (d <= DENEME) {
       yazDurum(m, d, 'calisiyor');
       const log = join(LOGD, `adim${N}-${sn()}.jsonl`);
       const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${SADE_IPUCU}\n${ipucu}`;
@@ -254,6 +267,20 @@ while (aday.length) {
         }
         yaz(`adım ${N} geçti (${m}, deneme ${d})`); process.exit(0);
       }
+      if (GECICI_TURLER.includes(neden)) {
+        saglayiciNeden = neden;
+        if (geciciTekrar < GECICI_TEKRAR) {
+          geciciTekrar++;
+          sifirla();
+          const bekle = bekleMs(geciciTekrar, GECICI_BEKLE);
+          yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden}); ${bekle} ms bekleyip yeniden deniyorum`);
+          await uyu(bekle);
+          continue; // aynı model, aynı deneme numarası: deneme hakkı tüketilmez
+        }
+        sifirla();
+        yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden})`);
+        break; // geçici tekrar sınırı doldu: kota gibi sıradaki modele geç
+      }
       if (neden === 'kapi' || neden === 'kurcalama') ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısının sonu:\n${sonBayt(kapiLog, 1500)}`;
       else if (neden === 'regresyon') {
         const basarisiz = oku(kapiLog).split('\n').filter((l) => l.includes('BAŞARISIZ')).slice(0, 5).join('\n');
@@ -262,11 +289,13 @@ while (aday.length) {
       else if (neden === 'sorun') ipucu = `Önceki deneme SORUN.md bıraktı; sorunu gider ve adımı yeniden yap. SORUN.md:\n${sorunIcerik}`;
       sifirla(); // temiz başlangıç (ignore'lanan metrik/log dosyaları kalır)
       if (neden === 'kota') kotaGoruldu = true;
+      if (SAGLAYICI_TURLER.includes(neden)) saglayiciNeden = neden;
       yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden})`);
-      if (neden !== 'yanit_yok' && neden !== 'kota') SAGLAYICI = false; // kota/sessizlik model değil sağlayıcı sorunu: eskale etme
+      if (neden !== 'yanit_yok' && !SAGLAYICI_TURLER.includes(neden)) SAGLAYICI = false; // sağlayıcı sorunu: eskale etme
       if (neden === 'sorun' && d === DENEME) { durdu = 'sorun'; break; } // SORUN.md çözülmediyse diğer modelleri boşuna deneme
       if (neden === 'butce') { durdu = 'butce'; break; }               // bu modelin bütçesi bitti: sıradaki modele geç
-      if (neden === 'yanit_yok' || neden === 'kota') break;            // sessiz/kotalı modeli yeniden denemek boşuna
+      if (neden === 'yanit_yok' || neden === 'kota' || neden === 'kimlik' || neden === 'model_yok') break; // yeniden denemek boşuna
+      d++;
     }
     kilitBirak(kilit);
     if (durdu === 'sorun') break;
@@ -283,8 +312,12 @@ while (aday.length) {
 }
 if (durdu === 'butce') { yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: modeller tükendi, en az biri token bütçesini (${butce}/model) aştı`); process.exit(2); }
 if (SAGLAYICI) {
-  yazDurum('', 0, 'saglayici');
-  if (kotaGoruldu) { yaz(`adım ${N}: ücretsiz kota dolu (tüm modeller kota/sessizlik verdi)`); process.exit(6); }
-  yaz(`adım ${N}: sağlayıcı yanıt vermiyor (tüm modeller ${ILK} sn içinde olay üretmedi)`); process.exit(6);
+  yazDurum('', 0, 'saglayici', saglayiciNeden || undefined);
+  if (kotaGoruldu) yaz(`adım ${N}: ücretsiz kota dolu (tüm modeller kota/sessizlik verdi)`);
+  else if (saglayiciNeden) yaz(`adım ${N}: sağlayıcı sorunu (tüm modeller ${saglayiciNeden})`);
+  else yaz(`adım ${N}: sağlayıcı yanıt vermiyor (tüm modeller ${ILK} sn içinde olay üretmedi)`);
+  const bilgi = saglayiciNeden && iletiBul('saglayici', saglayiciNeden);
+  if (bilgi) { yaz(bilgi.ileti); yaz(bilgi.oneri); }
+  process.exit(6);
 }
 yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: tüm modeller tükendi`); process.exit(2);
