@@ -189,7 +189,7 @@ Görev kod: m/oc
   const govde = `
 if (ISTEM.includes('KAPI ÜRETME')) { // kapı üretim istemi (mdk-adim-kapi.mjs); kod isteminde de kapı yolu geçtiği için yol değil görev başlığı aranır
   fs.mkdirSync('kapi', { recursive: true });
-  fs.writeFileSync('kapi/k.test.mjs', "process.exit(require('fs').existsSync('cikti.txt')?0:1);\\n");
+  fs.writeFileSync('kapi/k.test.mjs', "import { existsSync } from 'node:fs'; process.exit(existsSync('cikti.txt') ? 0 : 1);\\n");
 } else {
   fs.writeFileSync('cikti.txt', 'tamam\\n');
 }
