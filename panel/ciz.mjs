@@ -466,10 +466,18 @@ export function drawerHtml(adim, etkiKartiHtml) {
     : '';
   const kabul = Array.isArray(a.kabul) ? a.kabul : [];
   const kapilar = Array.isArray(a.kapilar) ? a.kapilar : [];
+  const kabulOnaylaDugmesi = (a.kabulZorunlu && !a.kabulOnay && !a.bitti && kabul.length)
+    ? `<button type="button" id="kabul-onayla" data-adim="${esc(a.no)}">Ölçütleri onayla</button>`
+    : '';
+  const kabulOnayRozeti = a.kabulOnay
+    ? '<span class="rozet bitti">ölçütler onaylandı</span>'
+    : '';
   const kabulBolumu = '<h3 class="drawer-bolum">BU İŞ NE ZAMAN BİTMİŞ SAYILIR</h3>' +
     (kabul.length
       ? `<ul class="kabul">${kabul.map((olcut) => `<li>${esc(olcut)}</li>`).join('')}</ul>`
       : '<p class="bos">kabul ölçütü yazılmamış</p>') +
+    kabulOnaylaDugmesi +
+    kabulOnayRozeti +
     (kapilar.length
       ? '<details class="teknik"><summary>teknik ayrıntı</summary>' +
         kapilar.map((k) => `<code>${esc(k)}</code>`).join('') +

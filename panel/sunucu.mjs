@@ -516,6 +516,115 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/kabul-onay: adımın kabul ölçütlerini onaylar; PLAN.md'de son `- Kabul:` satırının altına `- Kabul onayı: evet` ekler.
+  const kabulOnayAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume();
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      const no = Number(girdi?.adim);
+      if (!Number.isFinite(no)) {
+        hata(yanit, 400, 'adım no gerekli');
+        return;
+      }
+
+      let metin;
+      try {
+        metin = readFileSync(join(kok, 'PLAN.md'), 'utf8');
+      } catch {
+        hata(yanit, 404, 'PLAN.md okunamadı');
+        return;
+      }
+
+      const lines = metin.split('\n');
+      let bas = -1;
+      for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^\s*-\s*\[[ xX]\]\s+(\d+)\.\s/);
+        if (m && Number(m[1]) === no) { bas = i; break; }
+      }
+      if (bas < 0) {
+        hata(yanit, 400, 'adım bulunamadı');
+        return;
+      }
+      let son = lines.length;
+      for (let i = bas + 1; i < lines.length; i++) {
+        if (/^##\s/.test(lines[i]) || /^\s*-\s*\[[ xX]\]\s+\d+\.\s/.test(lines[i])) { son = i; break; }
+      }
+
+      let kabulIdx = -1;
+      let onayVar = false;
+      for (let i = bas; i < son; i++) {
+        if (/^\s*-\s*Kabul onayı:\s*evet\b/i.test(lines[i])) onayVar = true;
+        if (/^\s*-\s*Kabul:/i.test(lines[i]) && !/^\s*-\s*Kabul onayı:/i.test(lines[i])) kabulIdx = i;
+      }
+      if (kabulIdx < 0) {
+        hata(yanit, 400, 'kabul ölçütü yok');
+        return;
+      }
+
+      if (onayVar) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ tamam: true }));
+        return;
+      }
+
+      const indent = (lines[kabulIdx].match(/^(\s*)/) || ['', ''])[1];
+      const cikti = [...lines];
+      cikti.splice(kabulIdx + 1, 0, indent + '- Kabul onayı: evet');
+      const yol = join(kok, 'PLAN.md');
+      const gecici = join(kok, `PLAN.md.${process.pid}.tmp`);
+      try {
+        writeFileSync(gecici, cikti.join('\n'));
+        renameSync(gecici, yol);
+      } catch {
+        hata(yanit, 500, 'PLAN.md yazılamadı');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true }));
+      planla();
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
 
@@ -531,6 +640,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/gorev-model') {
       gorevModelAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/kabul-onay') {
+      kabulOnayAl(istek, yanit);
       return;
     }
 

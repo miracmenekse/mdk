@@ -780,6 +780,16 @@ kategorilerEl.addEventListener('keydown', (e) => {
 });
 drawerEl.addEventListener('click', (e) => {
   if (e.target.closest('#drawer-kapat')) drawerKapat();
+  const kabulDugme = e.target.closest('#kabul-onayla');
+  if (kabulDugme) {
+    const adim = Number(kabulDugme.dataset.adim);
+    kabulDugme.disabled = true;
+    fetch('/api/kabul-onay', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ adim }),
+    }).catch(() => { kabulDugme.disabled = false; });
+  }
 });
 drawerOverlayEl.addEventListener('click', drawerKapat);
 document.addEventListener('keydown', (e) => {

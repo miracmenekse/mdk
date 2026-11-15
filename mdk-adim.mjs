@@ -99,6 +99,11 @@ if (/^\s*- Etki:/m.test(blok) && !/^\s*- Onay: evet\b/m.test(blok)) { yaz(`adım
 // Epic çözüm onayı: tartışması olan Epic'in çözümü onaylanmadıysa adım koşmaz
 const epik = epicBlogu(plan, N);
 if (/^- Tartışma:/m.test(epik) && !/^- Onay: evet/m.test(epik)) { yaz(`adım ${N}: Epic çözüm onayı bekliyor (panelden onayla; node mdk-epic.mjs karar <no> onay)`); process.exit(5); }
+// Kabul ölçütleri onayı: PLAN başında zorunlu ise onaylanmadan adım koşmaz
+const planIlkKisim = plan.split(/^##\s/m)[0] || '';
+const kabulZorunlu = /^Kabul onayı:\s*zorunlu\b/m.test(planIlkKisim);
+if (kabulZorunlu && !/^\s*- Kabul onayı:\s*evet\b/m.test(blok)) { yaz(`adım ${N} kabul ölçütleri onay bekliyor (panelde story kartından onayla)`); process.exit(5); }
+if (!/^\s*- Kabul:/m.test(blok)) { yaz(`UYARI: adım ${N} için kabul ölçütü yazılmamış`); }
 // ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (hızlı kip: uzun koşturucu testleri atlanır; eski projelerde test/hepsi.sh)
 const HEPSI = existsSync('test/hepsi.mjs') ? 'test/hepsi.mjs' : existsSync('test/hepsi.sh') ? 'test/hepsi.sh' : '';
 const REGRESYON = !!HEPSI && !e.MDK_ONKONTROL_YOK;
