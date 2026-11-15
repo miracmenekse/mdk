@@ -10,9 +10,10 @@ import { telemetri } from './telemetri.mjs';
 import { claudeKullanim } from './claude.mjs';
 import { kararlar } from './karar.mjs';
 import { iletiBul } from '../mdk-hata.mjs';
+import { profilOzeti } from './profil.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [], sinir: { deneme: 0, butce: null } };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [], sinir: { deneme: 0, butce: null }, profiller: [] };
 
   let planMetni = null;
   try {
@@ -22,6 +23,7 @@ export function snapshot(dir) {
     sonuc.plan = null;
     planMetni = null;
   }
+  if (planMetni) sonuc.profiller = profilOzeti(planMetni);
 
   if (sonuc.plan && planMetni) {
     const modelSayisi = (metin, etiket) => {

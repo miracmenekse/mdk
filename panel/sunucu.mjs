@@ -10,6 +10,7 @@ import { depo, varsayilanCalistir } from './depo.mjs';
 import { parse, epicDurum } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
 import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
+import { profilUygula } from './profil.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
 import { takimDenetle } from './persona.mjs';
 
@@ -516,6 +517,82 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/profil: { ad } hazır profilini PLAN.md'nin `Görev` satırlarına tek seferde yazar.
+  const profilAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume();
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      let metin;
+      try {
+        metin = readFileSync(join(kok, 'PLAN.md'), 'utf8');
+      } catch {
+        hata(yanit, 404, 'PLAN.md okunamadı');
+        return;
+      }
+
+      let yeni;
+      try {
+        yeni = profilUygula(metin, girdi?.ad);
+      } catch (e) {
+        hata(yanit, 400, e.message);
+        return;
+      }
+
+      const yol = join(kok, 'PLAN.md');
+      const gecici = join(kok, `PLAN.md.${process.pid}.tmp`);
+      try {
+        writeFileSync(gecici, yeni);
+        renameSync(gecici, yol);
+      } catch {
+        hata(yanit, 500, 'PLAN.md yazılamadı');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true, etkin: girdi.ad }));
+      planla();
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   // POST /api/kabul-onay: adımın kabul ölçütlerini onaylar; PLAN.md'de son `- Kabul:` satırının altına `- Kabul onayı: evet` ekler.
   const kabulOnayAl = (istek, yanit) => {
     const izin = yazmaIzni(istek.headers, uzakAyar(kok));
@@ -640,6 +717,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/gorev-model') {
       gorevModelAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/profil') {
+      profilAl(istek, yanit);
       return;
     }
 
