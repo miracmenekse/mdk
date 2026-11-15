@@ -71,6 +71,8 @@ const V = {
     k(SON.kod === 0, 'çıkış 0');
     const a = agyArgv();
     k(a.includes('-p') && a.includes('--izin'), `agy argümanları -p ve --izin içermeli: ${a.join(' ')}`);
+    // gerçek agy -p'den sonraki argümanı istem sayar: -p'nin hemen ardından istem gelmeli
+    k(String(a[a.indexOf('-p') + 1] || '').startsWith('# Yürütücü'), `-p'den hemen sonra istem gelmeli: ${a.slice(0, 6).join(' ')}`);
     k(!a.includes('--model'), 'varsayilan model için --model verilmemeli');
     k(!opencodeCagrildi(), 'sahte opencode çağrılmamalı');
     k(son().ana === 'antigravity', `metrik ana antigravity olmalı: ${son().ana}`);

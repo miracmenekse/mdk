@@ -23,7 +23,7 @@ function rolKomutu(model, istem, ana) {
   if (i < 0) return null;
   const onek = model.slice(0, i), m = model.slice(i + 1);
   if (onek === 'claude') return [process.env.MDK_CLAUDE || 'claude', ['-p', '--model', m, '--permission-mode', 'acceptEdits', istem]];
-  if (onek === 'agy') return [process.env.MDK_AGY || 'agy', ['-p', ...(m === 'varsayilan' ? [] : ['--model', m]), ...(ana.agy_ek || []), istem]];
+  if (onek === 'agy') return [process.env.MDK_AGY || 'agy', [...(m === 'varsayilan' ? [] : ['--model', m]), ...(ana.agy_ek || []), '-p', istem]];
   return null;
 }
 

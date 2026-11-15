@@ -180,9 +180,9 @@ async function calistir(cm, bas, ist, log, bd) {
     yurm = 'cursor'; cursorIzin();
     komut = e.MDK_CURSOR || 'cursor-agent'; args = ['-p', '--output-format', 'stream-json', '--trust', '--model', cm.slice(7), ist]; env = temizOrtam();
   } else if (cm.startsWith('agy/')) {
-    // Antigravity: planlayıcı CLI'si (-p); varsayılan modelde --model verilmez, ana yürütücünün agy_ek'i eklenir
+    // Antigravity: agy -p'den hemen sonraki argümanı istem sayar; bu yüzden bayraklar önce, '-p <istem>' en sonda
     yurm = 'agy'; const ad = cm.slice(4);
-    komut = e.MDK_AGY || 'agy'; args = ['-p', ...(ad === 'varsayilan' ? [] : ['--model', ad]), ...((ANA && ANA.agy_ek) || []), ist]; env = temizOrtam();
+    komut = e.MDK_AGY || 'agy'; args = [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...((ANA && ANA.agy_ek) || []), '-p', ist]; env = temizOrtam();
   } else {
     yurm = 'opencode'; komut = OC; args = ['run', '-m', cm, '--title', bas, '--format', 'json', '--print-logs', ist]; env = temizOrtam({ OPENCODE_LOG_LEVEL: 'error' });
   }
