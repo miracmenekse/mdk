@@ -19,7 +19,7 @@ if (!process.env.MDK_DONMUS) {
   process.exit(r.status ?? 1);
 }
 
-const { adimBlogu, epicBlogu, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
+const { adimBlogu, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
 const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = await import('./mdk-adim-kapi.mjs');
 // donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
@@ -157,6 +157,8 @@ if (e.MDK_CLAUDE_KURAL !== '1') e.OPENCODE_DISABLE_CLAUDE_CODE = '1';
 const KURALLAR = kirp(oku(join(SELF, 'yurutucu-kurallar.md')));
 // PLAN başındaki "Kurallar (tüm adımlar için):" bloğu; model PLAN.md'yi açmadan görsün
 const PROJE_KURAL = (() => { const c = []; let on = false; for (const l of plan.split(/\r?\n/)) { if (/^Kurallar/.test(l)) on = true; if (on && /^\s*$/.test(l)) break; if (on) c.push(l); } return kirp(c.join('\n')); })();
+const GRAF = grafDilimi({ sorgu: `${baslik} ${(blok.match(/^\s*- Ne:(.*)$/m) || [])[1] || ''}`.slice(0, 400) });
+const GRAF_IPUCU = GRAF ? `Graph bağlamı (graphify; ilgili dosya/fonksiyon ve satırlar; ipucudur, dosyayı okuyup doğrula):\n${GRAF}\n` : '';
 
 // Cursor CLI (cursor/<model>): --force yok, izin listesi proje .cursor/cli.json'da; dosya her denemede yeniden yazılır, git'ten gizlenir
 const CURSOR_IZIN = '{"permissions":{"allow":["Read(**)","Write(**)","Shell(bash)","Shell(sh)","Shell(node)","Shell(npm)","Shell(npx)","Shell(git)","Shell(grep)","Shell(sed)","Shell(awk)","Shell(cat)","Shell(ls)","Shell(head)","Shell(tail)","Shell(wc)","Shell(find)","Shell(sort)","Shell(diff)","Shell(mkdir)","Shell(cp)","Shell(mv)","Shell(rm)","Shell(touch)","Shell(chmod)","Shell(echo)","Shell(test)","Shell(python3)"],"deny":["Shell(sudo)","Shell(git push)"]}}';
@@ -222,7 +224,7 @@ async function calistir(cm, bas, ist, log, bd) {
 // otomatik kapı üretimi: adımdaki kapı dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
 const EKSIK = eksikKapilar(KAPILAR);
 if (EKSIK.length && (planSatiri(plan, 'Görev kapi') !== null || anaGorev('kapi'))) {
-  const yeni = await kapiUret({ n: N, blok, kapilar: KAPILAR, planMetni: plan, kurallar: KURALLAR, projeKural: PROJE_KURAL, cp: CP, logd: LOGD, calistir, yazDurum, yazMetrik, selfDir: SELF, sade: SADE, yazLog: (p, m) => writeFileSync(p, m), modeller: modelListesi(anaGorev('kapi') || planSatiri(plan, 'Görev kapi') || '') });
+  const yeni = await kapiUret({ n: N, blok, kapilar: KAPILAR, planMetni: plan, kurallar: KURALLAR, projeKural: PROJE_KURAL, cp: CP, logd: LOGD, calistir, yazDurum, yazMetrik, selfDir: SELF, sade: SADE, graf: GRAF_IPUCU, yazLog: (p, m) => writeFileSync(p, m), modeller: modelListesi(anaGorev('kapi') || planSatiri(plan, 'Görev kapi') || '') });
   if (!yeni) { yazDurum('', 0, 'kapi_hata'); yaz(`adım ${N}: eksik kapı (${EKSIK.join(' ')}) üretilemedi veya kırmızı doğrulanamadı`); process.exit(4); }
   CP = yeni;
 }
@@ -253,7 +255,7 @@ while (aday.length) {
     while (d <= DENEME) {
       yazDurum(m, d, 'calisiyor');
       const log = join(LOGD, `adim${N}-${sn()}.jsonl`);
-      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${SADE_IPUCU}\n${ipucu}`;
+      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${GRAF_IPUCU}${SADE_IPUCU}\n${ipucu}`;
       const r = await calistir(m, `adim-${N}`, istem, log, true);
       let neden = r.neden;
       // 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
@@ -295,7 +297,7 @@ while (aday.length) {
       for (const l of git('diff', '--cached', '--numstat').stdout.split('\n').filter(Boolean)) { const [a, b] = l.split('\t'); ek += Number(a) || 0; sil += Number(b) || 0; dos++; }
       const o = olaylariTopla(log); harcanan += o.etkin;
       const boyutSonuc = neden ? null : boyutDenetle({ dosya: dos, satir: ek + sil });
-      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
+      yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), graf: GRAF ? 1 : 0, maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
       if (!neden) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
         git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');

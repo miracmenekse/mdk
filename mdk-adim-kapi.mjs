@@ -77,7 +77,7 @@ export async function kapiUret(ctx) {
 Görev: KAPI ÜRETME. Aşağıdaki adım için YALNIZCA şu eksik kapı test dosyasını yaz: ${eksikStr}. Üretim koduna dokunma.
 Yazdığın test mevcut kodda KIRMIZI (çıkış != 0) olmalı, adımın 'Ne:' maddesi uygulandığında YEŞİL (çıkış 0) olmalı.
 Kapı metnindeki her iddiayı ayrı bir assert ile ve davranışı ÇALIŞTIRARAK doğrula (modülü içe aktar, süreci ya da sunucuyu başlat); yalnız kaynak dosyada metin arayan test zayıf kapıdır. Başarı, hata ve sınır durumunu kapsa.
-${projeKural}
+${ctx.graf || ''}${projeKural}
 Adım (PLAN.md adım ${n}; metnin tamamı burada):
 ${blok}`;
       const r = await calistir(km, `kapi-${n}`, kistem, klog, false);

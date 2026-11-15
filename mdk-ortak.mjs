@@ -201,3 +201,26 @@ export function kilitBirak(k) {
   if (!k) return;
   try { if (Number(oku(k.yol).trim()) === process.pid) unlinkSync(k.yol); } catch {}
 }
+
+// graphify dilimi: adımın konusuyla ilgili dosya/fonksiyon ve satır bağlamı (isteğe bağlı)
+export function grafDilimi({ kok = process.cwd(), sorgu = '', komut, butce, guncelle = true } = {}) {
+  try {
+    if (process.env.MDK_GRAF !== '1') return '';
+    if (!sorgu || !String(sorgu).trim()) return '';
+    const git = spawnSync('git', ['check-ignore', '-q', 'graphify-out'], { cwd: kok });
+    if (git.status !== 0) return '';
+    const kmt = komut || process.env.MDK_GRAPHIFY || 'graphify';
+    if (guncelle !== false) {
+      const [uk, ua] = komutHazirla(kmt, ['update', '.']);
+      spawnSync(uk, ua, { cwd: kok, timeout: 60000, stdio: 'ignore' });
+    }
+    const B = butce || Number(process.env.MDK_GRAF_BUTCE) || 1500;
+    const [qk, qa] = komutHazirla(kmt, ['query', sorgu, '--budget', String(B)]);
+    const res = spawnSync(qk, qa, { cwd: kok, timeout: 30000, encoding: 'utf8' });
+    if (res.error || res.status !== 0 || !res.stdout || !res.stdout.trim()) return '';
+    return res.stdout.trim().slice(0, 8000);
+  } catch {
+    return '';
+  }
+}
+
