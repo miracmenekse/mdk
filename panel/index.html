@@ -988,16 +988,40 @@ dinle();
 const arastirmaEl = document.getElementById('arastirma');
 const radarEl = document.getElementById('radar');
 let radarVeri = null;
+let radarSaati = null;
+
+function radarBeklet() {
+  if (radarSaati) return;
+  radarSaati = setTimeout(() => {
+    radarSaati = null;
+    radarYenile().catch(() => radarBeklet());
+  }, 3000);
+}
 
 async function radarYenile() {
   const v = await fetch('/api/radar').then((r) => r.json());
   radarVeri = v;
   radarEl.innerHTML = radarHtml(v);
+  if (v.taraniyor) {
+    radarBeklet();
+  } else if (radarSaati) {
+    clearTimeout(radarSaati);
+    radarSaati = null;
+  }
   // radar verisi gelince Araştırma kartının sayısı güncellensin
   if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri, radarVeri); sekmeSec(); }
 }
 
 radarEl.addEventListener('click', async (e) => {
+  const tara = e.target.closest('#radar-tara');
+  if (tara) {
+    if (tara.disabled) return;
+    try {
+      await fetch('/api/radar-tara', { method: 'POST' });
+    } catch {}
+    await radarYenile().catch(() => {});
+    return;
+  }
   const b = e.target.closest('button[data-isaret]');
   if (!b) return;
   const satir = b.closest('.radar-satir');

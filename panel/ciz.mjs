@@ -1129,7 +1129,16 @@ function radarTarih(ts) {
 // radar şeridi: bu hafta değişenler + izlenen adaylar; veri yoksa boş durum
 export function radarHtml(veri, simdiMs = Date.now()) {
   const sonuc = veri?.sonuc;
-  if (!sonuc) return '<div class="radar bos">Henüz tarama yok</div>';
+  const taraniyor = veri?.taraniyor === true;
+  const dugme = taraniyor
+    ? '<button type="button" id="radar-tara" disabled>Taranıyor…</button>'
+    : '<button type="button" id="radar-tara">Şimdi tara</button>';
+  if (!sonuc) {
+    return '<div class="radar">' +
+      `<div class="radar-ust">${dugme}</div>` +
+      '<div class="radar bos">Henüz tarama yok</div>' +
+      '</div>';
+  }
   const isaretler = veri?.isaretler && typeof veri.isaretler === 'object' ? veri.isaretler : {};
   const adaylar = sonuc.adaylar || [];
   const degisenler = sonuc.degisenler || [];
@@ -1146,6 +1155,7 @@ export function radarHtml(veri, simdiMs = Date.now()) {
     '<div class="radar-ust">' +
     `<b>${esc(baslik)}</b>` +
     `<span class="soluk">son tarama: ${esc(goreli(sonuc.ts, simdiMs))}</span>` +
+    dugme +
     '</div>';
 
   if (sonuc.sonHata) {

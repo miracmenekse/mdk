@@ -395,6 +395,59 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // Radar taraması: aynı anda tek çocuk süreç; son denemeden sonra 1 saat soğuma.
+  const RADAR_GUN_MS = 86400000;
+  const RADAR_SOGUMA_MS = 3600000;
+  let radarCocuk = null;
+  let radarSonDeneme = 0;
+
+  const radarBetik = () => process.env.MDK_RADAR_BETIK
+    ? resolve(process.env.MDK_RADAR_BETIK)
+    : join(kok, 'mdk-radar.mjs');
+
+  const radarTara = () => {
+    if (radarCocuk) return false;
+    radarSonDeneme = Date.now();
+    try {
+      const cocuk = spawn(process.execPath, [radarBetik(), kok], {
+        cwd: kok,
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      radarCocuk = cocuk;
+      const bitir = () => {
+        if (radarCocuk === cocuk) radarCocuk = null;
+      };
+      cocuk.on('close', bitir);
+      cocuk.on('error', bitir);
+      cocuk.unref();
+      return true;
+    } catch {
+      radarCocuk = null;
+      return false;
+    }
+  };
+
+  const radarZamani = (ts) => {
+    const t = typeof ts === 'number' ? (ts < 1e12 ? ts * 1000 : ts) : Date.parse(ts);
+    return Number.isFinite(t) ? t : null;
+  };
+
+  const radarKendiliginden = () => {
+    if (radarCocuk) return;
+    if (!existsSync(join(kok, 'strateji', 'radar.json'))) return;
+    if (Date.now() - radarSonDeneme < RADAR_SOGUMA_MS) return;
+    let sonTs = null;
+    try {
+      sonTs = radarZamani(JSON.parse(readFileSync(join(kok, 'strateji', 'radar-sonuc.json'), 'utf8')).ts);
+    } catch {}
+    if (sonTs !== null && Date.now() - sonTs <= 7 * RADAR_GUN_MS) return;
+    radarTara();
+  };
+
+  const radarDurumVar = () =>
+    existsSync(radarBetik()) || existsSync(join(kok, 'strateji', 'radar.json'));
+
   // POST /api/gorev-model: `Görev <tür>:` satırındaki bir modeli değiştirir/yedek ekler.
   // Gövde { gorev, sira, model }; yalnız o satır yazılır, dosyanın geri kalanı korunur.
   const gorevModelAl = (istek, yanit) => {
@@ -485,6 +538,19 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
+    if (istek.method === 'POST' && pathname === '/api/radar-tara') {
+      if (radarCocuk) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ basladi: false, suruyor: true }));
+      } else if (radarTara()) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ basladi: true }));
+      } else {
+        hata(yanit, 500, 'radar taraması başlatılamadı');
+      }
+      return;
+    }
+
     if (pathname === '/api/test') {
       if (istek.method !== 'POST') {
         yanit.writeHead(405).end();
@@ -526,6 +592,7 @@ export async function baslat(dir, port, { calistir } = {}) {
     }
 
     if (pathname === '/api/radar') {
+      radarKendiliginden();
       // dosyalar yoksa ya da bozuksa boş şema; sunucu düşmez
       let veri = { sonuc: null, isaretler: {} };
       try {
@@ -542,6 +609,8 @@ export async function baslat(dir, port, { calistir } = {}) {
         } catch {}
         veri = { sonuc, isaretler };
       } catch {}
+      // tarayıcı yoksa eski istemcilerin yanıtı değişmesin
+      if (radarDurumVar()) veri.taraniyor = radarCocuk !== null;
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       yanit.end(JSON.stringify(veri));
       return;
