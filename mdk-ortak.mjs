@@ -1,6 +1,6 @@
 // Koşturucuların ortak parçaları (mdk-adim, mdk-incele, persona-tur, mdk-paralel). Yan etkisiz: yalnız dışa aktarım.
 // Bash sürümlerindeki awk/grep/sed/setsid/flock parçalarının JS karşılığı; Windows'ta da çalışır.
-import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeSync } from 'node:fs';
+import { closeSync, mkdirSync, openSync, readFileSync, statSync, unlinkSync, writeSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -223,4 +223,33 @@ export function grafDilimi({ kok = process.cwd(), sorgu = '', komut, butce, gunc
     return '';
   }
 }
+
+// çalışma ağacı kilidi: aynı depoda aynı anda birden fazla koşturucu çalışmasın
+export function agacKilidi(kok = process.cwd()) {
+  const dizin = join(kok, '.mdk-log');
+  const yol = join(dizin, 'agac.kilit');
+  try { mkdirSync(dizin, { recursive: true }); } catch {}
+  const birak = () => {
+    try {
+      if (Number(oku(yol).trim()) === process.pid) unlinkSync(yol);
+    } catch {}
+  };
+  for (let i = 0; i < 2; i++) {
+    try {
+      const fd = openSync(yol, 'wx');
+      try { writeSync(fd, String(process.pid)); } finally { closeSync(fd); }
+      return { ok: true, birak };
+    } catch (e) {
+      if (e.code !== 'EEXIST') return { ok: false, sahip: null };
+      const raw = oku(yol).trim();
+      const sahip = Number(raw);
+      if (Number.isInteger(sahip) && sahip > 0 && canli(sahip)) {
+        return { ok: false, sahip };
+      }
+      try { unlinkSync(yol); } catch {}
+    }
+  }
+  return { ok: false, sahip: null };
+}
+
 

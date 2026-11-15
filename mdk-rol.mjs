@@ -7,7 +7,7 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { anaOku, anaSec, rolModeli } from './mdk-ana.mjs';
-import { adimBlogu, kos } from './mdk-ortak.mjs';
+import { adimBlogu, agacKilidi, kos } from './mdk-ortak.mjs';
 import { kabukKos, temizOrtam } from './mdk-adim-kapi.mjs';
 
 const SELF = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +86,9 @@ async function main() {
   const model = rolModeli(ana, 'kodcu');
   if (!model || !rolKomutu(model, '', ana)) { yaz(`tanımsız ya da bilinmeyen kodcu modeli: ${model ?? '(yok)'}`); cik(4); }
   if (git('rev-parse', '--git-dir').status !== 0) { yaz('git deposu değil'); cik(4); }
+  const AGAC = agacKilidi();
+  if (!AGAC.ok) { yaz(`başka bir koşturucu bu çalışma kopyasında çalışıyor (pid ${AGAC.sahip}); bitmesini bekle ya da mdk-dagit.mjs kirala ile ayrı kopyada çalış`); cik(8); }
+  process.on('exit', () => AGAC.birak());
   if (git('status', '--porcelain').stdout.trim()) { yaz('çalışma ağacı kirli; önce commit et'); cik(4); }
   const CP = git('rev-parse', 'HEAD').stdout.trim();
 

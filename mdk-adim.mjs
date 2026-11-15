@@ -19,7 +19,7 @@ if (!process.env.MDK_DONMUS) {
   process.exit(r.status ?? 1);
 }
 
-const { adimBlogu, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
+const { adimBlogu, agacKilidi, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
 const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = await import('./mdk-adim-kapi.mjs');
 // donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
@@ -96,6 +96,9 @@ const butce = bm ? Number(bm[1]) : null;
 // geri alma güvenliği: temiz git ağacı şart (kontrol noktası = HEAD)
 if (git('rev-parse', '--git-dir').status !== 0) { yaz('git deposu değil'); process.exit(4); }
 if (git('check-ignore', '-q', '.mdk-log').status !== 0) { yaz(".gitignore'a .mdk-log/, durum.json, metrikler.jsonl ekle"); process.exit(4); }
+const AGAC = agacKilidi();
+if (!AGAC.ok) { yaz(`başka bir koşturucu bu çalışma kopyasında çalışıyor (pid ${AGAC.sahip}); bitmesini bekle ya da mdk-dagit.mjs kirala ile ayrı kopyada çalış`); process.exit(8); }
+process.on('exit', () => AGAC.birak());
 if (git('status', '--porcelain').stdout.trim()) { yaz('çalışma ağacı kirli; önce commit et'); process.exit(4); }
 let CP = git('rev-parse', 'HEAD').stdout.trim();
 const sifirla = () => { git('reset', '-q', '--hard', CP); git('clean', '-fdq'); };
