@@ -111,51 +111,51 @@ const ILETILER = {
   },
   butce: {
     ileti: 'Bu koşu için ayrılan harcama sınırı aşıldı.',
-    oneri: 'Sınırı artır ya da daha ucuz bir modelle yeniden başlat.',
+    oneri: 'Sıradaki modele geçilir; hep oluyorsa işi daha küçük parçalara böldür.',
   },
   sure: {
     ileti: 'Adım tanımlı süreden uzun sürdü.',
-    oneri: 'İşi daha küçük adımlara bölüp yeniden dene.',
+    oneri: 'Yeniden denenir; hep oluyorsa işi daha küçük parçalara böldür.',
   },
   kapi: {
-    ileti: 'Adımın doğrulama komutu başarısız oldu.',
-    oneri: 'Hata çıktısını inceleyip düzelt, sonra yeniden dene.',
+    ileti: 'Yazılan kod bu işin kabul testinden geçemedi.',
+    oneri: 'Bir şey yapman gerekmiyor; sıradaki deneme hatayı görerek yeniden yazar.',
   },
   regresyon: {
     ileti: 'Yapılan değişiklik mevcut testlerden birini bozdu.',
-    oneri: 'Kırılan testi düzelt; değişikliği geri almayı da düşün.',
+    oneri: 'Bir şey yapman gerekmiyor; değişiklik geri alındı, sıradaki deneme bunu gözeterek yeniden yazar.',
   },
   kurcalama: {
-    ileti: 'Korunan dosyalardan biri değiştirilmiş görünüyor.',
-    oneri: 'Korunan dosyaları eski haline getir ve yeniden dene.',
+    ileti: 'Model, işi sınayan test dosyasını değiştirmeye çalıştı; deneme geçersiz sayıldı.',
+    oneri: 'Bir şey yapman gerekmiyor; değişiklik geri alındı ve yeniden denenecek.',
   },
   sorun: {
-    ileti: 'Plan ile adım arasında bir çelişki saptandı.',
-    oneri: 'SORUN.md dosyasındaki notu okuyup planı düzelt.',
+    ileti: 'Model işi yaparken bir engelle karşılaştı ve not bıraktı.',
+    oneri: 'Notu Claude\'a göster; iş tanımının düzeltilmesi gerekebilir.',
   },
   eskale: {
-    ileti: 'Bu adım art arda birkaç kez başarısız oldu.',
-    oneri: 'Durup sorunu elle incele; gerekirse planı güncelle.',
+    ileti: 'Sıradaki tüm modeller denendi, bu iş tamamlanamadı.',
+    oneri: 'Claude\'a haber ver; işi daha güçlü bir modele verir ya da iş tanımını sadeleştirir.',
   },
   saglayici: {
     ileti: 'Model sağlayıcısında bir sorun oluştu.',
     oneri: 'Kısa bir süre sonra yeniden dene.',
   },
   kilit: {
-    ileti: 'Başka bir koşu hâlâ çalışıyor gibi görünüyor.',
-    oneri: 'O koşunun bitmesini bekle ya da kilidi temizle.',
+    ileti: 'Modellerin hepsi şu an başka bir işte kullanılıyor.',
+    oneri: 'Diğer işin bitmesini bekleyip yeniden başlat.',
   },
   kapi_hata: {
-    ileti: 'Doğrulama komutu beklenmedik bir hata verdi.',
-    oneri: 'Komutu tek başına çalıştırıp çıktısını incele.',
+    ileti: 'Bu iş için kabul testi yazılamadı.',
+    oneri: 'Claude\'a haber ver; işin kabul ölçütünün daha açık yazılması gerekiyor.',
   },
   ortam_hatasi: {
     ileti: 'Gerekli araç ya da ortam ayarı eksik.',
     oneri: 'Kurulumu denetle ve eksikleri tamamla.',
   },
   regresyon_kirmizi: {
-    ileti: 'Genel testler bu değişiklikten sonra kırıldı.',
-    oneri: 'Kırılan testleri düzelt ve yeniden dene.',
+    ileti: 'İş başlamadan önce mevcut testlerden biri zaten kırıktı.',
+    oneri: 'Claude\'a haber ver; önce kırık test onarılmalı.',
   },
 };
 
