@@ -11,9 +11,10 @@ import { claudeKullanim } from './claude.mjs';
 import { kararlar } from './karar.mjs';
 import { iletiBul } from '../mdk-hata.mjs';
 import { profilOzeti } from './profil.mjs';
+import { yapilacakOku } from './yapilacak.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [], sinir: { deneme: 0, butce: null }, profiller: [] };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [], sinir: { deneme: 0, butce: null }, profiller: [], yapilacaklar: [] };
 
   let planMetni = null;
   try {
@@ -272,6 +273,7 @@ export function snapshot(dir) {
     }
   }
 
+  sonuc.yapilacaklar = yapilacakOku(dir);
   return sonuc;
 }
 

@@ -1,7 +1,7 @@
 // Canlı sunucu: REST + SSE ile panel verisini 127.0.0.1'de sunar.
 
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { watch, existsSync, readFileSync, writeFileSync, realpathSync, mkdirSync, renameSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +11,7 @@ import { parse, epicDurum } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
 import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
 import { profilUygula } from './profil.mjs';
+import { yapilacakOku, yapilacakEkle, yapilacakDurum, yapilacakTasi, yapilacakYaz } from './yapilacak.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
 import { takimDenetle } from './persona.mjs';
 
@@ -18,7 +19,7 @@ const IP = '127.0.0.1';
 
 export async function baslat(dir, port, { calistir } = {}) {
   const kok = resolve(dir);
-  const izlenecekler = ['PLAN.md', 'durum.json', 'metrikler.jsonl'].map((f) => join(kok, f));
+  const izlenecekler = ['PLAN.md', 'durum.json', 'metrikler.jsonl', 'yapilacaklar.json'].map((f) => join(kok, f));
 
   const clientler = new Set();
   let zamanlayici = null;
@@ -593,6 +594,88 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/yapilacak: { islem: 'ekle', baslik, not } | { islem: 'durum', id, durum } | { islem: 'tasi', id, yon }.
+  // yapilacaklar.json yazılır; kök bir git deposuysa yalnız o dosya commit edilir (commit başarısızsa yine 200).
+  const yapilacakAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume();
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      let liste;
+      let konu;
+      try {
+        const eski = yapilacakOku(kok);
+        if (girdi?.islem === 'ekle') {
+          liste = yapilacakEkle(eski, { baslik: girdi.baslik, not: girdi.not }, new Date().toISOString());
+          konu = `yapılacak: ekle #${liste.at(-1).id}`;
+        } else if (girdi?.islem === 'durum') {
+          liste = yapilacakDurum(eski, Number(girdi.id), girdi.durum);
+          konu = `yapılacak: durum #${girdi.id}`;
+        } else if (girdi?.islem === 'tasi') {
+          liste = yapilacakTasi(eski, Number(girdi.id), Number(girdi.yon));
+          konu = `yapılacak: tasi #${girdi.id}`;
+        } else {
+          throw new Error('bilinmeyen işlem');
+        }
+      } catch (e) {
+        hata(yanit, 400, e.message);
+        return;
+      }
+
+      try {
+        yapilacakYaz(kok, liste);
+      } catch {
+        hata(yanit, 500, 'yapilacaklar.json yazılamadı');
+        return;
+      }
+      if (existsSync(join(kok, '.git'))) {
+        spawnSync('git', ['add', 'yapilacaklar.json'], { cwd: kok });
+        spawnSync('git', ['commit', '-qm', konu, '--', 'yapilacaklar.json'], { cwd: kok });
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true, liste }));
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   // POST /api/kabul-onay: adımın kabul ölçütlerini onaylar; PLAN.md'de son `- Kabul:` satırının altına `- Kabul onayı: evet` ekler.
   const kabulOnayAl = (istek, yanit) => {
     const izin = yazmaIzni(istek.headers, uzakAyar(kok));
@@ -722,6 +805,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/profil') {
       profilAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/yapilacak') {
+      yapilacakAl(istek, yanit);
       return;
     }
 
