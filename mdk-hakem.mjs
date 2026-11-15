@@ -68,10 +68,10 @@ if (dogrudan) {
   const blok = adimBlogu(plan, N);
   if (!blok) cik(`adım ${N} bulunamadı`, 4);
 
-  const kabulSatirlari = blok.split('\n').filter((l) => /Kabul:/i.test(l));
+  const kabulSatirlari = blok.split('\n').filter((l) => /^\s*-\s+Kabul:/.test(l)); // yalnız alan satırı: Ne/Kapı notu içinde geçen `- Kabul:` örnekleri ölçüt değildir
   const olcutMetinleri = [];
   for (const l of kabulSatirlari) {
-    const m = l.match(/Kabul:\s*(.*)/i);
+    const m = l.match(/^\s*-\s+Kabul:\s*(.*)/);
     if (m) olcutMetinleri.push(...m[1].split(';').map((s) => s.trim()).filter(Boolean));
   }
   if (!olcutMetinleri.length) cik(`adım ${N} için kabul ölçütü yok`, 4);
