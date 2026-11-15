@@ -1135,6 +1135,7 @@ export function radarHtml(veri, simdiMs = Date.now()) {
   const degisenler = sonuc.degisenler || [];
   const serit = degisenler.filter((d) => !isaretler[d.repo]);
   const TUR = { yeni: 'yeni', sicradi: 'sıçradı', durdu: 'durdu' };
+  const ISARET = { izle: 'İzle', incele: 'İncele', gec: 'Geç' };
 
   let baslik;
   if (sonuc.ilk) baslik = `İlk tarama yapıldı · ${adaylar.length} aday izleniyor`;
@@ -1165,6 +1166,11 @@ export function radarHtml(veri, simdiMs = Date.now()) {
       `<div class="radar-govde">${govde}` +
       ' <span class="kaynak">kaynak: GitHub API</span> ' +
       `<a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener noreferrer">GitHub'da aç</a>` +
+      '<div class="radar-eylem">' +
+      '<button type="button" data-isaret="izle">İzle</button>' +
+      '<button type="button" data-isaret="incele">İncele</button>' +
+      '<button type="button" data-isaret="gec">Geç</button>' +
+      '</div>' +
       '</div></details>';
   }).join('');
 
@@ -1179,6 +1185,7 @@ export function radarHtml(veri, simdiMs = Date.now()) {
     izlenen += `<div class="radar-grup">${esc(g)}</div>` +
       liste.map((a) => '<div class="radar-aday">' +
         (a.hata ? '<span class="rozet eskale">alınamadı</span> ' : '') +
+        (isaretler[a.repo] ? `<span class="rozet">${esc(ISARET[isaretler[a.repo].isaret] || isaretler[a.repo].isaret)}</span> ` : '') +
         `<span class="model">${esc(a.repo)}</span>` +
         '</div>').join('');
   }

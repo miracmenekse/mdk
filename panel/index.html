@@ -351,6 +351,8 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .radar-satir summary .rozet { margin-right: 4px; }
 .radar-govde { font-size: 12px; color: var(--soluk); margin: 4px 0 2px 12px; overflow-wrap: anywhere; }
 .radar .kaynak { color: var(--soluk); font-size: 11px; margin-left: 6px; }
+.radar-eylem { display: flex; gap: 6px; margin-top: 4px; }
+.radar-kayit-hata { color: var(--rozet-eskale-m); font-size: 11px; margin-left: 6px; }
 .radar-hata { color: var(--rozet-eskale-m); font-size: 12px; margin: 4px 0; }
 .radar-izlenen { margin-top: 8px; font-size: 12px; }
 .radar-izlenen summary { cursor: pointer; color: var(--soluk); }
@@ -987,6 +989,42 @@ const arastirmaEl = document.getElementById('arastirma');
 const radarEl = document.getElementById('radar');
 let radarVeri = null;
 
+async function radarYenile() {
+  const v = await fetch('/api/radar').then((r) => r.json());
+  radarVeri = v;
+  radarEl.innerHTML = radarHtml(v);
+  // radar verisi gelince Araştırma kartının sayısı güncellensin
+  if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri, radarVeri); sekmeSec(); }
+}
+
+radarEl.addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-isaret]');
+  if (!b) return;
+  const satir = b.closest('.radar-satir');
+  const repo = satir?.dataset.repo;
+  if (!repo) return;
+  let tamam = false;
+  try {
+    const yanit = await fetch('/api/radar-isaret', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ repo, isaret: b.dataset.isaret }),
+    });
+    tamam = yanit.ok;
+  } catch {}
+  if (tamam) {
+    await radarYenile().catch(() => {});
+    return;
+  }
+  let y = satir.querySelector('.radar-kayit-hata');
+  if (!y) {
+    y = document.createElement('span');
+    y.className = 'radar-kayit-hata';
+    satir.append(y);
+  }
+  y.textContent = 'kaydedilemedi';
+});
+
 // Görev modelleri: seçim değişince PLAN.md'ye yaz → POST /api/gorev-model
 gorevModelleriEl.addEventListener('change', async (e) => {
   const s = e.target.closest('.gorev-model');
@@ -1187,18 +1225,10 @@ suzgecEl.addEventListener('click', (e) => {
   arastirmaCiz();
 });
 
-fetch('/api/radar')
-  .then((r) => r.json())
-  .then((v) => {
-    radarVeri = v;
-    radarEl.innerHTML = radarHtml(v);
-    // radar verisi gelince Araştırma kartının sayısı güncellensin
-    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri, radarVeri); sekmeSec(); }
-  })
-  .catch(() => {
-    radarVeri = { sonuc: null, isaretler: {} };
-    radarEl.innerHTML = radarHtml(radarVeri);
-  });
+radarYenile().catch(() => {
+  radarVeri = { sonuc: null, isaretler: {} };
+  radarEl.innerHTML = radarHtml(radarVeri);
+});
 
 fetch('/api/arastirma')
   .then((r) => r.json())

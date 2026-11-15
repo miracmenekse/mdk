@@ -2,7 +2,7 @@
 
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
-import { watch, existsSync, readFileSync, writeFileSync, realpathSync, mkdirSync } from 'node:fs';
+import { watch, existsSync, readFileSync, writeFileSync, realpathSync, mkdirSync, renameSync } from 'node:fs';
 import { join, resolve, isAbsolute, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
@@ -303,6 +303,98 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/radar-isaret: bir değişeni izle/incele/geç olarak işaretler.
+  // Gövde { repo, isaret }; repo son taramadaki adaylarda olmalı, gövde 2 KB'ı aşamaz.
+  const radarIsaretAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume(); // kalan gövdeyi boşalt, soketi kapatma
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      const isaret = girdi?.isaret;
+      const repo = girdi?.repo;
+      if (!['izle', 'incele', 'gec'].includes(isaret)) {
+        hata(yanit, 400, 'isaret izle, incele ya da gec olmalı');
+        return;
+      }
+      if (typeof repo !== 'string' || !repo) {
+        hata(yanit, 400, 'repo gerekli');
+        return;
+      }
+
+      let sonuc;
+      try {
+        sonuc = JSON.parse(readFileSync(join(kok, 'strateji', 'radar-sonuc.json'), 'utf8'));
+      } catch {
+        hata(yanit, 400, 'radar taraması yok');
+        return;
+      }
+      const adaylar = Array.isArray(sonuc?.adaylar) ? sonuc.adaylar : [];
+      if (!adaylar.some((a) => a?.repo === repo)) {
+        hata(yanit, 400, 'repo son taramadaki adaylarda yok');
+        return;
+      }
+
+      let defter = {};
+      try {
+        const okunan = JSON.parse(readFileSync(join(kok, 'strateji', 'radar-isaret.json'), 'utf8'));
+        if (okunan && typeof okunan === 'object' && !Array.isArray(okunan)) defter = okunan;
+      } catch {}
+      defter[repo] = { isaret, ts: Date.now(), tarama: sonuc.ts };
+
+      const yol = join(kok, 'strateji', 'radar-isaret.json');
+      const gecici = join(kok, 'strateji', `radar-isaret.json.${process.pid}.tmp`);
+      try {
+        mkdirSync(join(kok, 'strateji'), { recursive: true });
+        writeFileSync(gecici, JSON.stringify(defter, null, 2) + '\n');
+        renameSync(gecici, yol);
+      } catch {
+        hata(yanit, 500, 'işaret kaydedilemedi');
+        return;
+      }
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify({ tamam: true }));
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   // POST /api/gorev-model: `Görev <tür>:` satırındaki bir modeli değiştirir/yedek ekler.
   // Gövde { gorev, sira, model }; yalnız o satır yazılır, dosyanın geri kalanı korunur.
   const gorevModelAl = (istek, yanit) => {
@@ -388,6 +480,11 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
+    if (istek.method === 'POST' && pathname === '/api/radar-isaret') {
+      radarIsaretAl(istek, yanit);
+      return;
+    }
+
     if (pathname === '/api/test') {
       if (istek.method !== 'POST') {
         yanit.writeHead(405).end();
@@ -436,7 +533,12 @@ export async function baslat(dir, port, { calistir } = {}) {
         let isaretler = {};
         try {
           const okunan = JSON.parse(readFileSync(join(kok, 'strateji', 'radar-isaret.json'), 'utf8'));
-          if (okunan && typeof okunan === 'object') isaretler = okunan;
+          if (okunan && typeof okunan === 'object') {
+            // yalnız bu taramaya ait işaretler "bu haftanın işareti" sayılır
+            for (const [repo, i] of Object.entries(okunan)) {
+              if (i && i.tarama === sonuc.ts) isaretler[repo] = i;
+            }
+          }
         } catch {}
         veri = { sonuc, isaretler };
       } catch {}
