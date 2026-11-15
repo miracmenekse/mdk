@@ -768,6 +768,9 @@ Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının
   - Ne: `test/*.test.sh`, `test/ios-ortak.sh`, `test/hepsi.sh` silindi; bitmemiş adımların (114-117) iOS kapıları `node test/ios-*.test.mjs`; `CLAUDE.md`, `esit/*`, `yurutucu-kurallar.md` yeni adlarla; `mdk-esitle` koşuldu.
   - Kapı: `node test/hepsi.mjs`
 
+## Epic 27 — Pazar radarı
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
