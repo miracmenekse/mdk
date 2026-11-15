@@ -851,6 +851,7 @@ Yalın kip. Ayrıntı `epic/31/is.md`. Tek story: sayılar zaten `metrikler.json
 
 ## Epic 32 — Rol → model profilleri
 - Durum: gelistirme
+- Ana: claude
 Yalın kip. Ayrıntı `epic/32/is.md`. Çalışma anında tek kaynak yine PLAN başındaki `Görev <tür>:` satırlarıdır; profil yalnız o satırları toplu yazar. Model adları `opencode models` çıktısından (2026-11-15): ücretsizler `opencode/…-free`, abonelik modelleri `opencode-go/…`. Go profilindeki rol → model ataması başlangıç tahminidir; ölçümle düzeltilir.
 - [ ] 179. Hazır profiller ve tek istekle uygulama
   - Kabul: üç hazır seçenek vardır: yalnız ücretsiz modeller, önce ücretsiz takılırsa abonelik modeli, abonelik modelleri; bir seçenek uygulanınca tüm işler için modeller tek seferde değişir ve planın geri kalanı aynen kalır; şu an hangi seçeneğin etkin olduğu bilinir, elle değişiklik yapılmışsa "özel" sayılır; tanınmayan seçenek reddedilir
