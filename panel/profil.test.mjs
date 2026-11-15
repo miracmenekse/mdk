@@ -78,6 +78,10 @@ const bozulmus = profilUygula(fikstur, 'go').replace(/^Görev kod:.*$/m, 'Görev
 assert.equal(etkinProfil(bozulmus), null, 'elle değişiklikte etkin profil olmamalı');
 assert.equal(etkinProfil(profilUygula(fikstur, 'ucretsiz')), 'ucretsiz', 'ucretsiz karma ile karışmamalı');
 assert.equal(etkinProfil(profilUygula(fikstur, 'karma')), 'karma', 'karma kendisiyle eşleşmeli');
+// PLAN'da profilde olmayan fazladan bir Görev türü (ör. karar) eşleşmeyi bozmamalı
+const fazlaTur = profilUygula(fikstur, 'ucretsiz').replace(/^Görev kod:/m, 'Görev karar: opencode/x-free\nGörev kod:');
+assert.ok(/^Görev karar:/m.test(fazlaTur), 'fikstürde fazladan karar satırı olmalı');
+assert.equal(etkinProfil(fazlaTur), 'ucretsiz', 'fazladan Görev türü etkin profili bozmamalı');
 
 // (4) profilUygula hataları -------------------------------------------------
 assert.throws(() => profilUygula(fikstur, 'yok'), Error, 'bilinmeyen profil atmalı');

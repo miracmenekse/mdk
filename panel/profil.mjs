@@ -95,14 +95,13 @@ export function profilUygula(metin, ad) {
   return satirlar.join('\n');
 }
 
-// PLAN'daki Görev satırları bir profilin tüm türleriyle birebir aynıysa o profilin adı, değilse null.
+// Profilin her türü PLAN'da var ve listesi aynıysa o profilin adı, değilse null.
+// PLAN'daki profilde olmayan fazladan türler (ör. karar) eşleşmeyi bozmaz.
 export function etkinProfil(metin) {
   const mevcut = gorevOku(metin);
-  const anahtarlar = Object.keys(mevcut).sort().join(',');
   for (const p of PROFILLER) {
-    const beklenen = Object.keys(p.gorevler).sort();
-    if (beklenen.join(',') !== anahtarlar) continue;
-    if (beklenen.every((t) => p.gorevler[t].join(',') === mevcut[t].join(','))) return p.ad;
+    const turler = Object.keys(p.gorevler);
+    if (turler.every((t) => mevcut[t] && p.gorevler[t].join(',') === mevcut[t].join(','))) return p.ad;
   }
   return null;
 }
