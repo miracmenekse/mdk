@@ -1015,7 +1015,7 @@ function ciz(d) {
   }
   // formda yazı varken ya da odaktayken yeniden çizme: yazılan metin kaybolmasın
   const yapForm = yapilacaklarEl.querySelector('#yapilacak-form');
-  const yapYazili = yapForm && (yapForm.contains(document.activeElement) || [...yapForm.querySelectorAll('input')].some((i) => i.value !== ''));
+  const yapYazili = yapForm && yapForm.contains(document.activeElement) && [...yapForm.querySelectorAll('input')].some((i) => i.value !== '');
   if (!yapYazili) yapilacaklarEl.innerHTML = yapilacaklarHtml(d.yapilacaklar, d.kararIzleyici);
   profillerEl.innerHTML = profilHtml(d.profiller, d.kararIzleyici);
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
@@ -1121,7 +1121,8 @@ radarEl.addEventListener('click', async (e) => {
   y.textContent = 'kaydedilemedi';
 });
 
-// Yapılacaklar: ekle / durum / taşı → POST /api/yapilacak; hata iletisi bölümün içinde gösterilir
+// Yapılacaklar: ekle / durum / taşı → POST /api/yapilacak. Başarıda liste yanıttan çizilir (SSE beklenmez);
+// hata iletisi formun altında gösterilir.
 async function yapilacakIstek(govde) {
   yapilacaklarEl.querySelectorAll('.yap-hata').forEach((el) => el.remove());
   let hata = '';
@@ -1131,27 +1132,30 @@ async function yapilacakIstek(govde) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(govde),
     });
-    if (!yanit.ok) {
-      const j = await yanit.json().catch(() => ({}));
-      hata = j.hata || 'kaydedilemedi (' + yanit.status + ')';
+    if (yanit.ok) {
+      const j = await yanit.json();
+      yapilacaklarEl.innerHTML = yapilacaklarHtml(j.liste, sonD?.kararIzleyici);
+      return true;
     }
+    const j = await yanit.json().catch(() => ({}));
+    hata = j.hata || 'kaydedilemedi (' + yanit.status + ')';
   } catch {
     hata = 'bağlantı hatası';
   }
-  if (hata) {
-    const p = document.createElement('p');
-    p.className = 'hata yap-hata';
-    p.textContent = hata;
-    yapilacaklarEl.append(p);
-  }
-  return !hata;
+  const p = document.createElement('p');
+  p.className = 'hata yap-hata';
+  p.textContent = hata;
+  const form = yapilacaklarEl.querySelector('#yapilacak-form');
+  if (form) form.after(p);
+  else yapilacaklarEl.prepend(p);
+  return false;
 }
 yapilacaklarEl.addEventListener('submit', async (e) => {
   const form = e.target.closest('#yapilacak-form');
   if (!form) return;
   e.preventDefault();
   const veri = new FormData(form);
-  if (await yapilacakIstek({ islem: 'ekle', baslik: veri.get('baslik'), not: veri.get('not') })) form.reset();
+  await yapilacakIstek({ islem: 'ekle', baslik: veri.get('baslik'), not: veri.get('not') });
 });
 yapilacaklarEl.addEventListener('click', (e) => {
   const dugme = e.target.closest('.yap-islem');
