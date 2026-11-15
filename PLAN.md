@@ -5,15 +5,15 @@ Bu plan bu aracın kendi canlı kontrol panelini ve etki görünümünü yapar.
 
 Yürütücü: opencode
 Modeller: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free
-Görev kod: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free
+Görev kod: opencode-go/kimi-k3, opencode-go/qwen3.8-max, opencode/deepseek-v4.1-flash-free
 Görev tasarim: opencode/glm-5.3-flash-free, opencode/minimax-m3.1-flash-free, opencode/mimo-v2.6-flash-free
 Görev persona: opencode/inkling-2-small-free, opencode/mimo-v2.6-flash-free
-Görev kapi: opencode/beam-free, opencode/deepseek-v4.1-flash-free
+Görev kapi: opencode-go/deepseek-v4-pro, opencode-go/kimi-k3, opencode/beam-free
 Görev inceleme: opencode/minimax-m3.1-flash-free, opencode/inkling-2-small-free
-Görev eskale: opencode/longcat-2.5-free, opencode/minimax-m3.1-flash-free, opencode/big-pickle
+Görev eskale: opencode-go/claude-haiku-5-5, opencode-go/gpt-6-luna
 Görev mekanik: opencode/nemotron-3.5-lightning-free, opencode/flint-40b-free, opencode/iceman-free
 Görev arastirma: opencode/inkling-2-small-free, opencode/nemotron-3.5-super-vl-free
-Görev hakem: opencode/inkling-2-small-free, opencode/longcat-2.5-free, opencode/minimax-m3.1-flash-free
+Görev hakem: opencode-go/glm-5.3, opencode/inkling-2-small-free
 
 Bütçe: 300000
 
