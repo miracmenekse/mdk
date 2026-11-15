@@ -800,6 +800,9 @@ Tartışma + Claude sınaması `epic/27/is.md`'de. Radar yeni sekme değil: Ara�
   - Kapı: `node panel/radar-betik.test.mjs`
   - Kapı notu (panel/radar-betik.test.mjs): `MDK_RADAR_BETIK` VERİLMEZ (varsa silinir). Geçici kök klasörde yalnız `strateji/radar.json` (1 depo: `a/b`) vardır, kökte `mdk-radar.mjs` YOKTUR. `MDK_GH` geçici klasördeki sahte `gh` `.mjs` dosyasıdır (stdout'a `{"stargazers_count":5,"license":{"spdx_id":"MIT"},"pushed_at":"2026-11-01T00:00:00Z","description":"x"}` basar, çıkış 0); ağa çıkılmaz. `panel/sunucu.mjs` `baslat(kok, 0)` ile başlatılır (dönüş değerinden port ve kapatma, `panel/radar-tara.test.mjs`'deki kullanım örnek alınır). `POST /api/radar-tara` → `basladi:true`; en çok 15 sn içinde `<kök>/strateji/radar-sonuc.json` oluşur, `adaylar[0].repo === 'a/b'` ve `yildiz === 5`; `GET /api/radar` `taraniyor:false` ve `sonuc.adaylar.length === 1` döner. Sunucu kapatılır, süreç asılı kalmaz.
 
+## Epic 28 — Sağlayıcı hataları: türüne göre davran, sade dille söyle
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - **Daha sonra yapılacak (kullanıcı kararı, 2026-11-15; kullanıcı istemeden Epic açma).** Dayanak: `strateji/rapor/ozet-2026-11-15.md`.
   1. Kapıyı sade dille gösterip onaylatmak: story koşmadan önce "bu iş bitti sayılması için şunlar doğru olmalı" listesi panelde (kapıyı model yazıyor; en büyük iç risk).
