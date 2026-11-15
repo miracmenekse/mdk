@@ -10,10 +10,10 @@
     {
       "ad": "antigravity",
       "baslik": "Antigravity",
-      "planlayici": ["agy", "-p", "{istem}"],
-      "agy_ek": [],
-      "roller": { "kodcu": "agy/varsayilan", "tasarimci": "agy/varsayilan" },
-      "gorevler": { "kod": ["agy/varsayilan"], "kapi": ["agy/varsayilan"], "eskale": ["agy/varsayilan"] }
+      "planlayici": ["agy", "-p", "{istem}", "--mode", "accept-edits", "--output-format", "stream-json", "--settings", "{\"permissions\":{\"allow\":[\"command(node)\",\"command(npm)\",\"command(npx)\",\"command(git)\",\"command(grep)\",\"command(sed)\",\"command(awk)\",\"command(cat)\",\"command(ls)\",\"command(head)\",\"command(tail)\",\"command(wc)\",\"command(find)\",\"command(sort)\",\"command(diff)\",\"command(mkdir)\",\"command(cp)\",\"command(mv)\",\"command(rm)\",\"command(touch)\",\"command(echo)\",\"command(test)\",\"command(bash)\",\"command(sh)\"],\"deny\":[\"command(sudo)\",\"command(git stash)\"]}}"],
+      "agy_ek": ["--mode", "accept-edits", "--output-format", "stream-json", "--settings", "{\"permissions\":{\"allow\":[\"command(node)\",\"command(npm)\",\"command(npx)\",\"command(git)\",\"command(grep)\",\"command(sed)\",\"command(awk)\",\"command(cat)\",\"command(ls)\",\"command(head)\",\"command(tail)\",\"command(wc)\",\"command(find)\",\"command(sort)\",\"command(diff)\",\"command(mkdir)\",\"command(cp)\",\"command(mv)\",\"command(rm)\",\"command(touch)\",\"command(echo)\",\"command(test)\",\"command(bash)\",\"command(sh)\"],\"deny\":[\"command(sudo)\",\"command(git push)\",\"command(git stash)\"]}}"],
+      "roller": { "kodcu": "agy/gemini-3.8-flash-medium", "tasarimci": "agy/gemini-4-argon-medium" },
+      "gorevler": { "kod": ["agy/gemini-3.8-flash-medium"], "kapi": ["agy/gemini-3.8-flash-medium"], "eskale": ["agy/gemini-4-argon-medium"] }
     }
   ]
 }
