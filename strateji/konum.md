@@ -1,4 +1,4 @@
-# mdk konumu (taslak — karar kullanıcının)
+# mdk konumu
 
 Tarih: 2026-11-15. Dayanak: `rakipler.md`. Bu sayfa karar değil, karara hazırlık.
 
@@ -22,7 +22,7 @@ Teknik olmayan insanlar için; bilişsel yükü ekranlarla azaltan, düşük mal
 2. **Yarı teknik, bütçesi dar kişi** (öğrenci, serbest çalışan; terminal açabilir ama kod yazmaz) — bugünkü ürüne en yakın; rakip dyad, spec-kit.
 3. **Küçük ekipte iş tarafı yöneticisi** (geliştiriciyle çalışır, işi panelden izler/onaylar) — panel ve onay akışı tam buna göre.
 
-Öneri: 2 ile başla, 1'e doğru git. Gerekçe: bugünkü kurulumla ulaşılabilen tek kitle 2; D açığı kapandıkça 1'e açılır.
+**Karar (kullanıcı, 2026-11-15): 2 ile başla, 1'e doğru git.** Gerekçe: bugünkü kurulumla ulaşılabilen tek kitle 2; D açığı kapandıkça 1'e açılır.
 
 ## Ticarileşme kapısı
 Şu ikisi geçmeden fiyat/lisans konuşulmaz: (a) terminalsiz kurulum, (b) üç gerçek kişinin baştan sona bir iş bitirmesi.
