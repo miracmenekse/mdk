@@ -865,7 +865,7 @@ Yalın kip. Ayrıntı `epic/32/is.md`. Çalışma anında tek kaynak yine PLAN b
   - Kapı notu (panel/profil-ui.test.mjs): `profilHtml` (`panel/ciz.mjs`) içe aktarılır; `panel/index.html` metin olarak okunur. Vakalar: (1) üç profil, ikincisi etkin → üç `profil-kart`, tam bir `profil-kart etkin`, iki `profil-sec` düğmesi (etkin kartta düğme yok), `etkin` rozeti bir kez, `özel ayar` yok; (2) hiçbiri etkin değil → `özel ayar` var, üç düğme; (3) `izleyici = true` → hiç düğme yok; (4) başlık `'A <b>'` → `A &lt;b&gt;`; `data-ad` değerleri profil adlarıyla aynı; (5) `[]` ve `undefined` → `''`; (6) `index.html` `id="profiller"` içerir, `/api/profil` adresine istek atan kod içerir ve `profilHtml`'i `/ciz.mjs`'ten içe aktarır.
 
 ## Epic 33 — Yapılacaklar listesi ve panelden iş girişi
-- Durum: analiz
+- Durum: gelistirme
 Yalın kip. Ayrıntı `epic/33/is.md`. Veri `yapilacaklar.json` (kökte, git'te izlenir: makineler arası taşınsın); panel her yazımdan sonra yalnız o dosyayı commit eder ki koşturucunun "temiz ağaç" şartı bozulmasın. Liste yeni sekme değil: "Şu an" ile "Epic'ler" arasında bölüm.
 - [ ] 181. Yapılacaklar verisi ve kaydı
   - Kabul: yapılacak bir iş başlığı ve isteğe bağlı notuyla eklenebilir; iş "bekliyor", "ertelendi" ya da "bitti" olarak işaretlenebilir; işlerin sırası yukarı-aşağı değiştirilebilir; boş ya da çok uzun başlık kabul edilmez; yapılan değişiklik kalıcıdır ve geliştirme akışını engellemez
