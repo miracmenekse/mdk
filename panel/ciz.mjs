@@ -443,6 +443,69 @@ export function drawerImza(adim, etki) {
   ]);
 }
 
+const NEDEN_CUMLE = {
+  kapi: 'kabul testinden geçemedi',
+  regresyon: 'başka bir şeyi bozdu, geri alındı',
+  sure: 'süre doldu',
+  butce: 'harcama sınırına ulaştı',
+  kota: 'modelin kullanım hakkı dolmuştu',
+  yanit_yok: 'model yanıt vermedi',
+  sorun: 'model bir engel bildirdi',
+  kurcalama: 'testi değiştirmeye çalıştı',
+  oran: 'sağlayıcı çok yoğundu',
+  sunucu: 'sağlayıcıda geçici sorun',
+  ag: 'bağlantı koptu',
+  kimlik: 'giriş bilgisi kabul edilmedi',
+  model_yok: 'model bulunamadı',
+};
+
+export function harcamaHtml(denemeler, sinir) {
+  const liste = Array.isArray(denemeler) ? denemeler : [];
+  const s = sinir && typeof sinir === 'object' ? sinir : null;
+  const sinirCumlesi = () => {
+    if (!s) return '';
+    const parcalar = [];
+    const deneme = Number(s.deneme);
+    if (Number.isFinite(deneme) && deneme > 0) parcalar.push(`En çok ${deneme} deneme yapılır, sonra kendiliğinden durur.`);
+    if (s.butce != null && Number.isFinite(Number(s.butce))) parcalar.push(`Bir model en çok ${Number(s.butce).toLocaleString('tr-TR')} token harcayabilir.`);
+    if (parcalar.length === 0) return '';
+    return `<p class="harcama-sinir">${esc(parcalar.join(' '))}</p>`;
+  };
+  if (liste.length === 0) {
+    let html = '<p class="bos">henüz denenmedi</p>';
+    const sc = sinirCumlesi();
+    if (sc) html += sc;
+    return html;
+  }
+  const gercekSayi = liste.filter((d) => !(d && (d.neden === 'kota' || d.neden === 'yanit_yok'))).length;
+  const sessizKotaSayi = liste.filter((d) => d && (d.neden === 'yanit_yok' || d.neden === 'kota')).length;
+  const toplamSure = liste.reduce((t, d) => {
+    const x = d && typeof d.sure_sn === 'number' && Number.isFinite(d.sure_sn) ? d.sure_sn : 0;
+    return t + x;
+  }, 0);
+  const toplamToken = liste.reduce((t, d) => {
+    const x = d && typeof d.token === 'number' && Number.isFinite(d.token) ? d.token : 0;
+    return t + x;
+  }, 0);
+  const sureMetni = toplamSure >= 60
+    ? `${Math.floor(toplamSure / 60)} dk ${toplamSure % 60} sn`
+    : `${toplamSure} sn`;
+  const tokenMetni = Math.round(toplamToken).toLocaleString('tr-TR');
+  const parcalar = [`${gercekSayi} deneme`, sureMetni, `${tokenMetni} token`];
+  if (sessizKotaSayi > 0) parcalar.push(`${sessizKotaSayi} kez model yanıt vermedi/kotası doluydu`);
+  let html = `<div class="harcama-ozet">${esc(parcalar.join(' · '))}</div>`;
+  const sc = sinirCumlesi();
+  if (sc) html += sc;
+  const denemelerHtml = liste.map((d) => {
+    const cumle = (d && !d.gecti && d.neden)
+      ? (Object.prototype.hasOwnProperty.call(NEDEN_CUMLE, d.neden) ? NEDEN_CUMLE[d.neden] : d.neden)
+      : null;
+    return `<div class="harcama-deneme">${esc(d?.deneme ?? '')}. ${esc(d?.model ?? '')} ${d?.gecti ? '✓' : '✕'}${cumle != null ? ' ' + esc(cumle) : ''}</div>`;
+  }).join('');
+  html += denemelerHtml;
+  return html;
+}
+
 // etkiKartiHtml: o adımın etki kartı HTML'i (karar formuyla) ya da null → "etki yok".
 export function drawerHtml(adim, etkiKartiHtml) {
   const a = adim || {};
@@ -510,6 +573,8 @@ export function drawerHtml(adim, etkiKartiHtml) {
     `<div class="drawer-durum">${rozet(sinif, a.etiket)} ${meta}${gecen}</div>` +
     ilerleme +
     kabulBolumu +
+    '<h3 class="drawer-bolum">HARCAMA</h3>' +
+    harcamaHtml(a.denemeler, a.sinir) +
     '<h3 class="drawer-bolum">PERSONA DÜŞÜNCELERİ</h3>' +
     '<div id="drawer-persona"></div>' +
     '<h3 class="drawer-bolum">ETKİ</h3>' +

@@ -12,12 +12,33 @@ import { kararlar } from './karar.mjs';
 import { iletiBul } from '../mdk-hata.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [], sinir: { deneme: 0, butce: null } };
 
+  let planMetni = null;
   try {
-    sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
+    planMetni = readFileSync(join(dir, 'PLAN.md'), 'utf8');
+    sonuc.plan = parse(planMetni);
   } catch {
     sonuc.plan = null;
+    planMetni = null;
+  }
+
+  if (sonuc.plan && planMetni) {
+    const modelSayisi = (metin, etiket) => {
+      const satir = metin.split('\n').find((s) => s.trim().startsWith(etiket + ':'));
+      if (!satir) return null;
+      const idx = satir.indexOf(':');
+      const deger = idx >= 0 ? satir.slice(idx + 1) : '';
+      return deger.split(',').map((m) => m.trim()).filter(Boolean).length;
+    };
+    let kod = modelSayisi(planMetni, 'Görev kod');
+    if (kod === null) kod = modelSayisi(planMetni, 'Modeller');
+    if (kod === null) kod = 0;
+    const eskale = modelSayisi(planMetni, 'Görev eskale');
+    sonuc.sinir = {
+      deneme: kod * 2 + (eskale === null ? 0 : eskale),
+      butce: sonuc.plan.ayarlar?.butce ?? null,
+    };
   }
 
   try {
