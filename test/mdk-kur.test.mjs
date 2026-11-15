@@ -5,7 +5,7 @@ const KUR = join(KOK, 'mdk-kur.mjs');
 const { vaka, kontrol, bitir } = denetci('mdk-kur.test');
 const T = gecici();
 const AGY = join(T, 'agy', 'mcp_config.json'); // henüz yok; üst klasörü de kurulum oluşturmalı
-const env = { MDK_AGY_MCP: AGY };
+const env = { MDK_AGY_MCP: AGY, MDK_AGY: join(T, 'yok-agy') };
 const planKaynak = oku(join(KOK, 'esit', 'planlayici.md')).trim();
 const json = (yol) => { try { return JSON.parse(oku(yol)); } catch { return {}; } };
 const satirVar = (metin, satir) => metin.split('\n').some((s) => s.trim() === satir);
