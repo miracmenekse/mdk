@@ -860,7 +860,7 @@ Yalın kip. Ayrıntı `epic/30/is.md`. Karar (2026-11-15): sade liste modelle ü
 - Durum: analiz
 
 ## Epic 38 — Hakem (judge) modeliyle geçti / geçmedi
-- Durum: analiz
+- Durum: gelistirme
 Yalın kip. Ayrıntı `epic/38/is.md`. Karar (2026-11-15): ilk sürümde hakem hükmü bağlayıcı değil, uyarıdır (story yine "geçti" sayılır); ölçümden sonra bağlayıcı yapılabilir. Hakemin ölçütü story'nin `- Kabul:` listesidir (Epic 30). Kayıt: `hakem.jsonl` (kökte, git dışı).
 - [ ] 176. Hakem betiği: her kabul ölçütü için geçti / geçmedi
   - Kabul: biten bir story için hakem model her kabul ölçütüne ayrı ayrı "geçti" ya da "geçmedi" der ve nedenini yazar; ölçütlerden biri geçmediyse genel hüküm "geçmedi" olur; hakem, kodu yazan modelden farklı bir modeldir; hakem anlaşılır yanıt veremezse yedek model denenir ve hiçbir şey bozulmaz
