@@ -403,7 +403,7 @@ export async function baslat(dir, port, { calistir } = {}) {
 
   const radarBetik = () => process.env.MDK_RADAR_BETIK
     ? resolve(process.env.MDK_RADAR_BETIK)
-    : join(kok, 'mdk-radar.mjs');
+    : join(fileURLToPath(new URL('..', import.meta.url)), 'mdk-radar.mjs');
 
   const radarTara = () => {
     if (radarCocuk) return false;
@@ -446,7 +446,8 @@ export async function baslat(dir, port, { calistir } = {}) {
   };
 
   const radarDurumVar = () =>
-    existsSync(radarBetik()) || existsSync(join(kok, 'strateji', 'radar.json'));
+    existsSync(process.env.MDK_RADAR_BETIK ? resolve(process.env.MDK_RADAR_BETIK) : join(kok, 'mdk-radar.mjs')) ||
+    existsSync(join(kok, 'strateji', 'radar.json'));
 
   // POST /api/gorev-model: `Görev <tür>:` satırındaki bir modeli değiştirir/yedek ekler.
   // Gövde { gorev, sira, model }; yalnız o satır yazılır, dosyanın geri kalanı korunur.
