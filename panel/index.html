@@ -490,7 +490,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .yapilacak .yap-baslik { flex: 1 1 160px; }
 .yapilacak small { flex-basis: 100%; color: var(--soluk); font-size: 12px; }
 .yapilacak .yap-dugmeler { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
-.yapilacak .yap-islem { font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
+.yapilacak .yap-islem, .yapilacak .yap-epic { font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
 .yapilacak-biten { margin-top: 10px; font-size: 13px; color: var(--soluk); }
 .yapilacak-biten summary { cursor: pointer; }
 .yapilacak-biten ul { margin: 6px 0 0; padding-left: 18px; }
@@ -1123,11 +1123,11 @@ radarEl.addEventListener('click', async (e) => {
 
 // Yapılacaklar: ekle / durum / taşı → POST /api/yapilacak. Başarıda liste yanıttan çizilir (SSE beklenmez);
 // hata iletisi formun altında gösterilir.
-async function yapilacakIstek(govde) {
+async function yapilacakIstek(govde, yol = '/api/yapilacak') {
   yapilacaklarEl.querySelectorAll('.yap-hata').forEach((el) => el.remove());
   let hata = '';
   try {
-    const yanit = await fetch('/api/yapilacak', {
+    const yanit = await fetch(yol, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(govde),
@@ -1158,6 +1158,11 @@ yapilacaklarEl.addEventListener('submit', async (e) => {
   await yapilacakIstek({ islem: 'ekle', baslik: veri.get('baslik'), not: veri.get('not') });
 });
 yapilacaklarEl.addEventListener('click', (e) => {
+  const epicDugme = e.target.closest('.yap-epic');
+  if (epicDugme) {
+    yapilacakIstek({ id: Number(epicDugme.dataset.id) }, '/api/yapilacak-epic');
+    return;
+  }
   const dugme = e.target.closest('.yap-islem');
   if (!dugme) return;
   const id = Number(dugme.closest('li').dataset.id);

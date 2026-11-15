@@ -3,7 +3,7 @@
 import { createServer } from 'node:http';
 import { spawn, spawnSync } from 'node:child_process';
 import { watch, existsSync, readFileSync, writeFileSync, realpathSync, mkdirSync, renameSync } from 'node:fs';
-import { join, resolve, isAbsolute, sep, basename } from 'node:path';
+import { join, resolve, isAbsolute, sep, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { snapshot } from './durum.mjs';
 import { depo, varsayilanCalistir } from './depo.mjs';
@@ -676,6 +676,113 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/yapilacak-epic: { id } → bekleyen, Epic'i olmayan işi `mdk-epic.mjs ac` ile Epic'e çevirir.
+  // İş metni .mdk-log/yapilacak-<id>.md'ye yazılır; başlık ve dosya yolu argüman dizisi olarak geçer (kabuk yok).
+  const yapilacakEpicAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume();
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      const id = Number(girdi?.id);
+      const oge = yapilacakOku(kok).find((o) => o.id === id);
+      if (!oge) {
+        hata(yanit, 400, 'iş bulunamadı');
+        return;
+      }
+      if (oge.epic || oge.durum === 'bitti') {
+        hata(yanit, 409, 'bu iş zaten Epic’e çevrilmiş ya da bitmiş');
+        return;
+      }
+
+      const isDosyasi = join(kok, '.mdk-log', `yapilacak-${id}.md`);
+      try {
+        mkdirSync(dirname(isDosyasi), { recursive: true });
+        writeFileSync(isDosyasi, `# ${oge.baslik}\n\n${oge.not || ''}\n\nKaynak: yapılacaklar #${id} (panelden).\n`);
+      } catch {
+        hata(yanit, 500, 'iş dosyası yazılamadı');
+        return;
+      }
+
+      const betik = process.env.MDK_EPIC_BETIK || join(fileURLToPath(new URL('..', import.meta.url)), 'mdk-epic.mjs');
+      const cocuk = spawn(process.execPath, [betik, 'ac', oge.baslik, isDosyasi], { cwd: kok });
+      let cikti = '';
+      let hatali = '';
+      let bitti = false;
+      const bitir = (kod, neden) => {
+        if (bitti) return;
+        bitti = true;
+        hata(yanit, kod, neden);
+      };
+      cocuk.stdout.on('data', (d) => { cikti += d; });
+      cocuk.stderr.on('data', (d) => { hatali += d; });
+      cocuk.on('error', () => bitir(500, 'Epic betiği başlatılamadı'));
+      cocuk.on('close', (kod) => {
+        if (bitti) return;
+        const satirlar = (s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+        const sonSatir = (s) => satirlar(s).at(-1) || '';
+        const son = sonSatir(cikti);
+        if (kod !== 0 || !/^\d+$/.test(son)) {
+          bitir(500, sonSatir(hatali) || son || 'Epic açılamadı');
+          return;
+        }
+        const epic = Number(son);
+        const yeni = yapilacakOku(kok).map((o) => (o.id === id ? { ...o, epic } : o));
+        try {
+          yapilacakYaz(kok, yeni);
+        } catch {
+          bitir(500, 'yapilacaklar.json yazılamadı');
+          return;
+        }
+        if (existsSync(join(kok, '.git'))) {
+          spawnSync('git', ['add', 'yapilacaklar.json'], { cwd: kok });
+          spawnSync('git', ['commit', '-qm', `yapılacak: epic #${id}`, '--', 'yapilacaklar.json'], { cwd: kok });
+        }
+        bitti = true;
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ tamam: true, epic, liste: yeni }));
+      });
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   // POST /api/kabul-onay: adımın kabul ölçütlerini onaylar; PLAN.md'de son `- Kabul:` satırının altına `- Kabul onayı: evet` ekler.
   const kabulOnayAl = (istek, yanit) => {
     const izin = yazmaIzni(istek.headers, uzakAyar(kok));
@@ -810,6 +917,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/yapilacak') {
       yapilacakAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/yapilacak-epic') {
+      yapilacakEpicAl(istek, yanit);
       return;
     }
 

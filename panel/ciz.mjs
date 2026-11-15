@@ -382,7 +382,9 @@ export function yapilacaklarHtml(liste, izleyici = false) {
         dugme('durum', 'bitti', 'bitti'),
         dugme('tasi', '-1', '↑'),
         dugme('tasi', '1', '↓'),
-      ].join('') + '</span>';
+      ].join('') +
+      (o.durum === 'bekliyor' && !o.epic ? `<button type="button" class="yap-epic" data-id="${esc(o.id)}">Epic'e çevir</button>` : '') +
+      '</span>';
     return `<li data-id="${esc(o.id)}" class="yapilacak ${esc(o.durum)}">` +
       `<b class="yap-baslik">${esc(o.baslik)}</b>${rozet}${not}${dugmeler}</li>`;
   }).join('');
