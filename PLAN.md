@@ -809,6 +809,17 @@ Tartışma + Claude sınaması `epic/27/is.md`'de. Radar yeni sekme değil: Ara�
   5. Panelden iş girişi: işi sohbet yerine panelden yazıp Epic açmak (2026-11-14'te sıraya konmuştu; yapılmadı).
   6. Story bölme kuralı: kural metinde var (1 story = 1 dikey dilim, 1–3 dosya, ~60–250 satır); koşturucu bunu denetlemiyor, çok küçük ya da çok büyük story'de uyarı yok (2026-11-14 listesinden; yarım).
   7. Bash → Node taşımasının Windows'ta gerçek denemesi: taşıma bitti (Epic 25-26), ama Windows PC'de hiç koşmadı (`node test/hepsi.mjs`, `MDK_OPENCODE` gerçek `.exe` yolu, Git Bash için `MDK_BASH`).
+  - Teknik incelemeden alınmaya değer fikirler (2026-11-15; ayrıntı ve kaynak dosyalar `strateji/teknik/ozet.md`; Epic'e çevirmeden önce ilgili kodu oku):
+  8. Sağlayıcı hatasını türüne göre ele almak: oran sınırı/zaman aşımı/5xx → sınırlı üstel bekleme ile yeniden dene; kota bitti/kimlik/model yok → beklemeden sıradaki modele geç; her denemeyi nedeniyle kaydet (claude-code-router, Aider). Orta.
+  9. Hata iletisini eyleme çevirmek: "kota doldu", "anahtar geçersiz", "ağ yok" ayrı ileti ve önerilen adım (dyad). Küçük-orta. 8 ile tek Epic olabilir.
+  10. Modeli adıma değil role bağlamak ve hazır profil seçtirmek: "yalnız ücretsiz", "Claude Pro'm var" (opencode-orchestrator-kit). Küçük.
+  11. Kurulum sihirbazı ve Node'u uygulamanın indirip doğrulaması (claude-code-router, dyad). Büyük. 2. maddenin (terminalsiz kurulum) çözüm yolu.
+  12. Başarısız test çıktısını ayıklayıp modele geri vermek (Aider, dyad). Orta.
+  13. Ajan başına bağlam bütçesi: rol başına en çok N dosya/satır, durum dosyada (opencode-orchestrator-kit, BMAD). Orta.
+  14. Persona tartışmasında ilk görüşleri birbirini görmeden almak, yanıt turu ardışık (BMAD). Orta.
+  15. Testi yalıtılmış kopyada (git worktree) koşturmak ve her adımı geri alınabilir checkpoint yapmak (dyad). Orta-büyük.
+  16. Depo haritası: sembol/bağımlılık haritası, önem sıralı, token bütçeli (Aider). Büyük; tree-sitter gerektirir, "bağımlılık yok" kuralına ters.
+  - Lisans: agent-kanban ve `dyad/src/pro` FSL; bunlardan yalnız fikir alınır, kod alınmaz.
   - 2026-11-14 listesinden tamamlananlar (kayıt için): personaların yeniden tasarımı (Epic 22-23), bash koşturucuların ve testlerin Node'a taşınması (Epic 25-26).
   - Bilinen kusur (Epic 27): Araştırma sekmesine geçince "Eski araştırma notu" kendiliğinden açılıyor; tarayıcı `#arastirma` adres parçasının hedefi `<details>` içinde olduğu için onu açıyor. Çözüm: içteki `section` kimliğini değiştirmek (`panel/arastirma.test.mjs:70` ve `panel/sekme.test.mjs:55` de güncellenir).
   - Teknik inceleme yapıldı (2026-11-15, Copilot CLI kuruldu): altı depo `strateji/teknik/` altında, sıralı fikir listesi `strateji/teknik/ozet.md`. Epic adayı: "sağlayıcı hatalarını sınıflandır + iletiyi eyleme çevir" (özet 1-2); kullanıcı kararı bekliyor.
