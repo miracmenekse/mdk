@@ -806,6 +806,7 @@ Tartışma + Claude sınaması `epic/27/is.md`'de. Radar yeni sekme değil: Ara�
   2. Terminalsiz kurulum (rakipler tek tıkla açılıyor; en büyük açık).
   3. Maliyet ve deneme sınırını panelde göstermek: "en çok N deneme, sonra durur; bu iş şu kadar tuttu".
   4. Yapılacaklar listesi: panelde yapılacak işleri tutan ve kullanıcıya gösteren özellik; bu liste onun ilk içeriği olur.
+  - Bilinen kusur (Epic 27): Araştırma sekmesine geçince "Eski araştırma notu" kendiliğinden açılıyor; tarayıcı `#arastirma` adres parçasının hedefi `<details>` içinde olduğu için onu açıyor. Çözüm: içteki `section` kimliğini değiştirmek (`panel/arastirma.test.mjs:70` ve `panel/sekme.test.mjs:55` de güncellenir).
   - Karar bekleyen: derin araştırmada bulunan depoların GitHub Copilot ile incelenmesi (dyad, Aider, opencode-orchestrator-kit, agent-kanban, BMAD-METHOD). Copilot CLI bu makinede kurulu değil; yol seçilmedi (CLI kur / kullanıcı github.com'da sorar / Claude okur).
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
