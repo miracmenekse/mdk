@@ -771,6 +771,7 @@ Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının
 ## Epic 27 — Pazar radarı
 - Durum: analiz
 - Tartışma: epic/27
+- Etki: etki/pazar-radari.html
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.

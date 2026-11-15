@@ -23,3 +23,11 @@ Kullanıcı paneli açar → Pazar sekmesi → bu haftanın farkı en üstte. Bo
 
 ## Hedef kitle (karar, 2026-11-15)
 Yarı teknik, bütçesi dar kişi (öğrenci, serbest çalışan; terminal açabilir ama kod yazmaz). Radar ekranını okuyan kişi işin business tarafını yöneten kullanıcıdır; teknik depo ayrıntısı değil "bu benim ürünüm için ne anlama geliyor" sorusunun cevabını arar.
+
+## Claude'un sınaması (2026-11-15, tartışma sonrası)
+- **Sekme mi bölüm mü:** ikisi de değil. Panelde zaten `Araştırma` sekmesi var (18 Ekim taraması, `arastirma/arastirma.json`); personalar bunu bilmiyordu. Radar o sekmenin en üstüne "Bu hafta" şeridi olarak girer: sekme sayısı artmaz, Geliştirme akışına yük binmez.
+- **Kapsam kırpması:** tahmini story 6 (ölçüm çizgesi + kesme taahhüdü) v1 dışı; 4 hafta sonra elle bakılır. 1+2 tek story.
+- **Eşikler:** sıçrama = bir önceki taramaya göre yıldız +%20 ya da +500; durmuş = 90 gündür push yok.
+- **Depolama:** `strateji/radar.json` (izleme listesi + sorgular), `strateji/radar-sonuc.json` (son tarama + önceki), `strateji/radar-isaret.json` (izle/incele/geç); üçü de git'te (iki makine).
+- **Tetikleme:** panel açılışında son tarama 7 günden eskiyse arka planda başlar; ayrıca "Şimdi tara" düğmesi. Zamanlanmış görev yok.
+- **Ön-seçim:** değişmeyen adaya hiçbir şey sorulmaz; yalnız "Bu hafta" şeridindekiler çekmecede işaretlenir.

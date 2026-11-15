@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Pazar radarı (Araştırma sekmesinde)</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 640px; height: auto;
+        background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce — Araştırma sekmesi: 18 Ekim'de elle yapılmış tek tarama; ne zaman eskidiği ve ne değiştiği görünmüyor</figcaption>
+  <svg id="once" viewBox="0 0 640 440" role="img" aria-label="Radar eklenmeden önce Araştırma sekmesi">
+    <rect x="16" y="16" width="608" height="36" fill="#9e9e9e"/>
+    <g font-size="13" fill="#ffffff">
+      <text x="30" y="39">Depo</text><text x="100" y="39">Geliştirme</text><text x="200" y="39">Modeller</text>
+      <text x="380" y="39">Persona</text>
+    </g>
+    <rect x="282" y="20" width="84" height="28" fill="#616161"/>
+    <text x="292" y="39" font-size="13" fill="#ffffff">Araştırma</text>
+    <text x="16" y="80" font-size="17" fill="#424242">Araştırma</text>
+    <rect x="16" y="92" width="608" height="30" fill="#eeeeee"/>
+    <text x="26" y="111" font-size="11" fill="#757575">Not: yıldız, lisans ve son push 2026-10-18'de çekildi…</text>
+    <text x="16" y="146" font-size="13" fill="#424242">Birleşim önerileri (2 açık, 3 yapıldı)</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="156" width="608" height="54"/>
+      <rect x="16" y="216" width="608" height="54"/>
+    </g>
+    <text x="16" y="296" font-size="13" fill="#424242">Adaylar (14)</text>
+    <g fill="#e0e0e0" stroke="#bdbdbd">
+      <rect x="16" y="306" width="608" height="56"/>
+      <rect x="16" y="368" width="608" height="56"/>
+    </g>
+    <g font-size="12" fill="#616161">
+      <text x="26" y="326">splunk/token-meter</text><text x="26" y="344" font-size="11">opencode-kullanim · ★ 126 · MIT · 2026-10-16 · Python</text>
+      <text x="26" y="388">touchkale/opencode-dashboard</text><text x="26" y="406" font-size="11">opencode-kullanim · ★ 4 · MIT · 2026-09-09 · Python</text>
+    </g>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra — aynı sekme (yeni sekme yok): en üstte "Bu hafta" şeridi, yalnız değişenler tek cümleyle; eski liste altta kapalı. Satıra tıklayınca çekmece açılır (izle / incele / geç)</figcaption>
+  <svg id="sonra" viewBox="0 0 640 440" role="img" aria-label="Radar eklendikten sonra Araştırma sekmesi">
+    <rect x="16" y="16" width="608" height="36" fill="#9e9e9e"/>
+    <g font-size="13" fill="#ffffff">
+      <text x="30" y="39">Depo</text><text x="100" y="39">Geliştirme</text><text x="200" y="39">Modeller</text>
+      <text x="380" y="39">Persona</text>
+    </g>
+    <rect x="282" y="20" width="84" height="28" fill="#616161"/>
+    <text x="292" y="39" font-size="13" fill="#ffffff">Araştırma</text>
+    <!-- değişim 1: sekmede okunmamış değişiklik sayısı -->
+    <circle class="degisen" cx="358" cy="26" r="8" stroke-width="2"/>
+    <text class="degisen-text" x="355" y="30" font-size="10">3</text>
+    <text x="16" y="80" font-size="17" fill="#424242">Araştırma</text>
+    <!-- değişim 2: Bu hafta şeridi -->
+    <rect class="degisen" x="16" y="92" width="608" height="212" stroke-width="2"/>
+    <text class="degisen-text" x="28" y="114" font-size="14">Bu hafta · 3 değişiklik</text>
+    <text x="330" y="114" font-size="11" fill="#757575">son tarama: 2 gün önce</text>
+    <rect x="520" y="99" width="94" height="22" fill="#bdbdbd"/>
+    <text class="degisen-text" x="532" y="114" font-size="11">Şimdi tara</text>
+    <g fill="#ffffff" stroke="#bdbdbd">
+      <rect x="26" y="128" width="588" height="50"/>
+      <rect x="26" y="184" width="588" height="50"/>
+      <rect x="26" y="240" width="588" height="50"/>
+    </g>
+    <g font-size="10" fill="#ffffff">
+      <rect x="34" y="136" width="44" height="16" fill="#757575"/><text x="42" y="148">yeni</text>
+      <rect x="34" y="192" width="52" height="16" fill="#757575"/><text x="40" y="204">sıçradı</text>
+      <rect x="34" y="248" width="44" height="16" fill="#757575"/><text x="41" y="260">durdu</text>
+    </g>
+    <g font-size="12" fill="#424242">
+      <text x="96" y="148">dyad-sh/dyad</text>
+      <text x="96" y="204">BloopAI/vibe-kanban</text>
+      <text x="96" y="260">eyaltoledano/claude-task-master</text>
+    </g>
+    <g class="degisen-text" font-size="11">
+      <text x="34" y="168">Senin için: yerel uygulama üretici, aynı kitleye oynuyor; kurulumuna bak.</text>
+      <text x="34" y="224">Senin için: pano fikri ilgi görüyor (+%22 yıldız); panel doğru yönde.</text>
+      <text x="34" y="280">Senin için: 6 aydır güncellenmedi; görev bölme alanında rakip azaldı.</text>
+    </g>
+    <g font-size="10" fill="#9e9e9e">
+      <text x="560" y="148">ayrıntı ›</text><text x="560" y="204">ayrıntı ›</text><text x="560" y="260">ayrıntı ›</text>
+    </g>
+    <!-- değişim 3: eski içerik kapalı başlıklara iner -->
+    <rect class="degisen" x="16" y="314" width="608" height="30" stroke-width="2"/>
+    <text class="degisen-text" x="28" y="334" font-size="12">▸ İzlenenler (21) — değişmeyenler, işaretlemen gerekmez</text>
+    <rect x="16" y="352" width="608" height="30" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="28" y="372" font-size="12" fill="#616161">▸ Birleşim önerileri (2 açık, 3 yapıldı)</text>
+    <rect x="16" y="390" width="608" height="30" fill="#e0e0e0" stroke="#bdbdbd"/>
+    <text x="28" y="410" font-size="12" fill="#616161">▸ Eski adaylar (14) · 2026-10-18</text>
+  </svg>
+</figure>
+
+<p style="font-size:.85rem;color:#666;max-width:640px">
+Durumlar: hiç tarama yoksa şeritte yalnız "Henüz tarama yok · Şimdi tara"; değişiklik yoksa tek satır "Bu hafta sakin"; ağ ya da <code>gh</code> hatasında son başarılı tarama tarihiyle gösterilir. Çekmecede: yıldız, lisans, son push ("kaynak: GitHub API") + üç düğme (izle / incele / geç). Değişmeyen adaylara hiçbir şey sorulmaz.
+</p>
+</body>
+</html>
