@@ -769,9 +769,10 @@ Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının
   - Kapı: `node test/hepsi.mjs`
 
 ## Epic 27 — Pazar radarı
-- Durum: analiz
+- Durum: tasarim
 - Tartışma: epic/27
 - Etki: etki/pazar-radari.html
+- Onay: evet
 
 ## Sonraki iyileştirmeler
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
