@@ -428,6 +428,23 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
+    if (pathname === '/api/radar') {
+      // dosyalar yoksa ya da bozuksa boş şema; sunucu düşmez
+      let veri = { sonuc: null, isaretler: {} };
+      try {
+        const sonuc = JSON.parse(readFileSync(join(kok, 'strateji', 'radar-sonuc.json'), 'utf8'));
+        let isaretler = {};
+        try {
+          const okunan = JSON.parse(readFileSync(join(kok, 'strateji', 'radar-isaret.json'), 'utf8'));
+          if (okunan && typeof okunan === 'object') isaretler = okunan;
+        } catch {}
+        veri = { sonuc, isaretler };
+      } catch {}
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify(veri));
+      return;
+    }
+
     if (pathname === '/api/persona') {
       // ?adim=<no> : o adımın `- Persona:` yolundaki persona-tur/<zaman>/ozet.md
       const no = Number(new URL(istek.url, 'http://x').searchParams.get('adim'));

@@ -780,7 +780,7 @@ const tam = (n) => Math.round(n).toLocaleString('tr-TR');
 const kutu = (id, etiket, deger) => `<div class="kpi-kutu"><span class="etiket">${esc(etiket)}</span><b id="${id}">${esc(deger)}</b></div>`;
 
 // üst şerit: dört sayı; bilinmeyen değer "—", eksik anlık görüntü çökmez
-export function kpiHtml(snap, ara) {
+export function kpiHtml(snap, ara, radar) {
   const adimlar = (snap?.plan?.kategoriler || []).flatMap((k) => k.adimlar || []);
   const biten = snap?.plan ? `${adimlar.filter((a) => a.bitti).length} / ${adimlar.length}` : '—';
   const modeller = snap?.modeller || [];
@@ -791,6 +791,12 @@ export function kpiHtml(snap, ara) {
   const sorunluAdim = (snap?.gecmis || []).filter((g) => sorunluMu(g, incelemeOf(g.no, g, snap?.incelemeler))).length;
   const sorunluModel = modeller.filter((m) => (m.uyum != null && m.uyum < 1) || m.sessiz > 0).length;
   const adaylar = ara?.adaylar?.length;
+  // radar varsa Araştırma kartı bu hafta işaretsiz değişenleri sayar
+  const radarDegisen = radar?.sonuc
+    ? (radar.sonuc.degisenler || []).filter((d) => !(radar.isaretler && radar.isaretler[d.repo])).length
+    : null;
+  const arastirmaDeger = radarDegisen ?? adaylar ?? '—';
+  const arastirmaAlt = radarDegisen != null ? 'bu hafta değişen' : 'araştırma notu';
 
   // kart = aynı zamanda sekme düğmesi (role=tab + data-sekme); rozet dikkat sayısı, 0'da gizli
   const kart = (sekme, ad, deger, alt, dikkat) => {
@@ -804,7 +810,7 @@ export function kpiHtml(snap, ara) {
   if (depo?.var) kartlar += kart('depo', 'Depo', ileri ?? '—', 'bekleyen commit', degisik);
   kartlar += kart('akis', 'Geliştirme', biten, 'biten story', sorunluAdim);
   kartlar += kart('modeller', 'Modeller', modeller.length || '—', 'etkin model', sorunluModel);
-  kartlar += kart('arastirma', 'Araştırma', adaylar ?? '—', 'araştırma notu', 0);
+  kartlar += kart('arastirma', 'Araştırma', arastirmaDeger, arastirmaAlt, 0);
   const pSay = (snap?.personaTakim?.personalar || []).length;
   kartlar += kart('persona', 'Persona', pSay || '—', 'takım üyesi', 0);
   return '<div class="kpi" role="tablist">' + kartlar + '</div>';
@@ -1111,6 +1117,73 @@ export function etkiHtml(etki, { gecmisAcik = false, izleyici = false } = {}) {
 export function etkiKartiHtml(e, izleyici = false) {
   if (!e) return '<p class="bos">etki yok</p>';
   return etkiKart(e, e.tahmin?.token || 0, izleyici);
+}
+
+// radar tarihi: ISO ya da sayı; geçersizse "—"
+function radarTarih(ts) {
+  const t = typeof ts === 'number' ? (ts < 1e12 ? ts * 1000 : ts) : Date.parse(ts);
+  if (!Number.isFinite(t)) return '—';
+  return new Date(t).toISOString().slice(0, 10);
+}
+
+// radar şeridi: bu hafta değişenler + izlenen adaylar; veri yoksa boş durum
+export function radarHtml(veri, simdiMs = Date.now()) {
+  const sonuc = veri?.sonuc;
+  if (!sonuc) return '<div class="radar bos">Henüz tarama yok</div>';
+  const isaretler = veri?.isaretler && typeof veri.isaretler === 'object' ? veri.isaretler : {};
+  const adaylar = sonuc.adaylar || [];
+  const degisenler = sonuc.degisenler || [];
+  const serit = degisenler.filter((d) => !isaretler[d.repo]);
+  const TUR = { yeni: 'yeni', sicradi: 'sıçradı', durdu: 'durdu' };
+
+  let baslik;
+  if (sonuc.ilk) baslik = `İlk tarama yapıldı · ${adaylar.length} aday izleniyor`;
+  else if (serit.length === 0) baslik = 'Bu hafta sakin';
+  else baslik = `Bu hafta · ${serit.length} değişiklik`;
+
+  let html = '<div class="radar">' +
+    '<div class="radar-ust">' +
+    `<b>${esc(baslik)}</b>` +
+    `<span class="soluk">son tarama: ${esc(goreli(sonuc.ts, simdiMs))}</span>` +
+    '</div>';
+
+  if (sonuc.sonHata) {
+    html += `<p class="radar-hata">Son tarama başarısız (${esc(goreli(sonuc.sonHata.ts, simdiMs))}) · gösterilen: ${esc(radarTarih(sonuc.ts))}</p>`;
+  }
+
+  html += serit.map((d) => {
+    const a = adaylar.find((x) => x.repo === d.repo) || {};
+    const ek = d.not != null && d.not !== ''
+      ? `<span>Senin için: ${esc(d.not)}</span>`
+      : (d.fark ? `<span>${esc(d.fark)}</span>` : '');
+    const govde = `★ ${esc(a.yildiz ?? '—')} · ${esc(a.lisans ?? '—')} · ${esc(a.son ?? '—')} · ${esc(d.fark ?? '—')}`;
+    return `<details class="radar-satir" data-repo="${esc(d.repo)}">` +
+      '<summary>' +
+      `<span class="rozet">${esc(TUR[d.tur] || d.tur || '—')}</span> ` +
+      `<span class="model">${esc(d.repo)}</span> ${ek}` +
+      '</summary>' +
+      `<div class="radar-govde">${govde}` +
+      ' <span class="kaynak">kaynak: GitHub API</span> ' +
+      `<a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener noreferrer">GitHub'da aç</a>` +
+      '</div></details>';
+  }).join('');
+
+  const gruplar = new Map();
+  for (const a of adaylar) {
+    const g = a.grup || 'diğer';
+    if (!gruplar.has(g)) gruplar.set(g, []);
+    gruplar.get(g).push(a);
+  }
+  let izlenen = '';
+  for (const [g, liste] of gruplar) {
+    izlenen += `<div class="radar-grup">${esc(g)}</div>` +
+      liste.map((a) => '<div class="radar-aday">' +
+        (a.hata ? '<span class="rozet eskale">alınamadı</span> ' : '') +
+        `<span class="model">${esc(a.repo)}</span>` +
+        '</div>').join('');
+  }
+  html += `<details class="radar-izlenen"><summary>İzlenenler (${adaylar.length})</summary>${izlenen}</details>`;
+  return html + '</div>';
 }
 
 const ROLLER = { altlik: 'altlık', ornek: 'örnek', 'yan-yana': 'yan yana', izle: 'izle', kullanma: 'kullanma' };

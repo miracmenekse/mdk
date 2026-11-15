@@ -342,6 +342,22 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .ayrinti-icerik { margin: 6px 0 2px 4px; padding-left: 10px; border-left: 2px solid var(--cizgi); }
 .ayrinti-icerik div { margin-bottom: 3px; overflow-wrap: anywhere; }
 #arastirma .bos { color: var(--bos); font-style: italic; }
+.radar { border: 1px solid var(--cizgi); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; background: var(--kart); }
+.radar.bos { border-style: dashed; color: var(--bos); font-style: italic; }
+.radar-ust { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.radar-ust b { font-size: 14px; }
+.radar-satir { margin: 6px 0; }
+.radar-satir summary { cursor: pointer; overflow-wrap: anywhere; }
+.radar-satir summary .rozet { margin-right: 4px; }
+.radar-govde { font-size: 12px; color: var(--soluk); margin: 4px 0 2px 12px; overflow-wrap: anywhere; }
+.radar .kaynak { color: var(--soluk); font-size: 11px; margin-left: 6px; }
+.radar-hata { color: var(--rozet-eskale-m); font-size: 12px; margin: 4px 0; }
+.radar-izlenen { margin-top: 8px; font-size: 12px; }
+.radar-izlenen summary { cursor: pointer; color: var(--soluk); }
+.radar-grup { margin: 6px 0 2px; font-weight: 600; color: var(--soluk); }
+.radar-aday { margin: 2px 0; overflow-wrap: anywhere; }
+.radar-izlenen .model { font-family: ui-monospace, SFMono-Regular, monospace; }
+
 #arastirma h3 { font-size: 14px; margin: 14px 0 6px; }
 #depo h3 { font-size: 14px; margin: 14px 0 6px; }
 #claude h3 { font-size: 14px; margin: 0 0 8px; }
@@ -494,8 +510,12 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
   <div role="tabpanel" id="sekme-arastirma" hidden>
   <h2>Araştırma</h2>
+  <section id="radar"></section>
+  <details>
+  <summary>Eski araştırma notu</summary>
   <div class="suzgec" id="ara-suzgec"></div>
   <section id="arastirma"><span class="bos">yükleniyor…</span></section>
+  </details>
   </div>
 
   <div role="tabpanel" id="sekme-persona" hidden>
@@ -537,7 +557,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 import { adCakisir, personaSil, personaGeriEkle, duzenKaydir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
@@ -882,7 +902,7 @@ function ciz(d) {
     sekmeSec();
   }
   // KPI kartları = sekmeler; her çizimde yenilenir, sonra seçili sekme işaretlenir
-  kpiEl.innerHTML = kpiHtml(d, araVeri);
+  kpiEl.innerHTML = kpiHtml(d, araVeri, radarVeri);
   kararSeridiEl.innerHTML = kararSeridiHtml(d.etki);
   sekmeSec();
   // persona takımı değiştiyse yeniden çiz (yazılan yorumu silmemek için değişmediyse dokunma)
@@ -964,6 +984,8 @@ dinle();
 
 // araştırma verisi canlı değil: açılışta bir kez çekilir, süzgeç yerelde çizer
 const arastirmaEl = document.getElementById('arastirma');
+const radarEl = document.getElementById('radar');
+let radarVeri = null;
 
 // Görev modelleri: seçim değişince PLAN.md'ye yaz → POST /api/gorev-model
 gorevModelleriEl.addEventListener('change', async (e) => {
@@ -1165,6 +1187,19 @@ suzgecEl.addEventListener('click', (e) => {
   arastirmaCiz();
 });
 
+fetch('/api/radar')
+  .then((r) => r.json())
+  .then((v) => {
+    radarVeri = v;
+    radarEl.innerHTML = radarHtml(v);
+    // radar verisi gelince Araştırma kartının sayısı güncellensin
+    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri, radarVeri); sekmeSec(); }
+  })
+  .catch(() => {
+    radarVeri = { sonuc: null, isaretler: {} };
+    radarEl.innerHTML = radarHtml(radarVeri);
+  });
+
 fetch('/api/arastirma')
   .then((r) => r.json())
   .then((v) => {
@@ -1182,7 +1217,7 @@ fetch('/api/arastirma')
     }
     arastirmaCiz();
     // araştırma verisi gelince Araştırma kartının sayısı güncellensin
-    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri); kararSeridiEl.innerHTML = kararSeridiHtml(sonD.etki); sekmeSec(); }
+    if (sonD) { kpiEl.innerHTML = kpiHtml(sonD, araVeri, radarVeri); kararSeridiEl.innerHTML = kararSeridiHtml(sonD.etki); sekmeSec(); }
   })
   .catch(() => {
     arastirmaEl.innerHTML = arastirmaHtml(null);
