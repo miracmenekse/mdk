@@ -51,9 +51,9 @@ export function opencodeSec(dir) {
   return (r.stdout || '').trim() || 'opencode';
 }
 
-// step_finish (v1), step_start (v2), cursor-agent assistant/result olaylarından ölçüm
+// step_finish (v1), step_start (v2), cursor-agent assistant/result, agy stream-json olaylarından ölçüm
 export function olaylariTopla(log) {
-  let token = 0, maliyet = 0, etkin = 0, ss = 0, sf = 0; const cur = new Set();
+  let token = 0, maliyet = 0, etkin = 0, ss = 0, sf = 0, agyIstek = 0; const cur = new Set();
   for (const l of satirlar(oku(log))) {
     let x; try { x = JSON.parse(l); } catch { continue; }
     if (!x || typeof x !== 'object') continue;
@@ -68,8 +68,17 @@ export function olaylariTopla(log) {
       const u = x.usage, top = (u.inputTokens || 0) + (u.outputTokens || 0) + (u.cacheReadTokens || 0) + (u.cacheWriteTokens || 0);
       token += top; etkin += top - (u.cacheReadTokens || 0);
     }
+    if (x.event === 'step_update' && x.step_update?.step_type === 'agent_response' && x.step_update?.state === 'DONE') {
+      agyIstek++;
+    }
+    if (x.event === 'result' && x.result?.usage) {
+      const u = x.result.usage;
+      const top = u.total_tokens ?? ((u.input_tokens || 0) + (u.output_tokens || 0) + (u.thinking_tokens || 0) + (u.cache_read_tokens || 0));
+      token += top;
+      etkin += top - (u.cache_read_tokens || 0);
+    }
   }
-  return { token, maliyet, etkin, istek: Math.max(ss, sf) + cur.size };
+  return { token, maliyet, etkin, istek: Math.max(ss, sf) + cur.size + agyIstek };
 }
 
 export function metinAyikla(log) {

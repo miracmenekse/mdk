@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { anaBul, anaOku } from './mdk-ana.mjs';
 
 const BU = dirname(fileURLToPath(import.meta.url));
@@ -97,11 +98,19 @@ function main() {
   // Tüm okumalar yazmadan önce: bozuk JSON varsa hiçbir dosya değişmez
   const claudeSecili = adlar.includes('claude');
   const agySecili = adlar.includes('antigravity');
+  const agy = process.env.MDK_AGY || 'agy';
+  const agyKos = (args) => {
+    try {
+      const [k, a] = /\.(mjs|cjs|js)$/i.test(agy) ? [process.execPath, [agy, ...args]] : [agy, args];
+      return spawnSync(k, a, { encoding: 'utf8' });
+    } catch { return { status: null }; }
+  };
+  const agyVar = agySecili && agyKos(['mcp', 'list']).status === 0;
   const agyYolu = process.env.MDK_AGY_MCP || join(homedir(), '.gemini', 'antigravity', 'mcp_config.json');
   let claudeMcp, agyMcp;
   try {
     if (claudeSecili) claudeMcp = mcpOku(join(proje, '.mcp.json'));
-    if (agySecili) agyMcp = mcpOku(agyYolu);
+    if (agySecili && !agyVar) agyMcp = mcpOku(agyYolu);
   } catch (e) { err(e.message); return 4; }
 
   yaz(join(proje, '.mdk', 'planlayici.md'), icerik);
@@ -114,8 +123,19 @@ function main() {
 
   if (agySecili) {
     yaz(join(proje, '.agents', 'rules', 'mdk.md'), icerik);
-    mcpEkle(agyMcp, `mdk-${basename(proje)}`, proje);
-    yaz(agyYolu, json(agyMcp));
+    if (agyVar) {
+      const ad = `mdk-${basename(proje)}`;
+      const res = agyKos(['mcp', 'add', '--env', `MDK_PROJE=${proje}`, ad, 'node', join(BU, 'mdk-mcp.mjs')]);
+      if (res.status === 0) {
+        console.log(`yazıldı: agy mcp ${ad}`);
+      } else {
+        err((res.stderr || res.stdout || `${agy} mcp add başarısız`).trim());
+        return 4;
+      }
+    } else {
+      mcpEkle(agyMcp, `mdk-${basename(proje)}`, proje);
+      yaz(agyYolu, json(agyMcp));
+    }
   }
 
   const plan = join(proje, 'PLAN.md');

@@ -172,7 +172,12 @@ function agyKota(log) {
   if (AGY_KOTA.test(oku(log + '.err'))) return true;
   const son = oku(log).split('\n').reverse().find((l) => l.includes('"event":"result"'));
   if (!son) return false;
-  try { const r = JSON.parse(son).result; return !!r && r.status !== 'SUCCESS' && AGY_KOTA.test(JSON.stringify(r)); } catch { return false; }
+  try {
+    const r = JSON.parse(son).result;
+    if (!r || r.status === 'SUCCESS') return false;
+    const { usage, ...kalan } = r;
+    return AGY_KOTA.test(JSON.stringify(kalan));
+  } catch { return false; }
 }
 const kotaVar = (log) => KOTA.test(oku(log + '.err')) || oku(log).split('\n').some((l) => /"type":"error"/.test(l) && KOTA.test(l.slice(l.indexOf('"type":"error"'))));
 // sağlayıcı sorunları: modele değil sağlayıcıya yazılır, eskale edilmez ve kalıcı olanlar sıradaki modele geçer
@@ -196,7 +201,7 @@ async function calistir(cm, bas, ist, log, bd) {
     yurm = 'opencode'; komut = OC; args = ['run', '-m', cm, '--title', bas, '--format', 'json', '--print-logs', ist]; env = temizOrtam({ OPENCODE_LOG_LEVEL: 'error' });
   }
   const durdur = () => {
-    if (kotaVar(log)) return 'kota'; // kota dolu: stderr'deki log ya da v2'nin stdout error olayı; ILK'yı bekleme
+    if (yurm === 'agy' ? agyKota(log) : kotaVar(log)) return 'kota'; // kota dolu: stderr'deki log ya da v2'nin stdout error olayı; ILK'yı bekleme
     if (bd && butce !== null && harcanan + olaylariTopla(log).etkin > butce) return 'butce'; // etkin token: önbellekten okunan bağlam sayılmaz
     return null;
   };
@@ -209,14 +214,15 @@ async function calistir(cm, bas, ist, log, bd) {
     const h = gunlukHatasi(log);
     if (h && SAGLAYICI_TURLER.includes(h.tur)) neden = h.tur;
   }
+  if (neden === 'izin') neden = '';
   if (neden && yurm === 'opencode') oturumKapat(OC, log, bas);
   return { neden, yurm, t0 };
 }
 
 // otomatik kapı üretimi: adımdaki kapı dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
 const EKSIK = eksikKapilar(KAPILAR);
-if (EKSIK.length && planSatiri(plan, 'Görev kapi') !== null) {
-  const yeni = await kapiUret({ n: N, blok, kapilar: KAPILAR, planMetni: plan, kurallar: KURALLAR, projeKural: PROJE_KURAL, cp: CP, logd: LOGD, calistir, yazDurum, yazMetrik, selfDir: SELF, sade: SADE, yazLog: (p, m) => writeFileSync(p, m) });
+if (EKSIK.length && (planSatiri(plan, 'Görev kapi') !== null || anaGorev('kapi'))) {
+  const yeni = await kapiUret({ n: N, blok, kapilar: KAPILAR, planMetni: plan, kurallar: KURALLAR, projeKural: PROJE_KURAL, cp: CP, logd: LOGD, calistir, yazDurum, yazMetrik, selfDir: SELF, sade: SADE, yazLog: (p, m) => writeFileSync(p, m), modeller: modelListesi(anaGorev('kapi') || planSatiri(plan, 'Görev kapi') || '') });
   if (!yeni) { yazDurum('', 0, 'kapi_hata'); yaz(`adım ${N}: eksik kapı (${EKSIK.join(' ')}) üretilemedi veya kırmızı doğrulanamadı`); process.exit(4); }
   CP = yeni;
 }
@@ -340,7 +346,14 @@ while (aday.length) {
         yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden})`);
         break; // geçici tekrar sınırı doldu: kota gibi sıradaki modele geç
       }
-      if (neden === 'kapi' || neden === 'kurcalama') ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısından başarısız iddia:\n${hataOzeti(oku(kapiLog), 1500)}`;
+      if (neden === 'kapi' || neden === 'kurcalama') {
+        ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısından başarısız iddia:\n${hataOzeti(oku(kapiLog), 1500)}`;
+        const err = oku(log + '.err');
+        if (err.includes('auto-denied')) {
+          const ilk = (err.split('\n').find((l) => l.trim()) || '').trim();
+          ipucu += `\nÖnceki denemede bir komut izin listesinde olmadığı için reddedildi: ${ilk}`;
+        }
+      }
       else if (neden === 'regresyon') {
         const basarisiz = oku(kapiLog).split('\n').filter((l) => l.includes('BAŞARISIZ')).slice(0, 5).join('\n');
         ipucu = `Önceki deneme adım kapısını geçti ama regresyonu bozdu (başka bir test kırıldı). O davranışı koruyarak adımı yeniden yap; kırılan testi değiştirme. Çıktının sonu:\n${basarisiz}\n${sonBayt(kapiLog, 1200)}`;

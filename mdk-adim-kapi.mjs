@@ -63,7 +63,7 @@ export async function kapiUret(ctx) {
   const yazLog = ctx.yazLog || (() => {});
   let cp = ctx.cp;
   const eksik = eksikKapilar(kapilar);
-  const modeller = modelListesi(planSatiri(planMetni, 'Görev kapi') || '');
+  const modeller = (ctx.modeller && ctx.modeller.length) ? ctx.modeller : modelListesi(planSatiri(planMetni, 'Görev kapi') || '');
   if (!eksik.length) return cp;
   const eksikStr = eksik.join(' ');
   process.env.OPENCODE_CONFIG_CONTENT = izinYapilandirmasi('kapi', kapilar, eksik, ctx.sade);
