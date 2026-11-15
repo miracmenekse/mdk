@@ -8,7 +8,7 @@ Modeller: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, openco
 Görev kod: opencode/deepseek-v4.1-flash-free, opencode/glm-5.3-flash-free, opencode/beam-free
 Görev tasarim: opencode/glm-5.3-flash-free, opencode/minimax-m3.1-flash-free, opencode/mimo-v2.6-flash-free
 Görev persona: opencode/inkling-2-small-free, opencode/mimo-v2.6-flash-free
-Görev kapi: agy/gemini-3.8-flash-medium, opencode/beam-free, opencode/deepseek-v4.1-flash-free
+Görev kapi: opencode/beam-free, opencode/deepseek-v4.1-flash-free
 Görev inceleme: opencode/minimax-m3.1-flash-free, opencode/inkling-2-small-free
 Görev eskale: opencode/longcat-2.5-free, opencode/minimax-m3.1-flash-free, opencode/big-pickle
 Görev mekanik: opencode/nemotron-3.5-lightning-free, opencode/flint-40b-free, opencode/iceman-free
