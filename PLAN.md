@@ -801,6 +801,12 @@ Tartışma + Claude sınaması `epic/27/is.md`'de. Radar yeni sekme değil: Ara�
   - Kapı notu (panel/radar-betik.test.mjs): `MDK_RADAR_BETIK` VERİLMEZ (varsa silinir). Geçici kök klasörde yalnız `strateji/radar.json` (1 depo: `a/b`) vardır, kökte `mdk-radar.mjs` YOKTUR. `MDK_GH` geçici klasördeki sahte `gh` `.mjs` dosyasıdır (stdout'a `{"stargazers_count":5,"license":{"spdx_id":"MIT"},"pushed_at":"2026-11-01T00:00:00Z","description":"x"}` basar, çıkış 0); ağa çıkılmaz. `panel/sunucu.mjs` `baslat(kok, 0)` ile başlatılır (dönüş değerinden port ve kapatma, `panel/radar-tara.test.mjs`'deki kullanım örnek alınır). `POST /api/radar-tara` → `basladi:true`; en çok 15 sn içinde `<kök>/strateji/radar-sonuc.json` oluşur, `adaylar[0].repo === 'a/b'` ve `yildiz === 5`; `GET /api/radar` `taraniyor:false` ve `sonuc.adaylar.length === 1` döner. Sunucu kapatılır, süreç asılı kalmaz.
 
 ## Sonraki iyileştirmeler
+- **Daha sonra yapılacak (kullanıcı kararı, 2026-11-15; kullanıcı istemeden Epic açma).** Dayanak: `strateji/rapor/ozet-2026-11-15.md`.
+  1. Kapıyı sade dille gösterip onaylatmak: story koşmadan önce "bu iş bitti sayılması için şunlar doğru olmalı" listesi panelde (kapıyı model yazıyor; en büyük iç risk).
+  2. Terminalsiz kurulum (rakipler tek tıkla açılıyor; en büyük açık).
+  3. Maliyet ve deneme sınırını panelde göstermek: "en çok N deneme, sonra durur; bu iş şu kadar tuttu".
+  4. Yapılacaklar listesi: panelde yapılacak işleri tutan ve kullanıcıya gösteren özellik; bu liste onun ilk içeriği olur.
+  - Karar bekleyen: derin araştırmada bulunan depoların GitHub Copilot ile incelenmesi (dyad, Aider, opencode-orchestrator-kit, agent-kanban, BMAD-METHOD). Copilot CLI bu makinede kurulu değil; yol seçilmedi (CLI kur / kullanıcı github.com'da sorar / Claude okur).
 - Kapıları (testleri) belirleme biçimini iyileştir: şu an adım başına dar, tek komut. Hedef: yapılan geliştirmeyi kapsayan (başarı/hata/sınır durumu, kullanıcı senaryosu) net kapılar.
 - Personalar (2026-10-27, adım 31-39 ve 58): `personalar.md` v2 üç alan, `persona-tur.sh` ile OpenCode'da ücretsiz modelle çalışıyor. Üç alan da gerçek kararla denendi (adım 36-38, 60-61); sessiz model 60 sn sonra atlanır (adım 59, `PERSONA_ILK`).
 - Gözlem: adım 7 yaklaşık 730 bin token harcadı (diğerleri 40-140 bin); adım başına token bütçesi ve dar adım kuralı düşünülebilir.
