@@ -273,7 +273,7 @@ while (aday.length) {
         kilitBirak(kilit);
         // hakem: story geçtikten sonra kendiliğinden çalışır (uyarı, bağlayıcı değil)
         if (planSatiri(plan, 'Görev hakem') !== null && /^\s*-\s*Kabul:/m.test(blok) && e.MDK_HAKEM !== '0' && existsSync(join(SELF, 'mdk-hakem.mjs'))) {
-          const hr = spawnSync(process.execPath, [join(SELF, 'mdk-hakem.mjs'), N, PLAN], { stdio: 'ignore', env: temizOrtam() });
+          const hr = spawnSync(process.execPath, [join(SELF, 'mdk-hakem.mjs'), N, PLAN], { stdio: 'ignore', env: temizOrtam({ ILK: e.MDK_HAKEM_ILK || '60', SURE: e.MDK_HAKEM_SURE || '180' }), timeout: Number(e.MDK_HAKEM_TAVAN || 420) * 1000 }); // hakem uyarıdır: koşuyu en çok 7 dk bekletir
           if (hr.status === 0) {
             const satirlar = oku('hakem.jsonl').trim().split(/\n/).filter(Boolean);
             let kayit = null;
