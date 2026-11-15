@@ -5,6 +5,7 @@
 //   node mdk-epic.mjs karar <no> onay
 //   node mdk-epic.mjs gelistir <no>
 //   node mdk-epic.mjs figma <no> <url>
+//   node mdk-epic.mjs ana <no> <ad>
 //   node mdk-epic.mjs durum [no]
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -12,6 +13,7 @@ import { join, dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parse, epicDurum } from './panel/plan.mjs';
+import { anaOku, anaBul } from './mdk-ana.mjs';
 
 const betikDizini = dirname(fileURLToPath(import.meta.url));
 
@@ -32,7 +34,9 @@ function gitDeposuMu(dir) {
 
 function commitEt(no, komut) {
   if (!gitDeposuMu(process.cwd())) return;
-  spawnSync('git', ['add', 'PLAN.md', `epic/${no}`], { cwd: process.cwd(), encoding: 'utf8' });
+  // epic/<no> klasörü yoksa git add tümden düşer; yalnız var olan yolları ekle
+  const yollar = ['PLAN.md', `epic/${no}`].filter((y) => existsSync(join(process.cwd(), y)));
+  spawnSync('git', ['add', ...yollar], { cwd: process.cwd(), encoding: 'utf8' });
   spawnSync('git', ['commit', '-qm', `epic ${no}: ${komut}`], { cwd: process.cwd(), encoding: 'utf8' });
 }
 
@@ -53,7 +57,7 @@ function findEpicHeadingIndex(lines, no) {
   return -1;
 }
 
-const ALAN_RE = /^\s*-\s+(Durum|Tartışma|Etki|Figma|Onay):/;
+const ALAN_RE = /^\s*-\s+(Durum|Tartışma|Etki|Figma|Onay|Ana):/;
 
 function setField(text, no, field, value) {
   const lines = String(text).split(/\r?\n/);
@@ -213,6 +217,25 @@ if (komut === 'ac') {
     hata(e.message);
   }
   commitEt(no, 'figma');
+  process.exit(0);
+} else if (komut === 'ana') {
+  if (argv.length !== 3) kullanim('kullanım: mdk-epic.mjs ana <no> <ad>');
+  const no = argv[1];
+  const ad = argv[2];
+  if (!anaBul(anaOku(), ad)) hata(`tanınmayan ana yürütücü: ${ad}`);
+  let plan;
+  try { plan = readFileSync('PLAN.md', 'utf8'); } catch (e) { hata('PLAN.md okunamadı'); }
+  const parsed = parse(plan);
+  const kat = parsed.kategoriler.find((k) => k.no === no);
+  if (!kat) hata('Epic yok');
+
+  try {
+    const yeni = setField(plan, no, 'Ana', ad);
+    writeFileSync('PLAN.md', yeni);
+  } catch (e) {
+    hata(e.message);
+  }
+  commitEt(no, 'ana');
   process.exit(0);
 } else if (komut === 'durum') {
   if (argv.length > 2) kullanim('kullanım: mdk-epic.mjs durum [no]');
