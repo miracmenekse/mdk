@@ -165,6 +165,15 @@ function cursorIzin() {
   const ex = git('rev-parse', '--git-path', 'info/exclude').stdout.trim();
   if (!oku(ex).split('\n').includes('.cursor/cli.json')) { mkdirSync(dirname(ex), { recursive: true }); appendFileSync(ex, '.cursor/cli.json\n'); }
 }
+// Antigravity kotası: yalnız stderr'de ya da başarısız "result" olayında aranır; stdout'taki araç çıktıları
+// (okunan dosya içerikleri) ve token sayılarındaki rakamlar kota sayılmaz
+const AGY_KOTA = /quota|rate limit|RESOURCE_EXHAUSTED|\b429\b/i;
+function agyKota(log) {
+  if (AGY_KOTA.test(oku(log + '.err'))) return true;
+  const son = oku(log).split('\n').reverse().find((l) => l.includes('"event":"result"'));
+  if (!son) return false;
+  try { const r = JSON.parse(son).result; return !!r && r.status !== 'SUCCESS' && AGY_KOTA.test(JSON.stringify(r)); } catch { return false; }
+}
 const kotaVar = (log) => KOTA.test(oku(log + '.err')) || oku(log).split('\n').some((l) => /"type":"error"/.test(l) && KOTA.test(l.slice(l.indexOf('"type":"error"'))));
 // sağlayıcı sorunları: modele değil sağlayıcıya yazılır, eskale edilmez ve kalıcı olanlar sıradaki modele geçer
 const SAGLAYICI_TURLER = ['oran', 'sunucu', 'ag', 'kimlik', 'model_yok', 'kota'];
@@ -195,7 +204,7 @@ async function calistir(cm, bas, ist, log, bd) {
   let neden = r.neden || '';
   if (!neden && yurm === 'opencode' && kotaVar(log)) neden = 'kota'; // hızlı kota çıkışı: süreç POLL dolmadan çıkabilir
   if (!neden && yurm === 'cursor' && /usage limit|rate limit|upgrade to|quota/i.test(oku(log + '.err'))) neden = 'kota'; // tahmin; gerçek mesaj görülünce daralt
-  if (!neden && yurm === 'agy' && /quota|rate limit|RESOURCE_EXHAUSTED|429/i.test(oku(log + '.err') + oku(log))) neden = 'kota'; // Antigravity kota mesajı
+  if (!neden && yurm === 'agy' && agyKota(log)) neden = 'kota'; // Antigravity kota mesajı
   if (!neden && yurm === 'opencode') { // günlükteki hata olayından tür çıkar; bilinmeyen akışı değiştirmez
     const h = gunlukHatasi(log);
     if (h && SAGLAYICI_TURLER.includes(h.tur)) neden = h.tur;
