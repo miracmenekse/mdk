@@ -360,6 +360,39 @@ export function akisTablosuHtml(plan, simdi, gecmis, incelemeler, etki = []) {
 
 const EPIC_ETIKET = { analiz: 'Analiz', tasarim: 'Tasarım', gelistirme: 'Geliştirme', tamamlandi: 'Tamamlandı' };
 
+// Yapılacaklar: açık işler sıralı, bitenler kapalı bir başlık altında. izleyici ise form ve düğme yok.
+export function yapilacaklarHtml(liste, izleyici = false) {
+  const form = izleyici ? '' :
+    '<form id="yapilacak-form" class="yapilacak-form">' +
+    '<input name="baslik" maxlength="120" placeholder="Yeni iş…" required>' +
+    '<input name="not" maxlength="1000" placeholder="not (isteğe bağlı)">' +
+    '<button type="submit">Ekle</button></form>';
+  if (!liste || liste.length === 0) return `${form}<p class="bos">yapılacak iş yok</p>`;
+  const acik = liste.filter((o) => o.durum !== 'bitti');
+  const biten = liste.filter((o) => o.durum === 'bitti');
+  const dugme = (islem, deger, etiket) =>
+    `<button type="button" class="yap-islem" data-islem="${islem}" data-deger="${esc(deger)}">${etiket}</button>`;
+  const satirlar = acik.map((o) => {
+    const rozet = (o.durum === 'ertelendi' ? ' <span class="rozet bekliyor">ertelendi</span>' : '') +
+      (o.epic ? ` <span class="rozet calisiyor">Epic ${esc(o.epic)}</span>` : '');
+    const not = o.not ? `<small>${esc(o.not)}</small>` : '';
+    const dugmeler = izleyici ? '' :
+      '<span class="yap-dugmeler">' + [
+        o.durum === 'ertelendi' ? dugme('durum', 'bekliyor', 'geri al') : dugme('durum', 'ertelendi', 'ertele'),
+        dugme('durum', 'bitti', 'bitti'),
+        dugme('tasi', '-1', '↑'),
+        dugme('tasi', '1', '↓'),
+      ].join('') + '</span>';
+    return `<li data-id="${esc(o.id)}" class="yapilacak ${esc(o.durum)}">` +
+      `<b class="yap-baslik">${esc(o.baslik)}</b>${rozet}${not}${dugmeler}</li>`;
+  }).join('');
+  const bitenHtml = biten.length === 0 ? '' :
+    `<details class="yapilacak-biten"><summary>biten işler (${biten.length})</summary><ul>` +
+    biten.map((o) => `<li>${esc(o.baslik)}</li>`).join('') + '</ul></details>';
+  const acikHtml = satirlar ? `<ol class="yapilacaklar">${satirlar}</ol>` : '<p class="bos">açık iş yok</p>';
+  return form + acikHtml + bitenHtml;
+}
+
 // Geliştirme sekmesi: her kategori bir Epic satırı; açık Epic'in altında yalnız kendi
 // story'lerini gösteren tablo (yeni adım üstte). Açık/kapalı tercihi acik[sira] ile.
 export function gelistirmeHtml(plan, simdi, gecmis, incelemeler, etki = [], epikler = [], acik = {}) {

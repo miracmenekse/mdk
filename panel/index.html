@@ -479,6 +479,22 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .profil-kart .rozet { margin-left: 6px; }
 .profil-kart .hata { font-size: 12px; margin: 6px 0 0; }
 .profil-kart .profil-sec[disabled] { opacity: .6; }
+#yapilacaklar .bos { color: var(--bos); font-style: italic; }
+.yapilacak-form { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.yapilacak-form input { font: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--cizgi); border-radius: 8px; background: var(--kart); color: var(--metin); flex: 1 1 160px; min-width: 0; }
+.yapilacak-form input[name=baslik] { flex: 2 1 220px; }
+.yapilacak-form button { font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--vurgu); background: var(--vurgu); color: #fff; cursor: pointer; }
+.yapilacaklar { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.yapilacak { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 8px 12px; }
+.yapilacak.ertelendi { opacity: .6; }
+.yapilacak .yap-baslik { flex: 1 1 160px; }
+.yapilacak small { flex-basis: 100%; color: var(--soluk); font-size: 12px; }
+.yapilacak .yap-dugmeler { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.yapilacak .yap-islem { font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); cursor: pointer; }
+.yapilacak-biten { margin-top: 10px; font-size: 13px; color: var(--soluk); }
+.yapilacak-biten summary { cursor: pointer; }
+.yapilacak-biten ul { margin: 6px 0 0; padding-left: 18px; }
+#yapilacaklar .yap-hata { font-size: 12px; margin: 6px 0 0; }
 #profiller .not { font-size: 12px; color: var(--soluk); margin: 0 0 8px; }
 @media (max-width: 600px) { .profiller { flex-direction: column; } }
 </style>
@@ -505,6 +521,9 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   <div role="tabpanel" id="sekme-akis">
   <h2>Şu an</h2>
   <section id="simdi" class="kart"><span class="bos">boşta</span></section>
+
+  <h2>Yapılacaklar</h2>
+  <section id="yapilacaklar"></section>
 
   <h2>Epic'ler</h2>
   <section id="kategoriler"></section>
@@ -588,7 +607,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, profilHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { yapilacaklarHtml, suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, profilHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 import { adCakisir, personaSil, personaGeriEkle, duzenKaydir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
@@ -598,6 +617,7 @@ const modellerEl = document.getElementById('modeller');
 const gorevModelleriEl = document.getElementById('gorev-modelleri');
 const gorevHataEl = document.getElementById('gorev-hata');
 const profillerEl = document.getElementById('profiller');
+const yapilacaklarEl = document.getElementById('yapilacaklar');
 const kapiUretimEl = document.getElementById('kapi-uretim');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
@@ -993,6 +1013,10 @@ function ciz(d) {
       })
       .catch(() => {});
   }
+  // formda yazı varken ya da odaktayken yeniden çizme: yazılan metin kaybolmasın
+  const yapForm = yapilacaklarEl.querySelector('#yapilacak-form');
+  const yapYazili = yapForm && (yapForm.contains(document.activeElement) || [...yapForm.querySelectorAll('input')].some((i) => i.value !== ''));
+  if (!yapYazili) yapilacaklarEl.innerHTML = yapilacaklarHtml(d.yapilacaklar, d.kararIzleyici);
   profillerEl.innerHTML = profilHtml(d.profiller, d.kararIzleyici);
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   kapiUretimEl.innerHTML = kapiUretimHtml(d.kapiUretim);
@@ -1095,6 +1119,46 @@ radarEl.addEventListener('click', async (e) => {
     satir.append(y);
   }
   y.textContent = 'kaydedilemedi';
+});
+
+// Yapılacaklar: ekle / durum / taşı → POST /api/yapilacak; hata iletisi bölümün içinde gösterilir
+async function yapilacakIstek(govde) {
+  yapilacaklarEl.querySelectorAll('.yap-hata').forEach((el) => el.remove());
+  let hata = '';
+  try {
+    const yanit = await fetch('/api/yapilacak', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(govde),
+    });
+    if (!yanit.ok) {
+      const j = await yanit.json().catch(() => ({}));
+      hata = j.hata || 'kaydedilemedi (' + yanit.status + ')';
+    }
+  } catch {
+    hata = 'bağlantı hatası';
+  }
+  if (hata) {
+    const p = document.createElement('p');
+    p.className = 'hata yap-hata';
+    p.textContent = hata;
+    yapilacaklarEl.append(p);
+  }
+  return !hata;
+}
+yapilacaklarEl.addEventListener('submit', async (e) => {
+  const form = e.target.closest('#yapilacak-form');
+  if (!form) return;
+  e.preventDefault();
+  const veri = new FormData(form);
+  if (await yapilacakIstek({ islem: 'ekle', baslik: veri.get('baslik'), not: veri.get('not') })) form.reset();
+});
+yapilacaklarEl.addEventListener('click', (e) => {
+  const dugme = e.target.closest('.yap-islem');
+  if (!dugme) return;
+  const id = Number(dugme.closest('li').dataset.id);
+  if (dugme.dataset.islem === 'tasi') yapilacakIstek({ islem: 'tasi', id, yon: Number(dugme.dataset.deger) });
+  else yapilacakIstek({ islem: 'durum', id, durum: dugme.dataset.deger });
 });
 
 // Hazır profil: "Bunu kullan" → POST /api/profil; başarıda kartları PLAN değişimi SSE ile yeniden çizer
