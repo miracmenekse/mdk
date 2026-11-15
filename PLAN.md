@@ -769,7 +769,7 @@ Kullanıcı tarifi ("geri kalanı da dönüştür"; Yalın Kip). Kullanıcının
   - Kapı: `node test/hepsi.mjs`
 
 ## Epic 27 — Pazar radarı
-- Durum: tasarim
+- Durum: gelistirme
 - Tartışma: epic/27
 - Etki: etki/pazar-radari.html
 - Onay: evet
