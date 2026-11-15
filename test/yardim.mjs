@@ -65,7 +65,7 @@ ${son ? "if (A[0] !== 'api') olay({ type: 'step_finish', part: { tokens: { total
 // koşturucuyu node ile koştur (eşzamanlı); iç MDK değişkenleri dışarıdan sızmasın
 export function temizEnv(ek = {}) {
   const e = { ...process.env };
-  for (const k of ['MDK_DONMUS', 'MDK_SELF_DIR', 'MDK_METRIK', 'MDK_DURUM', 'MDK_PLAN_DOKUNMA', 'MDK_KILIT', 'MDK_OPENCODE', 'MDK_CURSOR', 'OPENCODE_CONFIG_CONTENT', 'OPENCODE_DISABLE_CLAUDE_CODE', 'HEPSI_HIZLI', 'MDK_HAKEM', 'MDK_HAKEM_ARKA', 'MDK_GECICI_TEKRAR', 'MDK_GECICI_BEKLE_MS']) delete e[k];
+  for (const k of ['MDK_DONMUS', 'MDK_SELF_DIR', 'MDK_METRIK', 'MDK_DURUM', 'MDK_PLAN_DOKUNMA', 'MDK_KILIT', 'MDK_OPENCODE', 'MDK_CURSOR', 'OPENCODE_CONFIG_CONTENT', 'OPENCODE_DISABLE_CLAUDE_CODE', 'HEPSI_HIZLI', 'MDK_HAKEM', 'MDK_HAKEM_ARKA', 'MDK_GECICI_TEKRAR', 'MDK_GECICI_BEKLE_MS', 'MDK_ANA', 'MDK_YURUTUCULER', 'MDK_AGY', 'MDK_CLAUDE']) delete e[k];
   return { OPENCODE_DB: join(tmpdir(), 'mdk-test-yok.db'), ...e, ...ek };
 }
 export function kos(betik, args, { cwd, env = {}, zaman = 120000 } = {}) {
