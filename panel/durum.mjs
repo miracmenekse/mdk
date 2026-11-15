@@ -12,7 +12,7 @@ import { kararlar } from './karar.mjs';
 import { iletiBul } from '../mdk-hata.mjs';
 
 export function snapshot(dir) {
-  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
+  const sonuc = { plan: null, simdi: null, modeller: [], etki: [], epikler: [], incelemeler: {}, hakem: {}, gecmis: [], matris: { adimlar: [], modeller: [] }, claude: null, kararIzleyici: false, kapiUretim: [] };
 
   try {
     sonuc.plan = parse(readFileSync(join(dir, 'PLAN.md'), 'utf8'));
@@ -71,6 +71,21 @@ export function snapshot(dir) {
   // inceleme satırları: adım başına son sonuç; deneme istatistiğine girmez
   for (const s of satirlar) {
     if (s.tur === 'inceleme') sonuc.incelemeler[s.adim] = { inceleme: s.inceleme, not: s.not ?? null, ts: s.ts };
+  }
+
+  // hakem kayıtları: adım başına SON kayıt geçerli (bozuk satır atlanır)
+  try {
+    const ham = readFileSync(join(dir, 'hakem.jsonl'), 'utf8');
+    for (const line of ham.split('\n')) {
+      const t = line.trim();
+      if (!t) continue;
+      let rec;
+      try { rec = JSON.parse(t); } catch { continue; }
+      if (!rec || typeof rec !== 'object' || typeof rec.adim !== 'number') continue;
+      sonuc.hakem[rec.adim] = rec;
+    }
+  } catch {
+    sonuc.hakem = sonuc.hakem || {};
   }
 
   const harita = new Map();

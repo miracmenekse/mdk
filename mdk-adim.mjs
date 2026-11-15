@@ -271,6 +271,24 @@ while (aday.length) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
         git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');
         kilitBirak(kilit);
+        // hakem: story geçtikten sonra kendiliğinden çalışır (uyarı, bağlayıcı değil)
+        if (planSatiri(plan, 'Görev hakem') !== null && /^\s*-\s*Kabul:/m.test(blok) && e.MDK_HAKEM !== '0' && existsSync(join(SELF, 'mdk-hakem.mjs'))) {
+          const hr = spawnSync(process.execPath, [join(SELF, 'mdk-hakem.mjs'), N, PLAN], { stdio: 'ignore', env: temizOrtam() });
+          if (hr.status === 0) {
+            const satirlar = oku('hakem.jsonl').trim().split(/\n/).filter(Boolean);
+            let kayit = null;
+            if (satirlar.length) { try { kayit = JSON.parse(satirlar[satirlar.length - 1]); } catch {} }
+            if (kayit && kayit.hukum === 'gecmedi') {
+              const olcutler = Array.isArray(kayit.olcutler) ? kayit.olcutler : [];
+              const ilk = olcutler.find((o) => o.sonuc === 'gecmedi') || olcutler[0];
+              yaz(`UYARI: hakem "geçmedi" dedi: ${ilk?.metin ?? ''} — ${ilk?.gerekce ?? ''}`);
+            } else if (kayit && kayit.hukum === 'gecti') {
+              yaz(`hakem: geçti (${kayit.model})`);
+            }
+          } else if (hr.status === 2 || hr.status === 4) {
+            yaz('hakem: hüküm alınamadı');
+          }
+        }
         if (/^\s*-\s+(İncele|Incele):\s*evet\b/im.test(blok) && existsSync(join(SELF, 'mdk-incele.mjs'))) {
           spawnSync(process.execPath, [join(SELF, 'mdk-incele.mjs'), N, PLAN], { stdio: 'inherit', env: temizOrtam() });
         }

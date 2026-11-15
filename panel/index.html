@@ -94,6 +94,11 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: v
 .rozet.eskale { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
 .rozet.karar { background: var(--rozet-karar-z); color: var(--rozet-karar-m); }
 .rozet.hata { background: var(--rozet-hata-z); color: var(--rozet-hata-m); }
+.rozet.hakem-gecti { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
+.rozet.hakem-gecmedi { background: var(--rozet-hata-z); color: var(--rozet-hata-m); }
+.hakem-isaret.gecti { color: var(--rozet-bitti-m); }
+.hakem-isaret.gecmedi { color: var(--rozet-hata-m); }
+.hakem-gerekce { color: var(--metin-soluk, #6b7280); margin-left: 6px; }
 .rozet.dusuk { background: var(--rozet-eskale-z); color: var(--rozet-eskale-m); }
 .rozet.orta { background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); }
 .rozet.yuksek { background: var(--rozet-bitti-z); color: var(--rozet-bitti-m); }
@@ -663,6 +668,7 @@ function drawerAdimNesnesi(no) {
     bitti: !!a?.bitti,
     kabul: a?.kabul ?? [],
     kabulOnay: !!a?.kabulOnay,
+    hakem: sonD?.hakem?.[no] ?? null,
     kapilar: a?.kapilar ?? [],
     kabulZorunlu: !!sonPlan?.plan?.ayarlar?.kabulOnay,
     baslik: a?.baslik || (sonSimdi && sonSimdi.adim === no ? sonSimdi.baslik : '') || '—',

@@ -439,6 +439,7 @@ export function drawerImza(adim, etki) {
     e.bitti ?? null,
     e.karar?.ts ?? null,
     e.alindi ?? null,
+    a.hakem?.ts ?? null,
   ]);
 }
 
@@ -466,6 +467,14 @@ export function drawerHtml(adim, etkiKartiHtml) {
     : '';
   const kabul = Array.isArray(a.kabul) ? a.kabul : [];
   const kapilar = Array.isArray(a.kapilar) ? a.kapilar : [];
+  const hakemOlcutler = Array.isArray(a?.hakem?.olcutler) ? a.hakem.olcutler : [];
+  const olcutBul = (i) => hakemOlcutler.find((o) => o && o.no === i + 1) || hakemOlcutler[i] || null;
+  const hakemRozet = a.hakem
+    ? (a.hakem.hukum === 'gecti'
+        ? '<span class="rozet hakem-gecti">hakem: geçti</span>'
+        : '<span class="rozet hakem-gecmedi">hakem: geçmedi</span>') +
+      (a.hakem.model ? ' ' + esc(a.hakem.model) : '')
+    : '';
   const kabulOnaylaDugmesi = (a.kabulZorunlu && !a.kabulOnay && !a.bitti && kabul.length)
     ? `<button type="button" id="kabul-onayla" data-adim="${esc(a.no)}">Ölçütleri onayla</button>`
     : '';
@@ -473,8 +482,16 @@ export function drawerHtml(adim, etkiKartiHtml) {
     ? '<span class="rozet bitti">ölçütler onaylandı</span>'
     : '';
   const kabulBolumu = '<h3 class="drawer-bolum">BU İŞ NE ZAMAN BİTMİŞ SAYILIR</h3>' +
+    (hakemRozet ? hakemRozet + ' ' : '') +
     (kabul.length
-      ? `<ul class="kabul">${kabul.map((olcut) => `<li>${esc(olcut)}</li>`).join('')}</ul>`
+      ? `<ul class="kabul">${kabul.map((olcut, i) => {
+          const o = olcutBul(i);
+          const isaret = o ? (o.sonuc === 'gecti' ? '✓' : '✗') : '';
+          const isaretSinif = o ? (o.sonuc === 'gecti' ? 'gecti' : 'gecmedi') : '';
+          const prefix = o ? `<span class="hakem-isaret ${isaretSinif}">${isaret}</span> ` : '';
+          const suffix = o ? ` <small class="hakem-gerekce">${esc(o.gerekce ?? '')}</small>` : '';
+          return `<li>${prefix}${esc(olcut)}${suffix}</li>`;
+        }).join('')}</ul>`
       : '<p class="bos">kabul ölçütü yazılmamış</p>') +
     kabulOnaylaDugmesi +
     kabulOnayRozeti +
