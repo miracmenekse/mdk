@@ -910,6 +910,7 @@ Yalın kip. Ayrıntı `epic/38/is.md`. Karar (2026-11-15): ilk sürümde hakem h
 
 ## Epic 39 — Sağlayıcıdan bağımsız ana yürütücü
 - Durum: gelistirme
+- Ana: antigravity
 Yalın kip. Ayrıntı `epic/39/is.md`. "Ana yürütücü" = planlayıcı + onun ucuz kod/tasarım modelleri + story yürütücüsü; tanımı makine genelinde `yurutuculer.json` (yapılandırma, kural dosyası değil). Bilinen ana yürütücüler: `claude` (planlayıcı `claude -p`, story'ler OpenCode `Görev` satırlarıyla) ve `antigravity` (planlayıcı ve story'ler `agy -p`). Planlayıcı kuralları `.mdk/planlayici.md`'dedir, `AGENTS.md`'de değil (OpenCode yürütücüsü `AGENTS.md`'yi okur). `agy` bu Mac'te henüz kurulu değil: `agy` bayrakları (`--model`, izin bayrağı) `yurutuculer.json`'dan okunur, gerçek `agy --help` çıktısıyla sonra düzeltilir. Elle son adım ("Claude çıktı" tatbikatı, `agy` kurulunca): `claude` PATH'ten gizliyken boş deneme projesinde `mdk-kur.mjs` → Epic aç → story → `mdk-adim.mjs` → panel kararı → push, hepsi `agy` ile.
 - [x] 184. Ana yürütücü tanımı ve okuyucusu
   - Kabul: makinede hangi ana yürütücülerin tanımlı olduğu tek bir dosyadan okunur; her birinin planlayıcısının nasıl çağrılacağı, ucuz kod ve tasarım modeli bilinir; bir Epic hangi ana yürütücüye aitse o bulunur, belirtilmemişse varsayılan kullanılır; tanınmayan ana yürütücü adı reddedilir; kayıt aracı yeni ana yürütücü adlarını da kabul eder
