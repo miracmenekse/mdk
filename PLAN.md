@@ -959,6 +959,7 @@ Yalın kip. Ayrıntı `epic/39/is.md`. "Ana yürütücü" = planlayıcı + onun 
 
 ## Epic 40 — Graph bağlamı ile nokta atışı geliştirme
 - Durum: gelistirme
+- Ana: antigravity
 Yalın kip. Ayrıntı `epic/40/is.md`. graphify (`pip install graphifyy`; LLM'siz AST graph'ı, `graphify update .` ~3 sn) adımın konusuna göre küçük bağlam dilimi üretir; koşturucu bunu kod ve kapı istemine ekler. İsteğe bağlı (`MDK_GRAF=1`), ölçüm `MDK_DENEY` + metrikte `graf`.
 - [ ] 193. Koşturucu adıma graph bağlamı ekler (isteğe bağlı, ölçülür)
   - Kabul: graph açıkken kod yazan ve kapı yazan model, adımın konusuyla ilgili dosya/fonksiyon/satır listesini isteminde görür; graph kapalıyken, graphify kurulu değilken ya da hata verirken, ya da `graphify-out/` git'ten gizlenmemişken adım bugünkü gibi graph'sız koşar ve bu yüzden asla düşmez; her denemenin metriğinde graph kullanılıp kullanılmadığı görünür.
