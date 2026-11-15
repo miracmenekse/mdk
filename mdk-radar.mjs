@@ -1,15 +1,18 @@
 // Rakip depoları `gh api` ile tarar, eşiklere göre haftalık farkı yazar.
 // Kullanım: node mdk-radar.mjs [kök=.]  →  <kök>/strateji/radar-sonuc.json
-// Yalnız Node yerleşikleri; ağa çıkan tek yer `gh` çağrısıdır (MDK_GH ile değiştirilebilir).
+// Yalnız Node yerleşikleri; ağa çıkan yerler `gh` çağrısı (MDK_GH) ve özet için opencode'dur (ocSec).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { komutHazirla } from './mdk-ortak.mjs';
+import { komutHazirla, modelListesi, planSatiri } from './mdk-ortak.mjs';
+import { ocSec } from './oc-sec.mjs';
 
 const ALINAMADI = 'alinamadi';
 const GUN_MS = 86400000;
 const SURE_MS = 20000;
+const OZET_SURE_MS = 90000;
+const OZET_SORU = 'Bu değişiklik ürün sahibi için ne anlama geliyor? Tek Türkçe cümle, en çok 160 karakter, sayı yazma.';
 
 const gunFarki = (son, simdiMs) => {
   const t = Date.parse(`${son}T00:00:00Z`);
@@ -74,6 +77,69 @@ function adayGetir(komut, repo, grup) {
   };
 }
 
+function ozetIstem(urun, degisen, aday) {
+  return [
+    `Ürün: ${urun ?? ''}`,
+    `Depo: ${degisen.repo}`,
+    `Grup: ${aday?.grup ?? ''}`,
+    `Açıklama: ${aday?.aciklama ?? ''}`,
+    `Değişiklik: ${degisen.tur}${degisen.fark ? ` — ${degisen.fark}` : ''}`,
+    OZET_SORU,
+  ].join('\n');
+}
+
+function metinTopla(cikti) {
+  let m = '';
+  for (const l of String(cikti || '').split(/\r?\n/)) {
+    try {
+      const x = JSON.parse(l);
+      if (x?.type === 'text') m += x.part?.text ?? '';
+    } catch {}
+  }
+  return m;
+}
+
+function ozetUret(oc, model, istem) {
+  const [k, args] = komutHazirla(oc, ['run', '-m', model, '--format', 'json', '--title', 'radar', istem]);
+  let r;
+  try {
+    r = spawnSync(k, args, {
+      encoding: 'utf8', timeout: OZET_SURE_MS, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
+      env: { ...process.env, OPENCODE_LOG_LEVEL: 'error' },
+    });
+  } catch {
+    return '';
+  }
+  if (!r || r.error || r.status !== 0) return '';
+  return metinTopla(r.stdout).split(/\r?\n/)[0].trim().slice(0, 200);
+}
+
+function ozetle(kok, urun, adaylar, degisenler) {
+  let plan;
+  try {
+    plan = readFileSync(join(kok, 'PLAN.md'), 'utf8');
+  } catch {
+    return 0;
+  }
+  const modeller = modelListesi(planSatiri(plan, 'Görev arastirma'));
+  if (modeller.length === 0) return 0;
+  const oc = ocSec();
+  let adet = 0;
+  for (const d of degisenler) {
+    const aday = adaylar.find((a) => a.repo === d.repo);
+    const istem = ozetIstem(urun, d, aday);
+    for (const model of modeller) {
+      const metin = ozetUret(oc, model, istem);
+      if (metin) {
+        d.not = metin;
+        adet++;
+        break;
+      }
+    }
+  }
+  return adet;
+}
+
 function yaz(yol, veri) {
   mkdirSync(dirname(yol), { recursive: true });
   writeFileSync(yol, `${JSON.stringify(veri, null, 2)}\n`);
@@ -121,9 +187,14 @@ function main() {
   const onceki = ilk ? null : { ts: oncekiDosya.ts, adaylar: eskiAdaylar };
   const simdiMs = Date.now();
   const degisenler = ilk ? [] : farkBul(eskiAdaylar, adaylar, esik, simdiMs);
+  for (const d of degisenler) d.not = null;
+  let ozet = 0;
+  if (degisenler.length > 0 && process.env.MDK_RADAR_OZETSIZ !== '1') {
+    ozet = ozetle(kok, radar.urun, adaylar, degisenler);
+  }
   const sonuc = { ts: new Date(simdiMs).toISOString(), ilk, adaylar, degisenler, onceki };
   yaz(sonucYolu, sonuc);
-  console.log(`radar: ${adaylar.length} aday, ${degisenler.length} değişiklik`);
+  console.log(`radar: ${adaylar.length} aday, ${degisenler.length} değişiklik, ${ozet} özet`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
