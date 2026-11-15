@@ -4,6 +4,7 @@
   "izle": [
     { "repo": "dyad-sh/dyad", "grup": "yerel uygulama üretici" },
     { "repo": "stackblitz-labs/bolt.diy", "grup": "yerel uygulama üretici" },
+    { "repo": "Aider-AI/aider", "grup": "test güdümlü ajan" },
     { "repo": "github/spec-kit", "grup": "şartname güdümlü" },
     { "repo": "Fission-AI/OpenSpec", "grup": "şartname güdümlü" },
     { "repo": "gsd-build/get-shit-done", "grup": "şartname güdümlü" },

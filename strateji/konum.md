@@ -24,6 +24,9 @@ Teknik olmayan insanlar için; bilişsel yükü ekranlarla azaltan, düşük mal
 
 **Karar (kullanıcı, 2026-11-15): 2 ile başla, 1'e doğru git.** Gerekçe: bugünkü kurulumla ulaşılabilen tek kitle 2; D açığı kapandıkça 1'e açılır.
 
+## Deep Research sonrası (2026-11-15)
+Ayrıntı `rapor/ozet-2026-11-15.md`. Özet: pazarın bir numaralı şikâyeti "ölüm döngüsü" (ajan kendi hatasını düzeltirken kredi yakar), kök nedeni test yokluğu; ihtiyaç B bu yüzden A ile birlikte en güçlü koz. En yakın iki rakip Dyad (yerel, ekranlı, testsiz) ve Aider (testli, terminalde). mdk'nin farkı: ikisinin birleşimi + abonelik/ücretsiz model + panel. En büyük iç risk: kapıyı modelin yazması; kapı sade dille kullanıcıya onaylatılmalı.
+
 ## Ticarileşme kapısı
 Şu ikisi geçmeden fiyat/lisans konuşulmaz: (a) terminalsiz kurulum, (b) üç gerçek kişinin baştan sona bir iş bitirmesi.
 
