@@ -222,6 +222,7 @@ function kapiImza() {
 const kapiImzasi = kapiImza();
 const sonBayt = (yol, n) => { try { const b = readFileSync(yol); return kirp(b.subarray(Math.max(0, b.length - n)).toString('utf8')); } catch { return ''; } };
 
+let sonKapiLog = '';
 let ipucu = '', SAGLAYICI = true, durdu = '', kotaGoruldu = false, sorunIcerik = '', eskaleDenendi = false, saglayiciNeden = '';
 // model kilidi: paralel koşularda aynı model aynı anda denenmesin; süreç ölürse bayat kilit sonraki koşuda temizlenir
 const KILIT_DIR = e.MDK_KILIT || join(homedir(), '.cache', 'mdk', 'kilit'); mkdirSync(KILIT_DIR, { recursive: true });
@@ -253,7 +254,7 @@ while (aday.length) {
         copyFileSync('SORUN.md', join(LOGD, `sorun-${N}-${sn()}.md`)); sorunIcerik = kirp(oku('SORUN.md'));
         if (!neden) neden = 'sorun';
       }
-      const kapiLog = log + '.kapi';
+      const kapiLog = log + '.kapi'; sonKapiLog = kapiLog;
       if (!neden) {
         // kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
         let kurcalama = git('diff', '--cached', '--name-only', '--no-renames', '--diff-filter=MD', CP).stdout.split('\n').filter((f) => f && /(^|\/)test\/|^kapi\/|\.test\.[a-z]+$|^PLAN\.md$/.test(f));
@@ -359,7 +360,19 @@ while (aday.length) {
     eskaleDenendi = true; DENEME = 1; gorev = 'eskale'; aday = ESKALE;
   } else break;
 }
-if (durdu === 'butce') { yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: modeller tükendi, en az biri token bütçesini (${butce}/model) aştı`); process.exit(2); }
+// Karar modeli: tüm modeller tükendi (çıkış 2 öncesi). PLAN'da "Görev karar:" varsa nedeni ucuz modele sordurur ve
+// sonucu yazar; çıkış kodunu değiştirmez. Model yoksa ya da başarısızsa sessizce geçer.
+function kararModeli() {
+  if (planSatiri(plan, 'Görev karar') === null || !existsSync(join(SELF, 'mdk-karar.mjs'))) return;
+  const girdi = join(LOGD, `karar-${N}.txt`);
+  writeFileSync(girdi, `Son kapı çıktısı:\n${sonKapiLog ? kirp(oku(sonKapiLog)) : '(yok)'}\n\nSORUN.md:\n${sorunIcerik || '(yok)'}\n\nAdım:\n${blok}\n`);
+  const r = spawnSync(process.execPath, [join(SELF, 'mdk-karar.mjs'), 'basarisizlik', girdi, PLAN], { encoding: 'utf8', env: temizOrtam(), timeout: Number(e.MDK_KARAR_TAVAN || 240) * 1000, stdio: ['ignore', 'pipe', 'ignore'] });
+  try {
+    const j = JSON.parse((r.stdout || '').trim().split('\n').pop());
+    yaz(`karar modeli: ${j.secim}${j.gerekce ? ` — ${j.gerekce}` : ''}`);
+  } catch {}
+}
+if (durdu === 'butce') { yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: modeller tükendi, en az biri token bütçesini (${butce}/model) aştı`); kararModeli(); process.exit(2); }
 if (SAGLAYICI) {
   yazDurum('', 0, 'saglayici', saglayiciNeden || undefined);
   if (kotaGoruldu) yaz(`adım ${N}: ücretsiz kota dolu (tüm modeller kota/sessizlik verdi)`);
@@ -369,4 +382,4 @@ if (SAGLAYICI) {
   if (bilgi) { yaz(bilgi.ileti); yaz(bilgi.oneri); }
   process.exit(6);
 }
-yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: tüm modeller tükendi`); process.exit(2);
+yazDurum('', 0, 'eskale'); yaz(`adım ${N} eskale: tüm modeller tükendi`); kararModeli(); process.exit(2);

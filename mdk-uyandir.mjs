@@ -3,7 +3,7 @@
 //   --bir-kez: bir kez tara, işle, çık.
 //   Aksi hâlde: etki/.karar-uyandirici'ye pid yazar, her 5 sn tarar; SIGTERM/SIGINT'te pid dosyasını silip çıkar.
 // Okundu işareti etki/.karar-uyandi (karar-bekle'nin etki/.karar-okundu'suna dokunulmaz).
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -60,6 +60,21 @@ const anaAdi = (plan, k) => (k.epic !== undefined ? epicAnaAdi(plan, k.epic) : e
 
 const istemOlustur = (metin) => `Panelden karar geldi: ${metin}. Proje kuralların .mdk/planlayici.md dosyasında; o kurallara göre bu kararı işle ve sıradaki hamleyi node ${join(BU, 'mdk-epic.mjs')} durum ile belirle.`;
 
+// yorum/red kararında karar modeli metni sınıflandırır; sonucu istemin sonuna eklenecek cümle olarak döner.
+// Model başarısızsa (varsayılan) ya da metin yoksa '' döner ve istem eskisi gibi kalır.
+function yorumSinifi(karar) {
+  if (!['yorum', 'red'].includes(karar.tur) || typeof karar.metin !== 'string' || karar.metin.trim() === '') return '';
+  mkdirSync(logDizin, { recursive: true });
+  const girdi = join(logDizin, `yorum-${karar.ts}.txt`);
+  writeFileSync(girdi, karar.metin);
+  const r = spawnSync(process.execPath, [join(BU, 'mdk-karar.mjs'), 'yorum', girdi, join(kok, 'PLAN.md')], { cwd: kok, encoding: 'utf8', env: process.env, timeout: 300000, stdio: ['ignore', 'pipe', 'ignore'] });
+  try {
+    const o = JSON.parse((r.stdout || '').trim().split('\n').pop());
+    if (o.varsayilan) return '';
+    return ` Karar modeli bu yorumu "${o.secim}" olarak sınıfladı (${o.gerekce}).`;
+  } catch { return ''; }
+}
+
 // MDK_UYANDIR_KOMUT (testler) verilirse o betik [ana adı, istem] ile çağrılır
 function komutuKur(ana, istem) {
   const ozel = process.env.MDK_UYANDIR_KOMUT;
@@ -99,7 +114,7 @@ async function tara() {
     const kilit = kilitAl(logDizin, `uyandir-${ana.ad}`);
     if (!kilit) break;
     try {
-      const [cmd, args] = komutuKur(ana, istemOlustur(s));
+      const [cmd, args] = komutuKur(ana, istemOlustur(s) + yorumSinifi(karar));
       await calistir(cmd, args, join(logDizin, `uyandir-${karar.ts}.log`));
     } finally {
       kilitBirak(kilit);
