@@ -812,6 +812,22 @@ export function modellerHtml(modeller) {
     `<th>ort. süre</th><th>veri</th></tr></thead><tbody>${satirlar}</tbody></table>`;
 }
 
+// hazır profiller: her profil bir kart; etkin olan işaretli, diğerleri "Bunu kullan" ile seçilir
+export function profilHtml(profiller, izleyici = false) {
+  if (!profiller || profiller.length === 0) return '';
+  const etkinVar = profiller.some((p) => p.etkin);
+  const kartlar = profiller.map((p) => {
+    const dugme = !p.etkin && !izleyici
+      ? `<button type="button" class="profil-sec" data-ad="${esc(p.ad)}">Bunu kullan</button>`
+      : '';
+    const rozet = p.etkin ? '<span class="rozet bitti">etkin</span>' : '';
+    return `<div class="profil-kart${p.etkin ? ' etkin' : ''}" data-ad="${esc(p.ad)}">` +
+      `<b>${esc(p.baslik)}</b>${rozet}<p>${esc(p.aciklama)}</p>${dugme}</div>`;
+  }).join('');
+  const not = etkinVar ? '' : '<p class="not">özel ayar: modeller elle seçilmiş</p>';
+  return `${not}<div class="profiller">${kartlar}</div>`;
+}
+
 // görev modelleri: her `Görev <tür>:` satırı için model seçicileri ve yedek ekleme
 export function gorevModelleriHtml(gorevler, serbest) {
   if (!gorevler || gorevler.length === 0) return '<span class="bos">görev yok</span>';

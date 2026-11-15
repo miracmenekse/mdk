@@ -471,6 +471,16 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   :root:not([data-theme="light"]) .persona-c .metin { background: #10342a; color: #c7ede0; }
   :root:not([data-theme="light"]) .persona-d .metin { background: #3a2a12; color: #f6dfbd; }
 }
+.profiller { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 12px; }
+.profil-kart { flex: 1 1 200px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px; padding: 10px 12px; }
+.profil-kart.etkin { border-color: var(--rozet-bitti-m); box-shadow: inset 0 0 0 1px var(--rozet-bitti-m); }
+.profil-kart b { display: block; margin-bottom: 4px; }
+.profil-kart p { margin: 4px 0 8px; font-size: 12px; color: var(--soluk); }
+.profil-kart .rozet { margin-left: 6px; }
+.profil-kart .hata { font-size: 12px; margin: 6px 0 0; }
+.profil-kart .profil-sec[disabled] { opacity: .6; }
+#profiller .not { font-size: 12px; color: var(--soluk); margin: 0 0 8px; }
+@media (max-width: 600px) { .profiller { flex-direction: column; } }
 </style>
 </head>
 <body>
@@ -508,6 +518,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
   </div>
 
   <h2>Görev modelleri</h2>
+  <div id="profiller"></div>
   <section id="gorev-modelleri"></section>
   <p id="gorev-hata" class="hata" hidden></p>
 
@@ -577,7 +588,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, profilHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 import { adCakisir, personaSil, personaGeriEkle, duzenKaydir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
@@ -586,6 +597,7 @@ const kategorilerEl = document.getElementById('kategoriler');
 const modellerEl = document.getElementById('modeller');
 const gorevModelleriEl = document.getElementById('gorev-modelleri');
 const gorevHataEl = document.getElementById('gorev-hata');
+const profillerEl = document.getElementById('profiller');
 const kapiUretimEl = document.getElementById('kapi-uretim');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
@@ -981,6 +993,7 @@ function ciz(d) {
       })
       .catch(() => {});
   }
+  profillerEl.innerHTML = profilHtml(d.profiller, d.kararIzleyici);
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   kapiUretimEl.innerHTML = kapiUretimHtml(d.kapiUretim);
   modellerEl.innerHTML = modellerHtml(d.modeller);
@@ -1082,6 +1095,36 @@ radarEl.addEventListener('click', async (e) => {
     satir.append(y);
   }
   y.textContent = 'kaydedilemedi';
+});
+
+// Hazır profil: "Bunu kullan" → POST /api/profil; başarıda kartları PLAN değişimi SSE ile yeniden çizer
+profillerEl.addEventListener('click', async (e) => {
+  const dugme = e.target.closest('.profil-sec');
+  if (!dugme) return;
+  const kart = dugme.closest('.profil-kart');
+  kart.querySelectorAll('.profil-hata').forEach((el) => el.remove());
+  dugme.disabled = true;
+  try {
+    const yanit = await fetch('/api/profil', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ad: dugme.dataset.ad }),
+    });
+    if (!yanit.ok) {
+      const j = await yanit.json().catch(() => ({}));
+      const p = document.createElement('p');
+      p.className = 'hata profil-hata';
+      p.textContent = j.hata || 'kaydedilemedi (' + yanit.status + ')';
+      kart.append(p);
+      dugme.disabled = false;
+    }
+  } catch {
+    const p = document.createElement('p');
+    p.className = 'hata profil-hata';
+    p.textContent = 'bağlantı hatası';
+    kart.append(p);
+    dugme.disabled = false;
+  }
 });
 
 // Görev modelleri: seçim değişince PLAN.md'ye yaz → POST /api/gorev-model
