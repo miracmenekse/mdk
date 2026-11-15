@@ -13,6 +13,7 @@ Görev inceleme: opencode/minimax-m3.1-flash-free, opencode/inkling-2-small-free
 Görev eskale: opencode/longcat-2.5-free, opencode/minimax-m3.1-flash-free, opencode/big-pickle
 Görev mekanik: opencode/nemotron-3.5-lightning-free, opencode/flint-40b-free, opencode/iceman-free
 Görev arastirma: opencode/inkling-2-small-free, opencode/nemotron-3.5-super-vl-free
+Görev hakem: opencode/minimax-m3.1-flash-free, opencode/inkling-2-small-free, opencode/longcat-2.5-free
 
 Bütçe: 300000
 
