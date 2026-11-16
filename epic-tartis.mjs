@@ -83,27 +83,48 @@ async function ana() {
   const yaz = () => { sonuc.ts = new Date().toISOString(); writeFileSync(ciktiYolu, JSON.stringify(sonuc, null, 2) + '\n'); };
   yaz();
 
-  // Tur 1: Değerlendirme — tüm personalar paralel, işi YALNIZ kendi merceğiyle değerlendirir.
+  // Tur 1: Değerlendirme — bağımsız ilk görüş; işi YALNIZ kendi merceğiyle değerlendirir.
   const tur1Istem = (p) => `Sen "${p.ad}" personasısın. Optimize ettiğin: ${p.optimize}. Körlüğün (bilerek göz ardı et): ${p.korluk}. Sorduğun mercek sorusu: ${p.soru}\n\n` +
+    `Bağımsız ilk görüş: diğer personaların kim olduğunu ya da ne diyeceğini varsayma; yalnız kendi merceğinle yaz.\n\n` +
     `Aşağıdaki işi YALNIZ kendi merceğinle değerlendir: etki, gereksinim, endişe. En çok 120 kelime. Kod ya da dosya değiştirme, yalnız değerlendirmeni yaz.\n\nİş:\n${is}`;
-  const tur1 = await Promise.all(personalar.map((p, i) => cagir(tur1Istem(p), i).then((r) => ({ p, i, ...r }))));
+  const tur1 = [];
+  for (let i = 0; i < personalar.length; i++) {
+    const p = personalar[i];
+    const r = await cagir(tur1Istem(p), i);
+    tur1.push({ p, i, ...r });
+  }
   const gecerli = tur1.filter((r) => r.metin);
   sonuc.turlar.push({ tur: 1, ad: 'Değerlendirme', mesajlar: gecerli.map((r) => ({ persona: r.p.ad, model: r.model, metin: r.metin })) });
   yaz();
   if (gecerli.length < 2) { sonuc.durum = 'yetersiz'; yaz(); console.log(ciktiYolu); return 1; }
 
-  // Tur 2: Tartışma — tur 1'de geçerli yanıt verenler paralel; tur-1 metinleri ad etiketli istemde.
-  const tur1Bloklar = gecerli.map((r) => `${r.p.ad}: ${r.metin}`).join('\n\n');
-  const tur2Istem = (r) => `Sen "${r.p.ad}" personasısın. Tur 1 (Değerlendirme) metinleri:\n\n${tur1Bloklar}\n\n` +
-    `katıldığın, itiraz ettiğin ve fikrini değiştirdiğin noktayı yaz. En çok 120 kelime. Kod ya da dosya değiştirme, yalnız metnini yaz.`;
-  const tur2 = await Promise.all(gecerli.map((r) => cagir(tur2Istem(r), r.i).then((x) => ({ p: r.p, ...x }))));
-  sonuc.turlar.push({ tur: 2, ad: 'Tartışma', mesajlar: tur2.filter((r) => r.metin).map((r) => ({ persona: r.p.ad, model: r.model, metin: r.metin })) });
+  // Tur 2: Tartışma — ardışık yanıt turu; senden önceki yanıtlar eklenir.
+  const tur1Bloklar = gecerli.map((r) => `${r.p.ad}:\n${r.metin}`).join('\n\n');
+  const tur2Istem = (r, oncekiler) => {
+    let istem = `Sen "${r.p.ad}" personasısın. Tur 1 (Değerlendirme) metinleri:\n\n${tur1Bloklar}`;
+    if (oncekiler.length > 0) {
+      istem += `\n\nTur 2 (Tartışma — senden önceki yanıtlar):\n\n${oncekiler.map((m) => `${m.persona}: ${m.metin}`).join('\n\n')}`;
+    }
+    istem += `\n\nkatıldığın, itiraz ettiğin ve fikrini değiştirdiğin noktayı yaz. En çok 120 kelime. Kod ya da dosya değiştirme, yalnız metnini yaz.`;
+    return istem;
+  };
+  const tur2Mesajlar = [];
+  sonuc.turlar = [sonuc.turlar[0], { tur: 2, ad: 'Tartışma', mesajlar: [] }];
   yaz();
+  for (const r of gecerli) {
+    const x = await cagir(tur2Istem(r, tur2Mesajlar), r.i);
+    if (x.metin) {
+      tur2Mesajlar.push({ persona: r.p.ad, model: x.model, metin: x.metin });
+      sonuc.turlar = [sonuc.turlar[0], { tur: 2, ad: 'Tartışma', mesajlar: [...tur2Mesajlar] }];
+      yaz();
+    }
+  }
 
   // Tur 3: Uzlaşı — tek çağrı; tarafsız moderatör yanıtı belli başlıklarla verir.
   const turBloklari = sonuc.turlar.map((t) => `## Tur ${t.tur} (${t.ad})\n\n${t.mesajlar.map((m) => `${m.persona}: ${m.metin}`).join('\n\n')}`).join('\n\n');
   const tur3Istem = `Tarafsız moderatörsün; iş ve iki turun tüm metinleri aşağıda. Ortak uzlaşı metni yaz; yanıtın TAM ŞU başlıkları bu sırayla içersin:\n` +
-    `## Çözüm\n## UI/UX etkisi\n## Entegrasyon\n## Anlaşmazlıklar ve açık sorular\n## Tahmini story listesi\n\nİş:\n${is}\n\n${turBloklari}`;
+    `## Çözüm\n## UI/UX etkisi\n## Entegrasyon\n## Anlaşmazlıklar ve açık sorular\n## Tahmini story listesi\n\n` +
+    `Görüş ayrılıklarını ve kimlerin hangi noktada ayrıştığını persona adlarıyla (${gecerli.map((r) => r.p.ad).join(', ')}) açıkça an.\n\nİş:\n${is}\n\n${turBloklari}`;
   const tur3 = await cagir(tur3Istem, personalar.length);
   if (!tur3.metin) { sonuc.durum = 'yetersiz'; yaz(); console.log(ciktiYolu); return 1; }
   sonuc.cozum = { model: tur3.model, metin: tur3.metin };
