@@ -1050,6 +1050,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 
 ## Epic 43 — Epic detayında işlem geri bildirimi ve canlı güncelleme
 - Durum: analiz
+- Tartışma: epic/43
 
 ## Epic 44 — Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama
 - Durum: analiz
