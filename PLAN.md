@@ -1049,9 +1049,10 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node -e "const s=require('fs').readFileSync('panel/index.html','utf8');const g=(ad)=>{const i=s.indexOf(ad);if(i<0)throw new Error(ad+' yok');return s.slice(i,s.indexOf('\n}\n',i))};const assert=require('assert');assert.match(s,/#drawer\.tam-sayfa\s*\{[^}]*width:\s*100vw/);assert.match(s,/#drawer\.tam-sayfa \.drawer-ic\s*\{[^}]*max-width:\s*9\d\dpx/);assert.match(g('async function epicDrawerAc('),/classList\.add\('tam-sayfa'\)/);assert.match(g('async function drawerAc('),/classList\.remove\('tam-sayfa'\)/);assert.match(g('function drawerKapat('),/classList\.remove\('tam-sayfa'\)/);assert.doesNotMatch(g('async function drawerAc('),/classList\.add\('tam-sayfa'\)/)"`
 
 ## Epic 43 — Epic detayında işlem geri bildirimi ve canlı güncelleme
-- Durum: analiz
+- Durum: tasarim
 - Tartışma: epic/43
 - Etki: etki/epic-islem-bildirimi.html
+- Onay: evet
 
 ## Epic 44 — Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama
 - Durum: analiz
