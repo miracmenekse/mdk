@@ -29,8 +29,27 @@ const metinCek = (cikti) => {
   return m.trim();
 };
 
-// Tek opencode çağrısı; süre aşılırsa süreç öldürülür, stdin kapalı.
+// Tek çağrı; süre aşılırsa süreç öldürülür, stdin kapalı.
 const calistir = (model, istem) => new Promise((coz) => {
+  if (model.startsWith('agy/')) {
+    const agyBin = process.env.MDK_AGY || 'agy';
+    const ad = model.slice(4);
+    const args = [...(ad === 'varsayilan' ? [] : ['--model', ad]), '--mode', 'plan', '--output-format', 'text', '-p', istem];
+    const p = spawn(agyBin, args, {
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let cikti = '';
+    p.stdout.on('data', (d) => { cikti += d; });
+    p.stderr.on('data', () => {});
+    const zaman = setTimeout(() => p.kill(), sure);
+    p.on('close', () => {
+      clearTimeout(zaman);
+      coz(JSON.stringify({ type: 'text', part: { text: cikti.trim() } }));
+    });
+    p.on('error', () => { clearTimeout(zaman); coz(''); });
+    return;
+  }
   const p = spawn(OC, ['run', '-m', model, '--format', 'json', '--title', `epic-${no}`, istem], {
     env: { ...process.env, OPENCODE_LOG_LEVEL: 'error' },
     stdio: ['ignore', 'pipe', 'pipe'],
