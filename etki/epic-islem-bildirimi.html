@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Epic detayında işlem geri bildirimi ve canlı güncelleme</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 680px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: Butonlara basılınca işlem durumu belirsiz kalır, butonlar kilitlenmez, boş not kontrolü zayıftır ve kroki güncellendiğinde ekranı kapatıp açmak gerekir.</figcaption>
+  <svg id="once" viewBox="0 0 680 440" role="img" aria-label="Önce: Geri bildirimsiz Epic detay sayfası">
+    <g font-size="11" fill="#757575"><text x="20" y="24">ÇÖZÜM</text><text x="20" y="100">UI/UX ETKİSİ</text><text x="20" y="300">KARAR</text></g>
+    <g fill="#e0e0e0"><rect x="20" y="34" width="600" height="8"/><rect x="20" y="50" width="520" height="8"/><rect x="20" y="66" width="560" height="8"/></g>
+    <g fill="#fff" stroke="#bdbdbd"><rect x="20" y="110" width="310" height="110"/><rect x="350" y="110" width="310" height="110"/></g>
+    <g font-size="10" fill="#9e9e9e"><text x="30" y="126">önce (statik)</text><text x="360" y="126">sonra (statik)</text></g>
+    <!-- kroki aksiyon -->
+    <rect x="20" y="230" width="640" height="50" rx="6" fill="#fff" stroke="#e0e0e0"/>
+    <rect x="30" y="254" width="180" height="20" rx="10" fill="#fff" stroke="#bdbdbd"/><text x="40" y="268" font-size="10" fill="#424242">Krokiyi onayla → Figma'da çiz</text>
+    <rect x="220" y="254" width="60" height="20" rx="10" fill="#fff" stroke="#bdbdbd"/><text x="235" y="268" font-size="10" fill="#424242">Yorum</text>
+    <!-- karar formu -->
+    <rect x="20" y="315" width="640" height="80" rx="6" fill="#fff" stroke="#e0e0e0"/>
+    <rect x="30" y="360" width="100" height="22" rx="11" fill="#fff" stroke="#bdbdbd"/><text x="42" y="375" font-size="10" fill="#424242">Çözümü onayla</text>
+    <rect x="140" y="360" width="60" height="22" rx="11" fill="#fff" stroke="#bdbdbd"/><text x="156" y="375" font-size="10" fill="#424242">Reddet</text>
+    <rect x="210" y="360" width="60" height="22" rx="11" fill="#fff" stroke="#bdbdbd"/><text x="225" y="375" font-size="10" fill="#424242">Yorum</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: Tıklanan buton kilitlenir, anında 'İşleniyor / Alındı' rozeti belirir; boş notta satır içi uyarı çıkar; SSE ile içerik güncellenince 'GÜNCELLENDİ' rozeti parlar ve sayfa kapatılmadan canlı yenilenir.</figcaption>
+  <svg id="sonra" viewBox="0 0 680 470" role="img" aria-label="Sonra: Canlı geri bildirim ve güncellemeli Epic detay sayfası">
+    <g font-size="11" fill="#757575"><text x="20" y="24">ÇÖZÜM</text><text x="20" y="100">UI/UX ETKİSİ</text><text x="20" y="320">KARAR</text></g>
+    <!-- canlı güncelleme işareti -->
+    <rect class="degisen" x="100" y="88" width="130" height="18" rx="4"/>
+    <text class="degisen-text" x="110" y="101" font-size="9" font-weight="bold">✦ KROKİ GÜNCELLENDİ</text>
+    <g fill="#e0e0e0"><rect x="20" y="34" width="600" height="8"/><rect x="20" y="50" width="520" height="8"/><rect x="20" y="66" width="560" height="8"/></g>
+    <g fill="#fff" stroke="#c2410c"><rect x="20" y="110" width="310" height="110"/><rect x="350" y="110" width="310" height="110"/></g>
+    <g font-size="10" fill="#9a3412"><text x="30" y="126">önce (otomatik yenilendi)</text><text x="360" y="126">sonra (otomatik yenilendi)</text></g>
+    <!-- kroki formu kilitli ve durumlu -->
+    <rect class="degisen" x="20" y="230" width="640" height="60" rx="6"/>
+    <rect x="30" y="236" width="620" height="20" fill="#fff" stroke="#fdba74"/>
+    <text x="38" y="250" font-size="10" fill="#757575">krokiye not yazıldı...</text>
+    <rect x="30" y="262" width="180" height="20" rx="10" fill="#9e9e9e" opacity="0.6"/>
+    <text x="40" y="276" font-size="10" fill="#fff">Krokiyi onayla → Figma'da çiz</text>
+    <rect x="220" y="262" width="60" height="20" rx="10" fill="#9e9e9e" opacity="0.6"/>
+    <text x="235" y="276" font-size="10" fill="#fff">Yorum</text>
+    <text class="degisen-text" x="295" y="276" font-size="10" font-weight="bold">⏳ İşleniyor · Claude aldı...</text>
+    <!-- karar formu: satır içi doğrulama ve durum -->
+    <rect class="degisen" x="20" y="335" width="640" height="95" rx="6"/>
+    <rect x="30" y="343" width="620" height="28" fill="#fff" stroke="#dc2626"/>
+    <text x="38" y="360" font-size="10" fill="#dc2626">⚠ Reddet veya Yorum için açıklama notu yazılması zorunludur</text>
+    <rect x="30" y="380" width="100" height="22" rx="11" fill="#c2410c"/><text x="42" y="395" font-size="10" fill="#fff">Çözümü onayla</text>
+    <rect x="140" y="380" width="60" height="22" rx="11" fill="#fff" stroke="#c2410c"/><text x="156" y="395" font-size="10" class="degisen-text">Reddet</text>
+    <rect x="210" y="380" width="60" height="22" rx="11" fill="#fff" stroke="#c2410c"/><text x="225" y="395" font-size="10" class="degisen-text">Yorum</text>
+    <text class="degisen-text" x="285" y="395" font-size="10">✓ gönderildi (düğmeler kilitli)</text>
+  </svg>
+</figure>
+
+</body>
+</html>
