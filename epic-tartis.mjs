@@ -87,12 +87,7 @@ async function ana() {
   const tur1Istem = (p) => `Sen "${p.ad}" personasısın. Optimize ettiğin: ${p.optimize}. Körlüğün (bilerek göz ardı et): ${p.korluk}. Sorduğun mercek sorusu: ${p.soru}\n\n` +
     `Bağımsız ilk görüş: diğer personaların kim olduğunu ya da ne diyeceğini varsayma; yalnız kendi merceğinle yaz.\n\n` +
     `Aşağıdaki işi YALNIZ kendi merceğinle değerlendir: etki, gereksinim, endişe. En çok 120 kelime. Kod ya da dosya değiştirme, yalnız değerlendirmeni yaz.\n\nİş:\n${is}`;
-  const tur1 = [];
-  for (let i = 0; i < personalar.length; i++) {
-    const p = personalar[i];
-    const r = await cagir(tur1Istem(p), i);
-    tur1.push({ p, i, ...r });
-  }
+  const tur1 = await Promise.all(personalar.map((p, i) => cagir(tur1Istem(p), i).then((r) => ({ p, i, ...r }))));
   const gecerli = tur1.filter((r) => r.metin);
   sonuc.turlar.push({ tur: 1, ad: 'Değerlendirme', mesajlar: gecerli.map((r) => ({ persona: r.p.ad, model: r.model, metin: r.metin })) });
   yaz();
