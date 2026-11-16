@@ -1049,16 +1049,38 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node -e "const s=require('fs').readFileSync('panel/index.html','utf8');const g=(ad)=>{const i=s.indexOf(ad);if(i<0)throw new Error(ad+' yok');return s.slice(i,s.indexOf('\n}\n',i))};const assert=require('assert');assert.match(s,/#drawer\.tam-sayfa\s*\{[^}]*width:\s*100vw/);assert.match(s,/#drawer\.tam-sayfa \.drawer-ic\s*\{[^}]*max-width:\s*9\d\dpx/);assert.match(g('async function epicDrawerAc('),/classList\.add\('tam-sayfa'\)/);assert.match(g('async function drawerAc('),/classList\.remove\('tam-sayfa'\)/);assert.match(g('function drawerKapat('),/classList\.remove\('tam-sayfa'\)/);assert.doesNotMatch(g('async function drawerAc('),/classList\.add\('tam-sayfa'\)/)"`
 
 ## Epic 43 — Epic detayında işlem geri bildirimi ve canlı güncelleme
-- Durum: tasarim
+- Durum: gelistirme
 - Tartışma: epic/43
 - Etki: etki/epic-islem-bildirimi.html
 - Onay: evet
 - Ana: antigravity
 
+- [ ] 207. Epic detayında düğme durumları, çift tık engeli ve boş not kontrolü
+  - Kabul: Reddet veya Yorum tıklandığında açıklama notu boşsa form gönderilmez, alanın hemen yanında kırmızı uyarıyla neden çalışmadığı söylenir ve alana odaklanılır; düğmeye basıldığında düğmeler devre dışı (`disabled`) kalır ve durum "gönderiliyor…" → "gönderildi" olarak görünür; krokinin altındaki forma da durum alanı eklenir ve işlem kuyruktayken veya alındığında açıkça belirtilir; karar kuyruktayken form düğmeleri tekrar basılamaz
+  - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml` ve `kararDurum`): kroki formuna (`data-bolum="kroki"`) `<p class="karar-durum">${kararDurum(e, izleyici, 'kroki')}</p>` eklenir; `kararDurum(e, izleyici, bolum)` son kararın bölümüne göre veya genel durumunu basar (`e.karar && !e.alindi` iken iletide "gönderildi (kuyrukta)", `e.alindi` iken "alındı (hazırlanıyor)" yazar); bekleyen işlem varsa (`e.karar && !e.alindi`) form düğmelerine `disabled` eklenir. (b) `panel/index.html` (`drawerEl.addEventListener('submit' ... form.epic-karar)`): `(tur === 'red' || tur === 'yorum') && !metin.trim()` ise `durumYaz(`${tur === 'red' ? 'Reddet' : 'Yorum'} için not yazılması zorunludur`, true)` basılır, `textarea.focus()` verilir ve gönderilmez; başarılı gönderimde `yanit.ok` ise durum "gönderildi" olur ve düğmeler açık kalmaz, hata olursa hata metni basılıp düğmeler açılır.
+  - Kapı: `node test/epic-karar-durum.test.mjs`
+
+- [ ] 208. Kroki ve karar değişiminde açık Epic detayının otomatik yenilenmesi ve güncellendi işareti
+  - Kabul: Kroki dosyası, çözüm metni ya da tartışma değiştiğinde açık tam sayfa Epic detayı kapatıp açmaya gerek kalmadan kendiliğinden yenilenir; kroki iframe'i güncel görseli önbelleğe takılmadan gösterir; sayfa yenilendiğinde kullanıcının kaydırma konumu (scroll) korunur; güncellenen bölüm başlığında kısa süreli bir "güncellendi" rozeti belirir
+  - Ne: (a) `panel/durum.mjs`: `sonuc.epikler` doldurulurken `e.etki` varsa dosyanın `statSync` ile `etkiMtime` (mtimeMs) değeri nesneye eklenir. (b) `panel/ciz.mjs`: `epicImza(epik, tartisma)` dizisine `e.etkiMtime` eklenir; `epicDrawerHtml` içinde kroki iframe `src` adreslerine `&t=${e.etkiMtime || ''}` eklenir; güncellenen bölümlere `rozet-yeni` desteği verilir. (c) `panel/index.html` (`ciz(d)` içi epic çekmecesi yenilemesi): `drawerEl.innerHTML` güncellenmeden önce `const scrollY = drawerEl.scrollTop` saklanır ve render sonrası `drawerEl.scrollTop = scrollY` ile geri yüklenir; değişen bölüm başlığına geçici vurgu sınıfı verilir.
+  - Kapı: `node test/epic-canli-yenile.test.mjs`
+
 ## Epic 44 — Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama
 - Durum: tasarim
 - Tartışma: epic/44
 - Etki: etki/epic-bolum-atlama.html
+- Onay: evet
+- Ana: antigravity
+
+- [ ] 209. Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama motoru ve form koruması
+  - Kabul: Tam sayfa Epic detayında çok hızlı kaydırıldığında bir sonraki ya da önceki bölüme yumuşak geçişle atlar; normal kaydırmada standart serbest kaydırma devam eder; bir metin kutusu veya form alanı odaktayken hızlı kaydırma bölüm atlamaz; atlama sonrası eylemsizlik koruması (debounce kilidi) çalışır; üst çubukta hızlı atlama açılıp kapatılabilir ve seçim localStorage'da saklanır
+  - Ne: (a) `panel/index.html` ve `panel/ciz.mjs`: `#drawer.tam-sayfa` için kaydırma dinleyicisi; `wheel` ve `touch` olaylarında hız (`deltaY / deltaT`) hesaplanır; eşik aşıldığında ve `activeElement` input/textarea değilken bir sonraki/önceki `.drawer-bolum`'a `scrollIntoView({ behavior: 'smooth' })` yapılır ve 700ms kilit konur. (b) Üst çubukta aç/kapa toggle düğmesi (`#hizli-atlama-toggle`) ve `localStorage.getItem('mdk_hizli_atlama')` okuma/yazma.
+  - Kapı: `node test/epic-bolum-atlama.test.mjs`
+
+- [ ] 210. Tıklanabilir mini bölüm göstergesi ve aktif bölüm takibi
+  - Kabul: Tam sayfa Epic detayının kenarında hangi bölümde olunduğunu gösteren dikey küçük bir gösterge yer alır; kaydırdıkça o anki bölüm vurgulanır; göstergedeki bir bölüme tıklandığında doğrudan o bölümün başına yumuşak geçişle gider
+  - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml`): `#drawer.tam-sayfa` içine `.drawer-gosterge` dikey navigasyon çubuğu eklenir; her ana bölüm (`.drawer-bolum`) için bir nokta/etiket üretilir. (b) `panel/index.html`: `IntersectionObserver` ile görünür bölüm tespit edilip aktif nokta `.aktif` yapılır; gösterge öğesine tıklandığında ilgili bölüme `scrollIntoView({ behavior: 'smooth' })` yapılır.
+  - Kapı: `node test/epic-bolum-gosterge.test.mjs`
 - Onay: evet
 - Ana: antigravity
 
