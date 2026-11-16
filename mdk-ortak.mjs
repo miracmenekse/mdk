@@ -1,8 +1,8 @@
 // Koşturucuların ortak parçaları (mdk-adim, mdk-incele, persona-tur, mdk-paralel). Yan etkisiz: yalnız dışa aktarım.
 // Bash sürümlerindeki awk/grep/sed/setsid/flock parçalarının JS karşılığı; Windows'ta da çalışır.
-import { closeSync, mkdirSync, openSync, readFileSync, statSync, unlinkSync, writeSync } from 'node:fs';
+import { closeSync, copyFileSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
 const WIN = process.platform === 'win32';
@@ -283,6 +283,82 @@ export function agacKilidi(kok = process.cwd()) {
     }
   }
   return { ok: false, sahip: null };
+}
+
+// yalıtılmış deneme worktree'si: adımı geçici kopyada sına
+export function denemeWorktreeAc(kok = process.cwd(), adimNo = 0) {
+  try {
+    const yol = join(kok, '.mdk-log', 'wt', `adim-${adimNo}-${process.pid}`);
+    try {
+      spawnSync('git', ['worktree', 'remove', '--force', yol], { cwd: kok, stdio: 'ignore' });
+      rmSync(yol, { recursive: true, force: true });
+    } catch {}
+    mkdirSync(join(kok, '.mdk-log', 'wt'), { recursive: true });
+    const res = spawnSync('git', ['worktree', 'add', '--detach', yol, 'HEAD'], { cwd: kok, stdio: 'ignore' });
+    if (res.status !== 0 || res.error) return null;
+    const kapat = () => {
+      try {
+        spawnSync('git', ['worktree', 'remove', '--force', yol], { cwd: kok, stdio: 'ignore' });
+        rmSync(yol, { recursive: true, force: true });
+      } catch {}
+    };
+    return { yol, kapat };
+  } catch {
+    return null;
+  }
+}
+
+export function denemeWorktreeAktar(wtYol, kok = process.cwd()) {
+  try {
+    const res = spawnSync('git', ['status', '--porcelain', '-uall'], { cwd: wtYol, encoding: 'utf8' });
+    if (res.status !== 0 || res.error) return false;
+    const satirlar = (res.stdout || '').split(/\r?\n/).filter(Boolean);
+    for (const sat of satirlar) {
+      if (sat.slice(0, 2).includes('R') || sat.includes(' -> ')) {
+        const parcalar = sat.slice(3).trim().split(' -> ');
+        const eski = parcalar[0].replace(/^"|"$/g, '').trim();
+        const yeni = parcalar[1].replace(/^"|"$/g, '').trim();
+        try { rmSync(join(kok, eski), { recursive: true, force: true }); } catch {}
+        if (
+          yeni !== '.mdk-log' &&
+          !yeni.startsWith('.mdk-log/') &&
+          !yeni.startsWith('.mdk-log\\') &&
+          yeni !== 'durum.json' &&
+          yeni !== 'metrikler.jsonl'
+        ) {
+          const hy = join(kok, yeni);
+          mkdirSync(dirname(hy), { recursive: true });
+          copyFileSync(join(wtYol, yeni), hy);
+        }
+        continue;
+      }
+      const kod = sat.slice(0, 2);
+      let dosya = sat.slice(3).trim();
+      if (dosya.startsWith('"') && dosya.endsWith('"')) {
+        dosya = dosya.slice(1, -1);
+      }
+      if (
+        dosya === '.mdk-log' ||
+        dosya.startsWith('.mdk-log/') ||
+        dosya.startsWith('.mdk-log\\') ||
+        dosya === 'durum.json' ||
+        dosya === 'metrikler.jsonl'
+      ) {
+        continue;
+      }
+      const kaynakYol = join(wtYol, dosya);
+      const hedefYol = join(kok, dosya);
+      if (kod.includes('D') || !existsSync(kaynakYol)) {
+        try { rmSync(hedefYol, { recursive: true, force: true }); } catch {}
+      } else {
+        mkdirSync(dirname(hedefYol), { recursive: true });
+        copyFileSync(kaynakYol, hedefYol);
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 

@@ -19,7 +19,7 @@ if (!process.env.MDK_DONMUS) {
   process.exit(r.status ?? 1);
 }
 
-const { adimBlogu, agacKilidi, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
+const { adimBlogu, agacKilidi, denemeWorktreeAc, denemeWorktreeAktar, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
 const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = await import('./mdk-adim-kapi.mjs');
 // donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
@@ -55,10 +55,10 @@ const ILK = Number(e.ILK || 75);      // ilk olay bu kadar saniyede gelmezse sa�
 const OC = opencodeSec(SELF);
 const KOTA = /Free usage limit|Go usage limit|GoUsageLimitError|provider\.quota/;
 zombiTemizle(OC);
-const LOGD = '.mdk-log'; mkdirSync(LOGD, { recursive: true });
+const LOGD = join(process.cwd(), '.mdk-log'); mkdirSync(LOGD, { recursive: true });
 // deney koşusu worktree'den ana deponun dosyalarına yazabilsin, panel canlı görsün
-const METRIK = e.MDK_METRIK || 'metrikler.jsonl';
-const DURUM = e.MDK_DURUM || 'durum.json';
+const METRIK = e.MDK_METRIK || join(process.cwd(), 'metrikler.jsonl');
+const DURUM = e.MDK_DURUM || join(process.cwd(), 'durum.json');
 const DENEY = e.MDK_DENEY || null;
 
 let plan = oku(PLAN);
@@ -264,6 +264,9 @@ while (aday.length) {
     denendi = true; harcanan = 0; // bütçe model başına
     let geciciTekrar = 0, d = 1;
     while (d <= DENEME) {
+      const ANA_KOK = process.cwd();
+      const wt = e.MDK_YALITIM === '1' ? denemeWorktreeAc(ANA_KOK, N) : null;
+      if (wt) process.chdir(wt.yol);
       yazDurum(m, d, 'calisiyor');
       const log = join(LOGD, `adim${N}-${sn()}.jsonl`);
       const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${BAGLAM_IPUCU}\n${GRAF_IPUCU}${SADE_IPUCU}\n${ipucu}`;
@@ -272,6 +275,7 @@ while (aday.length) {
       // 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
       let boyut = 0; try { boyut = statSync(log).size; } catch {}
       if (!neden && boyut === 0 && /Unknown argument|Positionals:|command not found|No such file/i.test(oku(log + '.err'))) {
+        if (wt) { process.chdir(ANA_KOK); wt.kapat(); }
         kilitBirak(kilit); yazDurum(m, d, 'ortam_hatasi');
         hataYaz(`adım ${N}: çalıştırıcı/ortam hatası (${m}):`); hataYaz(kirp(oku(log + '.err')).split('\n').slice(0, 5).join('\n'));
         sifirla(); process.exit(4);
@@ -302,6 +306,11 @@ while (aday.length) {
             if (!s.ok) neden = 'regresyon';
           }
         }
+      }
+      if (wt) {
+        process.chdir(ANA_KOK);
+        if (!neden) denemeWorktreeAktar(wt.yol, ANA_KOK);
+        wt.kapat();
       }
       git('add', '-A');
       let ek = 0, sil = 0, dos = 0;
