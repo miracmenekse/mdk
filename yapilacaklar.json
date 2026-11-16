@@ -6,5 +6,13 @@
     "durum": "bekliyor",
     "epic": null,
     "ts": "2026-11-16T17:48:48.498Z"
+  },
+  {
+    "id": 2,
+    "baslik": "geliştirme sekmesinde yaıalcak iş girme alanındaki metin kısıtını kaldırmak istiyorum.",
+    "not": "çok dar. bitiyor.",
+    "durum": "bekliyor",
+    "epic": null,
+    "ts": "2026-11-16T17:49:27.252Z"
   }
 ]
