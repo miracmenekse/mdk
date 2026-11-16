@@ -1055,7 +1055,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Onay: evet
 - Ana: antigravity
 
-- [ ] 207. Epic detayında düğme durumları, çift tık engeli ve boş not kontrolü
+- [x] 207. Epic detayında düğme durumları, çift tık engeli ve boş not kontrolü
   - Kabul: Reddet veya Yorum tıklandığında açıklama notu boşsa form gönderilmez, alanın hemen yanında kırmızı uyarıyla neden çalışmadığı söylenir ve alana odaklanılır; düğmeye basıldığında düğmeler devre dışı (`disabled`) kalır ve durum "gönderiliyor…" → "gönderildi" olarak görünür; krokinin altındaki forma da durum alanı eklenir ve işlem kuyruktayken veya alındığında açıkça belirtilir; karar kuyruktayken form düğmeleri tekrar basılamaz
   - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml` ve `kararDurum`): kroki formuna (`data-bolum="kroki"`) `<p class="karar-durum">${kararDurum(e, izleyici, 'kroki')}</p>` eklenir; `kararDurum(e, izleyici, bolum)` son kararın bölümüne göre veya genel durumunu basar (`e.karar && !e.alindi` iken iletide "gönderildi (kuyrukta)", `e.alindi` iken "alındı (hazırlanıyor)" yazar); bekleyen işlem varsa (`e.karar && !e.alindi`) form düğmelerine `disabled` eklenir. (b) `panel/index.html` (`drawerEl.addEventListener('submit' ... form.epic-karar)`): `(tur === 'red' || tur === 'yorum') && !metin.trim()` ise `durumYaz(`${tur === 'red' ? 'Reddet' : 'Yorum'} için not yazılması zorunludur`, true)` basılır, `textarea.focus()` verilir ve gönderilmez; başarılı gönderimde `yanit.ok` ise durum "gönderildi" olur ve düğmeler açık kalmaz, hata olursa hata metni basılıp düğmeler açılır.
   - Kapı: `node test/epic-karar-durum.test.mjs`

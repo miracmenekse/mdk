@@ -724,17 +724,20 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
     html += '<p class="bos">taslak yok</p>';
   }
   if (e.figma) html += figmaBilgi(e);
+  const bekleyen = Boolean(e.karar && !e.alindi);
+  const dis = bekleyen ? ' disabled' : '';
   if (statu !== 'tamamlandi') {
     if (e.etki) {
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="kroki" data-onek="kroki: ">` +
         '<textarea name="metin" rows="2" maxlength="2000" placeholder="krokiye not"></textarea>' +
-        '<button type="submit" name="tur" value="figma">Krokiyi onayla → Figma\'da çiz</button>' +
-        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
-        '<p class="karar-durum"></p>' +
+        `<button type="submit" name="tur" value="figma"${dis}>Krokiyi onayla → Figma'da çiz</button>` +
+        `<button type="submit" name="tur" value="yorum"${dis}>Yorum</button>` +
+        `<p class="karar-durum">${kararDurum(e, izleyici, 'kroki')}</p>` +
         '</form>';
     } else {
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="kroki">` +
-        '<button type="submit" name="tur" value="figma">Figma\'da çiz</button>' +
+        `<button type="submit" name="tur" value="figma"${dis}>Figma'da çiz</button>` +
+        `<p class="karar-durum">${kararDurum(e, izleyici, 'kroki')}</p>` +
         '</form>';
     }
   }
@@ -746,16 +749,16 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
       html += '<p class="karar-durum">çözüm onaylandı</p>';
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
         '<textarea name="metin" rows="2" maxlength="2000" placeholder="çözüme not (onayı değiştirmez)"></textarea>' +
-        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
-        '<p class="karar-durum"></p>' +
+        `<button type="submit" name="tur" value="yorum"${dis}>Yorum</button>` +
+        `<p class="karar-durum">${kararDurum(e, izleyici, 'cozum')}</p>` +
         '</form>';
     } else if (tartisma?.durum === 'bitti') {
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
         '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
-        '<button type="submit" name="tur" value="onay">Çözümü onayla</button>' +
-        '<button type="submit" name="tur" value="red">Reddet</button>' +
-        '<button type="submit" name="tur" value="yorum">Yorum</button>' +
-        `<p class="karar-durum">${kararDurum(e, izleyici)}</p>` +
+        `<button type="submit" name="tur" value="onay"${dis}>Çözümü onayla</button>` +
+        `<button type="submit" name="tur" value="red"${dis}>Reddet</button>` +
+        `<button type="submit" name="tur" value="yorum"${dis}>Yorum</button>` +
+        `<p class="karar-durum">${kararDurum(e, izleyici, 'cozum')}</p>` +
         '</form>';
     } else {
       html += '<p class="bos">karar için önce tartışma bitmeli</p>';
@@ -1185,15 +1188,20 @@ export function matrisHtml(m) {
 }
 
 // karar durumu: son karar varsa özet + iletim hâli
-function kararDurum(e, izleyici) {
+function kararDurum(e, izleyici, bolum) {
   if (!e.karar) return '';
   const k = e.karar;
+  if (bolum) {
+    const isKroki = k.bolum ? k.bolum === 'kroki' : (k.tur === 'figma' || (typeof k.metin === 'string' && k.metin.startsWith('kroki:')));
+    if (bolum === 'kroki' && !isKroki) return '';
+    if (bolum === 'cozum' && isKroki) return '';
+  }
   const dt = new Date(ms(k.ts));
   const saatMetin = dt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   const metin = k.metin ? ` · "${esc(k.metin)}"` : '';
-  const ileti = e.alindi ? ' — Claude aldı'
+  const ileti = e.alindi ? ' — Claude aldı — alındı (hazırlanıyor)'
     : izleyici ? " — Claude'a iletiliyor"
-    : ' — kuyrukta, Claude oturumu açılınca işlenir';
+    : ' — gönderildi (kuyrukta), Claude oturumu açılınca işlenir';
   return `son karar: ${esc(k.tur)} · ${saatMetin}${metin}${ileti}`;
 }
 

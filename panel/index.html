@@ -966,9 +966,6 @@ drawerEl.addEventListener('submit', async (e) => {
   const epic = form.dataset.epic;
   const textarea = form.querySelector('textarea');
   let metin = textarea ? textarea.value : '';
-  if (form.dataset.onek && metin.trim()) metin = form.dataset.onek + metin.trim();
-  const dugmeler = form.querySelectorAll('button');
-  dugmeler.forEach((b) => { b.disabled = true; });
   // form drawer kapanınca kaybolabilir: o an açık olanı bul
   const canli = () => drawerEl.querySelector(`form.epic-karar[data-epic="${epic}"][data-bolum="${form.dataset.bolum}"]`) || form;
   const durumYaz = (metin, hata = false) => {
@@ -977,6 +974,14 @@ drawerEl.addEventListener('submit', async (e) => {
     d.textContent = metin;
     d.classList.toggle('hata', hata);
   };
+  if ((tur === 'red' || tur === 'yorum') && !metin.trim()) {
+    durumYaz(`${tur === 'red' ? 'Reddet' : 'Yorum'} için not yazılması zorunludur`, true);
+    if (textarea) textarea.focus();
+    return;
+  }
+  if (form.dataset.onek && metin.trim()) metin = form.dataset.onek + metin.trim();
+  const dugmeler = form.querySelectorAll('button');
+  dugmeler.forEach((b) => { b.disabled = true; });
   durumYaz('gönderiliyor…');
   try {
     const yanit = await fetch('/api/karar', {
@@ -994,10 +999,10 @@ drawerEl.addEventListener('submit', async (e) => {
       let hata = 'HTTP ' + yanit.status;
       try { hata = (await yanit.json()).hata || hata; } catch {}
       durumYaz(hata, true);
+      canli().querySelectorAll('button').forEach((b) => { b.disabled = false; });
     }
   } catch {
     durumYaz('panel sunucusuna ulaşılamadı', true);
-  } finally {
     canli().querySelectorAll('button').forEach((b) => { b.disabled = false; });
   }
 });
