@@ -918,7 +918,7 @@ Yalın kip. Ayrıntı `epic/36/is.md`. Biten her adım git'te etiketlenir ve tek
   - Kapı notu (test/adim-yalitim.test.mjs): A, birim (`denemeWorktreeAc`, `denemeWorktreeAktar` `mdk-ortak.mjs`'ten): (1) geçici depoda `denemeWorktreeAc(R, 1)` → `wt.yol` var ve içinde `PLAN.md` var; `wt.yol` içinde `yeni.txt` yazılıp `denemeWorktreeAktar(wt.yol, R)` ve `wt.kapat()` çağrılınca `R/yeni.txt` var ve `wt.yol` silinmiş; (2) `wt.yol` içinde izlenen bir dosya silinip `denemeWorktreeAktar` çağrılınca `R`'de de silinir. B, entegrasyon (`test/mdk-adim.test.mjs:1-28` kurulumu, `MDK_ONKONTROL_YOK:'1'`, `MDK_YALITIM:'1'`): (3) sahte opencode `process.cwd()` yolunu `<T>/calisma-yolu.txt`'ye ve `cikti.txt`'yi `process.cwd()` içine yazar → `mdk-adim.mjs 1` çıkış 0, `calisma-yolu.txt` `.mdk-log/wt/adim-1-` içerir (model worktree içinde koşmuş), koşu sonunda ana depoda `cikti.txt` commit edilmiş ve `.mdk-log/wt/` altında worktree kalmamış; (4) sahte opencode `bozuk.txt` yazar ama kapı (`cikti.txt`) kırmızı kalır → çıkış 2, ana depoda `bozuk.txt` yok ve `.mdk-log/wt/` temizlenmiş.
 
 ## Epic 37 — Terminalsiz kurulum
-- Durum: analiz
+- Durum: gelistirme
 - Ana: antigravity
 Yalın kip. Ayrıntı `epic/37/is.md`. Tek komutla ve panel açılışında ön koşullar (Node, git, ana yürütücü, gh) denetlenir; macOS ve Windows için çift tıklanır başlatıcılar ve panelde kurulum sihirbazı sunulur.
 - [ ] 200. Ön koşul doktoru (`mdk-doktor.mjs`) ve çift tıklanır başlatıcılar
