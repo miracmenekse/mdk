@@ -412,7 +412,7 @@ function kararModeli() {
   if (planSatiri(plan, 'Görev karar') === null || !existsSync(join(SELF, 'mdk-karar.mjs'))) return;
   const girdi = join(LOGD, `karar-${N}.txt`);
   writeFileSync(girdi, `Son kapı çıktısı:\n${sonKapiLog ? kirp(oku(sonKapiLog)) : '(yok)'}\n\nSORUN.md:\n${sorunIcerik || '(yok)'}\n\nAdım:\n${blok}\n`);
-  const r = spawnSync(process.execPath, [join(SELF, 'mdk-karar.mjs'), 'basarisizlik', girdi, PLAN], { encoding: 'utf8', env: temizOrtam(), timeout: Number(e.MDK_KARAR_TAVAN || 240) * 1000, stdio: ['ignore', 'pipe', 'ignore'] });
+  const r = spawnSync(process.execPath, [join(SELF, 'mdk-karar.mjs'), 'basarisizlik', girdi, PLAN, String(N)], { encoding: 'utf8', env: temizOrtam(), timeout: Number(e.MDK_KARAR_TAVAN || 240) * 1000, stdio: ['ignore', 'pipe', 'ignore'] });
   try {
     const j = JSON.parse((r.stdout || '').trim().split('\n').pop());
     yaz(`karar modeli: ${j.secim}${j.gerekce ? ` — ${j.gerekce}` : ''}`);

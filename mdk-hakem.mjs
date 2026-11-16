@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { adimBlogu, kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
+import { adimBlogu, agySaltOkuArgs, kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
 import { anaOku, anaSec, gorevModelleri } from './mdk-ana.mjs';
 
 export function hakemAyristir(metin, olcutSayisi) {
@@ -143,7 +143,7 @@ Yanıt biçimi: her ölçüt için tam olarak bir satır 'ÖLÇÜT <i>: GEÇTİ|
       const ad = m.slice(4);
       await kos({
         komut: process.env.MDK_AGY || 'agy',
-        args: [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...(ana?.agy_ek || []), '-p', istem],
+        args: agySaltOkuArgs(ad, istem),
         env: process.env,
         log,
         ilk: ILK,

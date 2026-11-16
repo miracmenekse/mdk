@@ -361,4 +361,9 @@ export function denemeWorktreeAktar(wtYol, kok = process.cwd()) {
   }
 }
 
+// Salt okunur agy çağrısı: plan kipinde, model verilmişse --model ile başlar.
+export function agySaltOkuArgs(ad, istem) {
+  return [...(ad === 'varsayilan' ? [] : ['--model', ad]), '--mode', 'plan', '--output-format', 'stream-json', '-p', istem];
+}
+
 

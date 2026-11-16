@@ -1,5 +1,5 @@
 // Karar modeli: bir story tüm modellerde başarısız olunca ya da panelden serbest bir yorum gelince, ucuz bir modele
-// sınıflandırtır. Kullanım (proje kökünde): node mdk-karar.mjs <tür> <girdi-dosyası> [plan=PLAN.md]
+// sınıflandırtır. Kullanım (proje kökünde): node mdk-karar.mjs <tür> <girdi-dosyası> [plan=PLAN.md] [adım-no]
 //   tür: basarisizlik → kapi_yanlis | model_zayif | plan_belirsiz | ortam
 //        yorum        → onay | red | soru | degisiklik
 // Çıktı: stdout'a tek satır JSON { tur, secim, gerekce, model, varsayilan }; kökte kararmodel.jsonl'a ts ile eklenir.
@@ -8,7 +8,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
+import { agySaltOkuArgs, kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
 import { anaOku, anaSec, gorevModelleri } from './mdk-ana.mjs';
 
 export const TURLER = {
@@ -52,7 +52,7 @@ const dogrudan = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href
 
 if (dogrudan) {
   const cik = (m, kod) => { console.log(m); process.exit(kod); };
-  const [tur, girdiYol, planYol = 'PLAN.md'] = process.argv.slice(2);
+  const [tur, girdiYol, planYol = 'PLAN.md', adim] = process.argv.slice(2);
   const turTanim = TURLER[tur];
   if (!turTanim) cik(`bilinmeyen karar türü: ${tur ?? '(yok)'}`, 2);
   let girdi;
@@ -63,7 +63,8 @@ if (dogrudan) {
   let ana = null;
   if (tanim.liste.length) {
     try {
-      ana = anaSec(tanim, { plan, adimNo: typeof N !== 'undefined' ? Number(N) : undefined });
+      const adimNo = Number.isInteger(Number(adim)) && Number(adim) > 0 ? Number(adim) : undefined;
+      ana = anaSec(tanim, adimNo === undefined ? { plan } : { plan, adimNo });
     } catch {}
   }
 
@@ -95,7 +96,7 @@ GEREKÇE: <tek kısa cümle>`;
       const ad = m.slice(4);
       await kos({
         komut: process.env.MDK_AGY || 'agy',
-        args: [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...(ana?.agy_ek || []), '-p', istem],
+        args: agySaltOkuArgs(ad, istem),
         env: process.env,
         log,
         ilk: ILK,
