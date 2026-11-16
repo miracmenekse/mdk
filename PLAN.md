@@ -1066,7 +1066,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node test/epic-canli-yenile.test.mjs`
 
 ## Epic 44 — Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama
-- Durum: tasarim
+- Durum: gelistirme
 - Tartışma: epic/44
 - Etki: etki/epic-bolum-atlama.html
 - Onay: evet
