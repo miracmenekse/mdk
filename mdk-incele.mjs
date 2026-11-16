@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { adimBlogu, kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
+import { anaOku, anaSec, gorevModelleri } from './mdk-ana.mjs';
 
 const DIR = process.env.MDK_SELF_DIR || dirname(fileURLToPath(import.meta.url));
 const N = process.argv[2];
@@ -32,7 +33,16 @@ const sha = (git('log', '-1', '--format=%H', '--grep', `^adım ${N}: `).stdout |
 if (!sha) cik(`adım ${N} için commit yok ('adım ${N}: …' konusu)`, 4);
 const commitDiff = (git('show', sha).stdout || '').replace(/\n+$/, '');
 
-const modline = planSatiri(plan, 'Görev inceleme');
+const tanim = anaOku(process.env.MDK_YURUTUCULER || join(DIR, 'yurutuculer.json'));
+let ana = null;
+if (tanim.liste.length) {
+  try {
+    ana = anaSec(tanim, { plan, adimNo: typeof N !== 'undefined' ? Number(N) : undefined });
+  } catch {}
+}
+
+const anaModeller = ana ? gorevModelleri(ana, 'inceleme') : null;
+const modline = (anaModeller && anaModeller.length ? anaModeller.join(',') : null) ?? planSatiri(plan, 'Görev inceleme');
 if (!modline) cik("PLAN'da 'Görev inceleme:' satırı yok", 4);
 const MODELLER = modelListesi(modline);
 if (!MODELLER.length) cik("'Görev inceleme:' satırı boş", 4);
@@ -50,9 +60,22 @@ ${commitDiff}`;
 let sinif = '', uyum = null;
 for (const m of MODELLER) {
   const log = join(LOGD, `incele${N}-${Math.floor(Date.now() / 1000)}.jsonl`);
-  const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
-  const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `incele-${N}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
-  if (neden) oturumKapat(OC, log, null);
+  if (m.startsWith('agy/')) {
+    const ad = m.slice(4);
+    await kos({
+      komut: process.env.MDK_AGY || 'agy',
+      args: [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...(ana?.agy_ek || []), '-p', istem],
+      env: process.env,
+      log,
+      ilk: ILK,
+      sure: SURE,
+      poll: POLL * 1000,
+    });
+  } else {
+    const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
+    const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `incele-${N}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
+    if (neden) oturumKapat(OC, log, null);
+  }
   const metin = metinAyikla(log);
   const ilkSatir = metin.split('\n')[0];
   const e = ilkSatir.match(/^UYUM: (\d+)$/);

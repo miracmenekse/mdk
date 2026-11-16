@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { adimBlogu, kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
+import { anaOku, anaSec, gorevModelleri } from './mdk-ana.mjs';
 
 export function hakemAyristir(metin, olcutSayisi) {
   const sayi = Number(olcutSayisi);
@@ -81,11 +82,20 @@ if (dogrudan) {
   const commitDiff = (git('show', sha).stdout || '').slice(0, 30000);
 
   const subject = (git('log', '-1', '--format=%s', '--grep', `^adım ${N}: `).stdout || '').trim();
-  const yazanEs = subject.match(/\(([^)]+),\s*deneme\s*\d+\)\s*$/);
+  const yazanEs = subject.match(/\(([^,)]+),\s*(?:deneme\s*\d+|rol\s+\S+)\)\s*$/);
   const yazan = yazanEs ? yazanEs[1].trim() : null;
   if (!yazan) cik(`adım ${N} için kodu yazan model bulunamadı`, 4);
 
-  const hakemSatiri = planSatiri(plan, 'Görev hakem');
+  const tanim = anaOku(process.env.MDK_YURUTUCULER || join(DIR, 'yurutuculer.json'));
+  let ana = null;
+  if (tanim.liste.length) {
+    try {
+      ana = anaSec(tanim, { plan, adimNo: typeof N !== 'undefined' ? Number(N) : undefined });
+    } catch {}
+  }
+
+  const anaModeller = ana ? (gorevModelleri(ana, 'hakem') || gorevModelleri(ana, 'inceleme')) : null;
+  const hakemSatiri = (anaModeller && anaModeller.length ? anaModeller.join(',') : null) ?? planSatiri(plan, 'Görev hakem');
   const incelemeSatiri = planSatiri(plan, 'Görev inceleme');
   const kaynakSatiri = hakemSatiri ?? incelemeSatiri;
   if (!kaynakSatiri) cik("PLAN'da 'Görev hakem:' ya da 'Görev inceleme:' satırı yok", 4);
@@ -129,9 +139,22 @@ Yanıt biçimi: her ölçüt için tam olarak bir satır 'ÖLÇÜT <i>: GEÇTİ|
   let sonuc = null;
   for (const m of MODELLER) {
     const log = join(LOGD, `hakem${N}-${Math.floor(Date.now() / 1000)}.jsonl`);
-    const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
-    const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `hakem-${N}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
-    if (neden) oturumKapat(OC, log, null);
+    if (m.startsWith('agy/')) {
+      const ad = m.slice(4);
+      await kos({
+        komut: process.env.MDK_AGY || 'agy',
+        args: [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...(ana?.agy_ek || []), '-p', istem],
+        env: process.env,
+        log,
+        ilk: ILK,
+        sure: SURE,
+        poll: POLL * 1000,
+      });
+    } else {
+      const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
+      const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `hakem-${N}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
+      if (neden) oturumKapat(OC, log, null);
+    }
     const metin = metinAyikla(log);
     const ayr = hakemAyristir(metin, olcutMetinleri.length);
     if (ayr) { sonuc = { model: m, ayr }; break; }

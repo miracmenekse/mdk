@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { kos, metinAyikla, modelListesi, opencodeSec, oturumKapat, planSatiri } from './mdk-ortak.mjs';
+import { anaOku, anaSec, gorevModelleri } from './mdk-ana.mjs';
 
 export const TURLER = {
   basarisizlik: {
@@ -52,12 +53,23 @@ const dogrudan = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href
 if (dogrudan) {
   const cik = (m, kod) => { console.log(m); process.exit(kod); };
   const [tur, girdiYol, planYol = 'PLAN.md'] = process.argv.slice(2);
-  const tanim = TURLER[tur];
-  if (!tanim) cik(`bilinmeyen karar türü: ${tur ?? '(yok)'}`, 2);
+  const turTanim = TURLER[tur];
+  if (!turTanim) cik(`bilinmeyen karar türü: ${tur ?? '(yok)'}`, 2);
   let girdi;
   try { girdi = readFileSync(girdiYol, 'utf8'); } catch { cik(`girdi okunamadı: ${girdiYol}`, 2); }
   const plan = existsSync(planYol) ? readFileSync(planYol, 'utf8') : '';
-  const modeller = modelListesi(planSatiri(plan, 'Görev karar') ?? planSatiri(plan, 'Görev hakem') ?? '');
+
+  const tanim = anaOku(process.env.MDK_YURUTUCULER || join(DIR, 'yurutuculer.json'));
+  let ana = null;
+  if (tanim.liste.length) {
+    try {
+      ana = anaSec(tanim, { plan, adimNo: typeof N !== 'undefined' ? Number(N) : undefined });
+    } catch {}
+  }
+
+  const anaModeller = ana ? (gorevModelleri(ana, 'karar') || gorevModelleri(ana, 'hakem')) : null;
+  const kaynakSatiri = (anaModeller && anaModeller.length ? anaModeller.join(',') : null) ?? planSatiri(plan, 'Görev karar') ?? planSatiri(plan, 'Görev hakem') ?? '';
+  const modeller = modelListesi(kaynakSatiri);
 
   const OC = opencodeSec(DIR);
   const LOGD = '.mdk-log';
@@ -66,8 +78,8 @@ if (dogrudan) {
   const ILK = Number(process.env.MDK_KARAR_ILK || 90);
   const SURE = Number(process.env.MDK_KARAR_SURE || 200);
   const istem = `Aşağıda bir "${tur}" karar girdisi var. Bu bir sınıflandırma görevi: kod yazma, dosya yaratma ya da değiştirme yok.
-${tanim.aciklama}
-Seçenekler: ${tanim.secenekler.join(', ')}
+${turTanim.aciklama}
+Seçenekler: ${turTanim.secenekler.join(', ')}
 
 Girdi:
 ${girdi.slice(0, 12000)}
@@ -79,14 +91,27 @@ GEREKÇE: <tek kısa cümle>`;
   let sonuc = null;
   for (const m of modeller) {
     const log = join(LOGD, `karar-${tur}-${Date.now()}.jsonl`);
-    const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
-    const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `karar-${tur}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
-    if (neden) oturumKapat(OC, log, null);
-    const ayr = kararAyristir(metinAyikla(log), tanim.secenekler);
+    if (m.startsWith('agy/')) {
+      const ad = m.slice(4);
+      await kos({
+        komut: process.env.MDK_AGY || 'agy',
+        args: [...(ad === 'varsayilan' ? [] : ['--model', ad]), ...(ana?.agy_ek || []), '-p', istem],
+        env: process.env,
+        log,
+        ilk: ILK,
+        sure: SURE,
+        poll: POLL * 1000,
+      });
+    } else {
+      const env = { ...process.env, OPENCODE_LOG_LEVEL: 'error' };
+      const { neden } = await kos({ komut: OC, args: ['run', '--format', 'json', '-m', m, '--title', `karar-${tur}`, '--agent', 'plan', istem], env, log, ilk: ILK, sure: SURE, poll: POLL * 1000 });
+      if (neden) oturumKapat(OC, log, null);
+    }
+    const ayr = kararAyristir(metinAyikla(log), turTanim.secenekler);
     if (ayr) { sonuc = { ...ayr, model: m, varsayilan: false }; break; }
   }
   // model yok ya da hiçbiri okunur yanıt vermedi: güvenli varsayılan
-  if (!sonuc) sonuc = { secim: tanim.varsayilan, gerekce: '', model: null, varsayilan: true };
+  if (!sonuc) sonuc = { secim: turTanim.varsayilan, gerekce: '', model: null, varsayilan: true };
 
   const cikti = { tur, secim: sonuc.secim, gerekce: sonuc.gerekce, model: sonuc.model, varsayilan: sonuc.varsayilan };
   appendFileSync(join(process.cwd(), 'kararmodel.jsonl'), JSON.stringify({ ts: new Date().toISOString(), ...cikti }) + '\n');

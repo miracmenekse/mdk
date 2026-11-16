@@ -13,7 +13,7 @@ const yol = (ad) => join(BETIK_DIZIN, ad);
 const metin = (t, hata = false) => ({ content: [{ type: 'text', text: t }], isError: hata });
 const gecersiz = (alan) => metin(`geçersiz argüman: ${alan}`, true);
 const tamSayi = (v) => Number.isInteger(Number(v)) && Number(v) > 0;
-const EPIC_ISLEMLER = ['ac', 'tartis', 'karar', 'gelistir', 'figma', 'durum'];
+const EPIC_ISLEMLER = ['ac', 'tartis', 'karar', 'gelistir', 'figma', 'durum', 'ana'];
 
 // Betiği koşar ve bitmesini bekler; metin: 'çıkış <kod>' + stdout + stderr
 function calistir(betik, args) {
@@ -66,7 +66,7 @@ const ARAC = {
       if (a.islem === 'ac') return a.ad && a.dosya ? calistir('mdk-epic.mjs', ['ac', a.ad, a.dosya]) : gecersiz(a.ad ? 'dosya' : 'ad');
       if (a.islem === 'durum') return calistir('mdk-epic.mjs', ['durum']);
       if (!tamSayi(a.no)) return gecersiz('no');
-      if (a.islem === 'karar' || a.islem === 'figma') return a.deger ? calistir('mdk-epic.mjs', [a.islem, String(a.no), a.deger]) : gecersiz('deger');
+      if (a.islem === 'karar' || a.islem === 'figma' || a.islem === 'ana') return a.deger ? calistir('mdk-epic.mjs', [a.islem, String(a.no), a.deger]) : gecersiz('deger');
       return calistir('mdk-epic.mjs', [a.islem, String(a.no)]);
     },
   },

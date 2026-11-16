@@ -49,6 +49,18 @@
         ],
         "eskale": [
           "agy/gemini-4-argon-medium"
+        ],
+        "hakem": [
+          "agy/gemini-3.8-flash-medium"
+        ],
+        "inceleme": [
+          "agy/gemini-3.8-flash-medium"
+        ],
+        "karar": [
+          "agy/gemini-3.8-flash-medium"
+        ],
+        "persona": [
+          "agy/gemini-3.8-flash-medium"
         ]
       }
     }

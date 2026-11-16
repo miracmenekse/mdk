@@ -110,7 +110,13 @@ export function olaylariTopla(log) {
 
 export function metinAyikla(log) {
   let m = '';
-  for (const l of satirlar(oku(log))) { try { const x = JSON.parse(l); if (x?.type === 'text') m += x.part?.text ?? ''; } catch {} }
+  for (const l of satirlar(oku(log))) {
+    try {
+      const x = JSON.parse(l);
+      if (x?.type === 'text') m += x.part?.text ?? '';
+      else if (x?.event === 'result' && typeof x.result?.response === 'string') m += x.result.response;
+    } catch {}
+  }
   return m;
 }
 
