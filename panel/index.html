@@ -703,6 +703,7 @@ function drawerAdimNesnesi(no) {
      no,
      persona: a?.persona ?? null,
      bitti: !!a?.bitti,
+     izleyici: !!sonD?.kararIzleyici,
      denemeler: g?.denemeler ?? [],
      sinir: sonD?.sinir ?? null,
      kabul: a?.kabul ?? [],
@@ -834,6 +835,16 @@ drawerEl.addEventListener('click', (e) => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ adim }),
     }).catch(() => { kabulDugme.disabled = false; });
+  }
+  const geriAlDugme = e.target.closest('#adim-geri-al');
+  if (geriAlDugme) {
+    const adim = Number(geriAlDugme.dataset.adim);
+    geriAlDugme.disabled = true;
+    fetch('/api/adim-geri-al', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ adim }),
+    }).catch(() => { geriAlDugme.disabled = false; });
   }
 });
 drawerOverlayEl.addEventListener('click', drawerKapat);

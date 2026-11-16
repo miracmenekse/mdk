@@ -606,6 +606,7 @@ export function drawerHtml(adim, etkiKartiHtml) {
     '</div>' +
     `<h2 class="drawer-baslik">${esc(a.baslik || '—')}</h2>` +
     `<div class="drawer-durum">${rozet(sinif, a.etiket)} ${meta}${gecen}</div>` +
+    (a.bitti && !a.izleyici ? `<button type="button" id="adim-geri-al" data-adim="${esc(a.no)}">Bu adımı geri al</button>` : '') +
     ilerleme +
     kabulBolumu +
     '<h3 class="drawer-bolum">HARCAMA</h3>' +

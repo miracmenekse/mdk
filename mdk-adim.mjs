@@ -312,7 +312,7 @@ while (aday.length) {
       yazMetrik({ ts: sn(), adim: Number(N), yurutucu: r.yurm, model: m, ana: ANA ? ANA.ad : null, gorev, deneme: d, gecti: !neden, sure_sn: sn() - r.t0, token: o.token, etkin: o.etkin, istek: o.istek, deney: DENEY, sade: Number(e.MDK_SADE || 0), graf: GRAF ? 1 : 0, maliyet: o.maliyet, eklenen: ek, silinen: sil, dosya: dos, okunan_dosya: o.okunanDosya || 0, okunan_satir: o.okunanSatir || 0, baglam_asim: baglamSonuc.asim, boyut: boyutSonuc ? boyutSonuc.tur : null, neden: neden || null });
       if (!neden) {
         if (e.MDK_PLAN_DOKUNMA !== '1') writeFileSync(PLAN, oku(PLAN).replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
-        git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); yazDurum(m, d, 'gecti');
+        git('add', '-A'); git('commit', '-qm', `adım ${N}: ${baslik} (${m}, deneme ${d})`); git('tag', '-f', `mdk/adim-${N}`, 'HEAD'); yazDurum(m, d, 'gecti');
         kilitBirak(kilit);
         // hakem: story geçtikten sonra kendiliğinden çalışır (uyarı, bağlayıcı değil)
         if (planSatiri(plan, 'Görev hakem') !== null && /^\s*-\s*Kabul:/m.test(blok) && e.MDK_HAKEM !== '0' && existsSync(join(SELF, 'mdk-hakem.mjs'))) {

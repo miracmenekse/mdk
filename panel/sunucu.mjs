@@ -892,6 +892,72 @@ export async function baslat(dir, port, { calistir } = {}) {
     });
   };
 
+  // POST /api/adim-geri-al: biten bir adımı geri alır.
+  const adimGeriAl = (istek, yanit) => {
+    const izin = yazmaIzni(istek.headers, uzakAyar(kok));
+    if (!izin.izin) {
+      hata(yanit, 403, izin.neden);
+      return;
+    }
+    const tip = String(istek.headers['content-type'] || '');
+    if (!tip.startsWith('application/json')) {
+      hata(yanit, 415, 'içerik türü application/json olmalı');
+      return;
+    }
+
+    const parcalar = [];
+    let boy = 0;
+    let kesildi = false;
+    istek.on('data', (parca) => {
+      if (kesildi) return;
+      boy += parca.length;
+      if (boy > 2048) {
+        kesildi = true;
+        yanit.writeHead(413).end();
+        istek.resume();
+        return;
+      }
+      parcalar.push(parca);
+    });
+
+    istek.on('end', () => {
+      if (kesildi) return;
+
+      let girdi;
+      try {
+        girdi = JSON.parse(Buffer.concat(parcalar).toString('utf8'));
+      } catch {
+        hata(yanit, 400, 'gövde geçerli JSON değil');
+        return;
+      }
+
+      const no = Number(girdi?.adim);
+      if (!Number.isInteger(no) || no <= 0) {
+        hata(yanit, 400, 'adım no geçersiz');
+        return;
+      }
+
+      const betik = process.env.MDK_GERI_AL_BETIK || join(fileURLToPath(new URL('..', import.meta.url)), 'mdk-geri-al.mjs');
+      const sonuc = spawnSync(process.execPath, [betik, String(no)], { cwd: kok, encoding: 'utf8' });
+
+      if (sonuc.status === 0) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify({ tamam: true, adim: no }));
+        planla();
+      } else {
+        const cikti = `${sonuc.stderr || ''}\n${sonuc.stdout || ''}`.trim();
+        const sonSatir = cikti.split('\n').map((s) => s.trim()).filter(Boolean).pop() || 'geri alma başarısız';
+        hata(yanit, 400, sonSatir);
+      }
+    });
+
+    istek.on('error', () => {
+      if (kesildi) return;
+      kesildi = true;
+      hata(yanit, 400, 'istek okunamadı');
+    });
+  };
+
   const sunucu = createServer((istek, yanit) => {
     const { pathname } = new URL(istek.url, 'http://x');
 
@@ -927,6 +993,11 @@ export async function baslat(dir, port, { calistir } = {}) {
 
     if (istek.method === 'POST' && pathname === '/api/kabul-onay') {
       kabulOnayAl(istek, yanit);
+      return;
+    }
+
+    if (istek.method === 'POST' && pathname === '/api/adim-geri-al') {
+      adimGeriAl(istek, yanit);
       return;
     }
 

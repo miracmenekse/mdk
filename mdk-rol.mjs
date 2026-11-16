@@ -124,6 +124,7 @@ async function main() {
   writeFileSync(PLAN, readFileSync(PLAN, 'utf8').replace(new RegExp(`^- \\[ \\] ${N}\\.`, 'gm'), `- [x] ${N}.`));
   git('add', '-A');
   git('commit', '-qm', `adım ${N}: ${baslik} (${model}, rol kodcu)`);
+  git('tag', '-f', `mdk/adim-${N}`, 'HEAD');
   kayit(N, ana.ad, model, true);
   yaz(`adım ${N} geçti (${model}, rol kodcu)`);
   cik(0);
