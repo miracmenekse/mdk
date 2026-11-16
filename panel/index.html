@@ -870,12 +870,20 @@ drawerEl.addEventListener('click', (e) => {
   const geriAlDugme = e.target.closest('#adim-geri-al');
   if (geriAlDugme) {
     const adim = Number(geriAlDugme.dataset.adim);
+    if (!confirm(`Adım ${adim} geri alınsın mı? Kod değişiklikleri geri sarılır.`)) return;
+    let hata = 'geri alma başarısız';
+    geriAlDugme.parentElement.querySelector('#adim-geri-al-hata')?.remove();
+    geriAlDugme.insertAdjacentHTML('afterend', '<p id="adim-geri-al-hata" class="soluk"></p>');
+    const hataP = geriAlDugme.parentElement.querySelector('#adim-geri-al-hata');
     geriAlDugme.disabled = true;
-    fetch('/api/adim-geri-al', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ adim }),
-    }).catch(() => { geriAlDugme.disabled = false; });
+    fetch('/api/adim-geri-al', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ adim }) })
+      .then(async (res) => {
+        if (res.ok) return drawerKapat();
+        try { hata = (await res.json()).hata || hata; } catch {}
+        hataP.textContent = hata;
+        geriAlDugme.disabled = false;
+      })
+      .catch(() => { geriAlDugme.disabled = false; });
   }
 });
 drawerOverlayEl.addEventListener('click', drawerKapat);
