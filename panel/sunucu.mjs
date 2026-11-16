@@ -14,6 +14,7 @@ import { profilUygula } from './profil.mjs';
 import { yapilacakOku, yapilacakEkle, yapilacakDurum, yapilacakTasi, yapilacakYaz } from './yapilacak.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
 import { takimDenetle } from './persona.mjs';
+import { doktorRaporu } from '../mdk-doktor.mjs';
 
 const IP = '127.0.0.1';
 
@@ -1045,6 +1046,12 @@ export async function baslat(dir, port, { calistir } = {}) {
     if (pathname === '/api/durum') {
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       yanit.end(JSON.stringify(durum()));
+      return;
+    }
+
+    if (pathname === '/api/doktor') {
+      yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      yanit.end(JSON.stringify(doktorRaporu(process.env)));
       return;
     }
 

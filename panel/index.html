@@ -151,6 +151,20 @@ td.sayi { font-variant-numeric: tabular-nums; }
 .kpi-kart .alt { color: var(--soluk); font-size: 12px; }
 .karar-seridi { display: block; width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; border-radius: 8px; padding: 6px 10px; margin: 0 0 6px; font: inherit; font-size: 13px; cursor: pointer; }
 .karar-seridi:hover { border-color: #ea580c; }
+/* Kurulum sihirbazı */
+.doktor-sihirbaz { margin-bottom: 12px; border-color: #fdba74; background: #fffaf0; }
+@media (prefers-color-scheme: dark) {
+  .doktor-sihirbaz { background: #261b0c; border-color: #9a3412; }
+}
+.doktor-sihirbaz h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.doktor-satir { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; }
+.doktor-satir .doktor-isaret { font-weight: 700; width: 16px; text-align: center; }
+.doktor-satir.kurulu .doktor-isaret { color: #16a34a; }
+.doktor-satir.eksik .doktor-isaret { color: #dc2626; }
+.doktor-satir.istege-bagli .doktor-isaret { color: var(--soluk); }
+.doktor-satir.eksik b { color: #dc2626; }
+#doktor-yenile { margin-top: 10px; padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid var(--cizgi); background: var(--kart); cursor: pointer; color: var(--metin); }
+#doktor-yenile:hover { border-color: var(--vurgu); }
 /* Persona takımı sekmesi */
 .persona-aciklama { font-size: 13px; color: var(--soluk); margin: 0 0 14px; max-width: 760px; }
 .persona-durum { font-size: 12px; color: var(--soluk); margin: 0 0 10px; }
@@ -506,6 +520,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 
   <section id="depo-serit"></section>
   <section id="kpi"></section>
+  <div id="doktor-seridi"></div>
   <div id="karar-seridi"></div>
 
   <!-- sekmeler artık #kpi kartlarıdır (kpiHtml, role=tablist); ayrı sekme çubuğu yok -->
@@ -607,7 +622,7 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </dialog>
 
 <script type="module">
-import { yapilacaklarHtml, suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, profilHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
+import { doktorHtml, yapilacaklarHtml, suAnHtml, planHtml, akisTablosuHtml, gelistirmeHtml, drawerHtml, drawerImza, epicDrawerHtml, epicImza, adimAsama, personaBalonlarHtml, etkiKartiHtml, modellerHtml, gorevModelleriHtml, profilHtml, etkiHtml, arastirmaHtml, radarHtml, telemetriHtml, matrisHtml, kpiHtml, kararSeridiHtml, claudeHtml, depoSeritHtml, depoHtml, dengeHtml, tokenPayiHtml, modelTokenCubukHtml, personaTakimHtml, kapiUretimHtml } from '/ciz.mjs';
 import { adCakisir, personaSil, personaGeriEkle, duzenKaydir } from '/persona.mjs';
 
 const baglantiEl = document.getElementById('baglanti');
@@ -625,6 +640,7 @@ const claudeEl = document.getElementById('claude');
 const tokenPayiEl = document.getElementById('token-payi');
 const modelCubukEl = document.getElementById('model-cubuk');
 const kpiEl = document.getElementById('kpi');
+const doktorSeridiEl = document.getElementById('doktor-seridi');
 const kararSeridiEl = document.getElementById('karar-seridi');
 const depoSeritEl = document.getElementById('depo-serit');
 const depoEl = document.getElementById('depo');
@@ -669,6 +685,21 @@ kararSeridiEl.addEventListener('click', (e) => {
   const b = e.target.closest('[data-adim]');
   if (b) drawerAc(Number(b.dataset.adim));
 });
+
+async function doktorYenile() {
+  try {
+    const res = await fetch('/api/doktor');
+    if (res.ok) {
+      const v = await res.json();
+      doktorSeridiEl.innerHTML = doktorHtml(v);
+    }
+  } catch {}
+}
+doktorSeridiEl.addEventListener('click', (e) => {
+  if (e.target.closest('#doktor-yenile')) doktorYenile();
+});
+doktorYenile();
+
 window.addEventListener('hashchange', sekmeSec);
 sekmeSec();
 

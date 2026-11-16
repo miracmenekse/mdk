@@ -1483,3 +1483,22 @@ export function depoHtml(d) {
   if (typeof d.ts === 'number') html += `<p class="soluk">son yoklama ${esc(goreli(d.ts))}</p>`;
   return html;
 }
+
+// Kurulum sihirbazı kartı
+export function doktorHtml(rapor, zorlaGoster = false) {
+  if (!rapor || (rapor.tamam === true && !zorlaGoster)) return '';
+  const baslik = rapor.tamam ? 'Kurulum hazır' : 'Kurulum sihirbazı · eksik araç var';
+  const araclar = Array.isArray(rapor.araclar) ? rapor.araclar : [];
+  const satirlar = araclar.map((a) => {
+    const sinif = a.kurulu ? 'kurulu' : (a.zorunlu ? 'eksik' : 'istege-bagli');
+    const isaret = a.kurulu ? '✓' : '✗';
+    const aciklama = a.kurulu ? esc(a.surum || 'kurulu') : esc(a.oneri || '');
+    return `<div class="doktor-satir ${sinif}"><span class="doktor-isaret">${isaret}</span> <b>${esc(a.baslik ?? '')}</b> ${aciklama}</div>`;
+  }).join('');
+
+  return `<section class="kart doktor-sihirbaz">` +
+    `<h3>${esc(baslik)}</h3>` +
+    satirlar +
+    `<button type="button" id="doktor-yenile">Yeniden kontrol et</button>` +
+    `</section>`;
+}
