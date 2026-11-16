@@ -3,15 +3,24 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
-export const komutHazirla = (komut, args = []) => (/\.(mjs|cjs|js)$/i.test(komut) ? [process.execPath, [komut, ...args]] : [komut, args]);
+export const komutHazirla = (komut, args = [], platform = process.platform) => {
+  // .mjs/.cjs/.js her platformda Node ile çalışır
+  if (/\.(mjs|cjs|js)$/i.test(komut)) return [process.execPath, [komut, ...args], {}];
+  // Windows'ta uzantısız ya da .cmd/.bat komutlar shell gerektirir (npm ile kurulan claude.cmd vb.)
+  if (platform === 'win32' && (/\.(cmd|bat)$/i.test(komut) || !/\.[^\\/]+$/.test(komut))) {
+    return [komut, args, { shell: true }];
+  }
+  return [komut, args, {}];
+};
 
 function calistir(komut, args = []) {
   try {
-    const [prog, param] = komutHazirla(komut, args);
+    const [prog, param, secenek] = komutHazirla(komut, args);
     const res = spawnSync(prog, param, {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 10000,
+      timeout: 4000,
+      ...secenek,
     });
     if (res.status === 0) {
       return { basarili: true, cikti: (res.stdout || '').trim() };

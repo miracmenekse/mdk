@@ -18,6 +18,10 @@ import { doktorRaporu } from '../mdk-doktor.mjs';
 
 const IP = '127.0.0.1';
 
+// doktor raporu önbelleği: kurulum denetimi açılışı kilitlemesin diye sonucu 60 sn saklar
+let doktorOnbellek = null;
+let doktorOnbellekZamani = 0;
+
 export async function baslat(dir, port, { calistir } = {}) {
   const kok = resolve(dir);
   const izlenecekler = ['PLAN.md', 'durum.json', 'metrikler.jsonl', 'yapilacaklar.json'].map((f) => join(kok, f));
@@ -1050,8 +1054,19 @@ export async function baslat(dir, port, { calistir } = {}) {
     }
 
     if (pathname === '/api/doktor') {
+      const yenile = new URL(istek.url, 'http://x').searchParams.get('yenile') === '1';
+      const simdi = Date.now();
+      // kurulum denetimi paneli kilitlemesin: sonuç 60 sn bellekte saklanır, ?yenile=1 taze denetim yapar
+      if (!yenile && doktorOnbellek && simdi - doktorOnbellekZamani < 60000) {
+        yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        yanit.end(JSON.stringify(doktorOnbellek));
+        return;
+      }
+      const rapor = doktorRaporu(process.env);
+      doktorOnbellek = rapor;
+      doktorOnbellekZamani = simdi;
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      yanit.end(JSON.stringify(doktorRaporu(process.env)));
+      yanit.end(JSON.stringify(rapor));
       return;
     }
 

@@ -686,9 +686,10 @@ kararSeridiEl.addEventListener('click', (e) => {
   if (b) drawerAc(Number(b.dataset.adim));
 });
 
-async function doktorYenile() {
+async function doktorYenile(taze = false) {
   try {
-    const res = await fetch('/api/doktor');
+    // düğmeden gelirse taze denetim; ilk açılışta önbelleğe düşer
+    const res = await fetch(taze ? '/api/doktor?yenile=1' : '/api/doktor');
     if (res.ok) {
       const v = await res.json();
       doktorSeridiEl.innerHTML = doktorHtml(v);
@@ -696,7 +697,7 @@ async function doktorYenile() {
   } catch {}
 }
 doktorSeridiEl.addEventListener('click', (e) => {
-  if (e.target.closest('#doktor-yenile')) doktorYenile();
+  if (e.target.closest('#doktor-yenile')) doktorYenile(true);
 });
 doktorYenile();
 
