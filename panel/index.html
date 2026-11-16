@@ -438,6 +438,10 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 #drawer-overlay { position: fixed; inset: 0; background: rgba(17, 20, 24, .38); z-index: 40; }
 #drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 92vw); background: var(--kart); border-left: 1px solid var(--cizgi); box-shadow: -8px 0 28px rgba(0, 0, 0, .18); z-index: 41; overflow-y: auto; }
 .drawer-ic { padding: 18px 20px 40px; }
+#drawer.tam-sayfa { top: 0; right: 0; left: 0; width: 100vw; border-left: none; box-shadow: none; }
+#drawer.tam-sayfa .drawer-ic { max-width: 920px; margin: 0 auto; padding: 28px 32px 60px; font-size: 15px; line-height: 1.6; }
+#drawer.tam-sayfa .drawer-baslik { font-size: 24px; }
+@media (max-width: 640px) { #drawer.tam-sayfa .drawer-ic { padding: 18px 16px 40px; } }
 .drawer-bas { display: flex; align-items: center; justify-content: space-between; }
 .drawer-bas .etiket { font-size: 12px; color: var(--soluk); letter-spacing: .04em; }
 .drawer-bas .etiket + b { font-size: 18px; margin-left: 4px; }
@@ -766,6 +770,7 @@ function drawerSureGuncelle() {
 }
 
 async function drawerAc(no) {
+  drawerEl.classList.remove('tam-sayfa');
   drawerAdim = no;
   drawerEpic = null;
   drawerEpicTartisma = null;
@@ -809,6 +814,7 @@ async function epicDrawerAc(no) {
   const kayit = epik || { no, ad: '', statu: 'analiz' };
   drawerEpicTartisma = tartisma;
   drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici);
+  drawerEl.classList.add('tam-sayfa');
   drawerEl.hidden = false;
   drawerOverlayEl.hidden = false;
   document.body.classList.add('drawer-acik');
@@ -816,6 +822,7 @@ async function epicDrawerAc(no) {
 }
 
 function drawerKapat() {
+  drawerEl.classList.remove('tam-sayfa');
   drawerEl.hidden = true;
   drawerOverlayEl.hidden = true;
   document.body.classList.remove('drawer-acik');
