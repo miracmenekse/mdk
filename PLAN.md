@@ -1053,6 +1053,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Tartışma: epic/43
 - Etki: etki/epic-islem-bildirimi.html
 - Onay: evet
+- Ana: antigravity
 
 ## Epic 44 — Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama
 - Durum: tasarim
