@@ -1524,8 +1524,8 @@ function ciz(d) {
   // formda yazı varken ya da odaktayken yeniden çizme: yazılan metin kaybolmasın
   const yapForm = yapilacaklarEl.querySelector('#yapilacak-form');
   const yapYazili = yapForm && yapForm.contains(document.activeElement) && [...yapForm.querySelectorAll('input, textarea')].some((i) => i.value !== '');
-  if (!yapYazili) yapilacaklarEl.innerHTML = yapilacaklarHtml(d.yapilacaklar, d.kararIzleyici);
-  profillerEl.innerHTML = profilHtml(d.profiller, d.kararIzleyici);
+  if (!yapYazili) yapilacaklarEl.innerHTML = yapilacaklarHtml(d.yapilacaklar);
+  profillerEl.innerHTML = profilHtml(d.profiller);
   gorevModelleriEl.innerHTML = gorevModelleriHtml(d.gorevler, d.serbestModeller);
   kapiUretimEl.innerHTML = kapiUretimHtml(d.kapiUretim);
   modellerEl.innerHTML = modellerHtml(d.modeller);
@@ -1642,7 +1642,7 @@ async function yapilacakIstek(govde, yol = '/api/yapilacak') {
     });
     if (yanit.ok) {
       const j = await yanit.json();
-      yapilacaklarEl.innerHTML = yapilacaklarHtml(j.liste, sonD?.kararIzleyici);
+      yapilacaklarEl.innerHTML = yapilacaklarHtml(j.liste);
       return true;
     }
     const j = await yanit.json().catch(() => ({}));
