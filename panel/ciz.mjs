@@ -695,10 +695,11 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
     bolumListesi.push({ ad: 'Karar', hedef: 'karar' });
   }
 
-  let gostergeHtml = '<nav class="drawer-gosterge" aria-label="Bölüm navigasyonu">';
+  let gostergeHtml = '<nav class="drawer-gosterge" aria-label="Bölüm navigasyonu">' +
+    '<div class="gosterge-baslik"><span>BÖLÜMLER</span><span class="gosterge-bildirim" hidden></span></div>';
   for (let i = 0; i < bolumListesi.length; i++) {
     const b = bolumListesi[i];
-    gostergeHtml += `<button type="button" class="gosterge-nokta${i === 0 ? ' aktif' : ''}" data-indeks="${i}" data-hedef="${b.hedef}" title="${b.ad}" aria-label="${b.ad}"></button>`;
+    gostergeHtml += `<button type="button" class="gosterge-nokta${i === 0 ? ' aktif' : ''}" data-indeks="${i}" data-hedef="${b.hedef}" title="${b.ad}" aria-label="${b.ad}"><span class="gosterge-simge"></span><span class="gosterge-ad">${esc(b.ad)}</span></button>`;
   }
   gostergeHtml += '</nav>';
 
