@@ -1113,10 +1113,11 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 
 
 ## Epic 47 — Etki krokisinin yanına kullanım senaryosu örneği
-- Durum: analiz
+- Durum: tasarim
 - Tartışma: epic/47
 - Etki: etki/kroki-senaryo-scrollsuz.html
 - Ana: antigravity
+- Onay: evet
 
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
