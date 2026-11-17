@@ -1085,7 +1085,14 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Ana: antigravity
 
 ## Epic 45 — geliştirme sekmesinde yaıalcak iş girme alanındaki metin kısıtını kaldırmak istiyorum.
-- Durum: analiz
+- Durum: gelistirme
+- Ana: antigravity
+
+- [ ] 211. Yapılacak iş formunda geniş textarea ve esnek boyut limitleri
+  - Kabul: Yapılacak iş formunda not alanı tek satırlık dar input yerine çok satırlı genişleyebilir textarea olur; başlık ve not alanlarındaki dar karakter kısıtları esnetilir (başlık en çok 300, not en çok 10.000 karakter); sunucunun 2 KB'lık dar gövde kısıtı 64 KB'a çıkarılarak uzun notlar 413 veya 400 hatası almadan kaydedilir; form düzeni alt satıra geçen textarea ile rahat yazılabilir genişliktedir
+  - Ne: (a) `panel/ciz.mjs:366-370`: `yapilacaklarHtml` içinde `<input name="not" ...>` yerine `<textarea name="not" rows="3" placeholder="not (isteğe bağlı)"></textarea>`, başlıkta `maxlength="300"`. (b) `panel/index.html:518-523`: `.yapilacak-form textarea` flex ve boyut stilleri (`flex: 1 1 100%`, `min-height: 64px`, `resize: vertical`). (c) `panel/yapilacak.mjs:21-24`: başlık limiti 300'e, not limiti 10.000'e çıkarılır; `panel/yapilacak.test.mjs` sınır kontrolleri 301 ve 10001'e güncellenir. (d) `panel/sunucu.mjs:622`: `yapilacakAl` gövde limiti 2048'den 65536'ya çıkarılır.
+  - Kapı: `node test/yapilacak-genis-form.test.mjs`
+
 
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
