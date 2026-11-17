@@ -24,7 +24,7 @@ function bekleyenler() {
 }
 const BEKLEYEN = bekleyenler();
 // süreç sayan, süre ölçen ya da kilit kullanan testler birbirini bozmasın diye sırayla, paralel grubun ardından koşar
-const SIRALI = ['mdk-adim', 'mdk-hiz', 'mdk-paralel', 'persona-tur', 'persona-gorev', 'mdk-incele', 'epic-onay', 'mdk-panel', 'mdk-esitle', 'mdk-figma'].map((a) => `test/${a}.test.mjs`).concat(['panel/radar-tara.test.mjs']); // radar-tara zamanlamaya dayalı: yük altında oynak, sırayla koşar
+const SIRALI = ['mdk-adim', 'mdk-hiz', 'mdk-paralel', 'persona-tur', 'persona-gorev', 'mdk-incele', 'epic-onay', 'mdk-panel', 'mdk-esitle', 'mdk-figma', 'tartis-bagimsiz'].map((a) => `test/${a}.test.mjs`).concat(['panel/radar-tara.test.mjs']); // radar-tara zamanlamaya dayalı: yük altında oynak, sırayla koşar
 // hızlı kipte atlananlar: koşturucunun kendi uzun testleri (eskiden hepsi.sh'te de hızlı kipte atlanır ya da hiç koşmazdı)
 const YAVAS = ['mdk-adim', 'mdk-hiz', 'mdk-paralel', 'persona-tur', 'persona-gorev', 'mdk-incele', 'epic-onay'].map((a) => `test/${a}.test.mjs`);
 const IOS = /^test\/ios-/; // simülatör ister; yalnız kendi adımının kapısında koşar
