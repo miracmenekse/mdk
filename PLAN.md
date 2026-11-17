@@ -1126,6 +1126,9 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node test/kroki-senaryo.test.mjs`
 
 
+## Epic 48 — Persona ağırlıklandırma ile sadeleşmiş çözüm çıktısı
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
   - Epic 28 Sağlayıcı hataları (8+9) → Epic 29 Koşturucu denetimleri (6+12) → Epic 30 Kapıyı sade dille göster (1) → Epic 31 Maliyet ve deneme göstergesi (3) → Epic 32 Rol → model profilleri (10) → Epic 33 Yapılacaklar listesi ve panelden iş girişi (4+5) → Epic 34 Bağlam bütçesi (13) → Epic 35 Persona bağımsız ilk görüş (14) → Epic 36 Yalıtılmış test ve geri alma (15) → Epic 37 Terminalsiz kurulum (2+11; Windows denemesi 7 bu Epic'in elle adımı).
