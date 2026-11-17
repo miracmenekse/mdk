@@ -1134,7 +1134,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Senaryo: Ürün Sahibi veya Geliştirici | Panelde veya adımda tek tıkla odak persona seçer | Sentez tablosunda kazanan öneri öne çıkar, emniyet riskleri en üstte kilitli kalır | Hata durumunda varsayılan ağırlığa dönülür
 - Ana: antigravity
 
-- [ ] 215. Odak persona ayrıştırma ve tartışma sentezinde ağırlıklı karar motoru
+- [x] 215. Odak persona ayrıştırma ve tartışma sentezinde ağırlıklı karar motoru
   - Kabul: PLAN.md'de Epic veya Adım altında `- Odak-persona:` satırı ayrıştırılır ve durum snapshot'ına (`odakPersona`) aktarılır; `epic-tartis.mjs` komutuna `--odak "<ad>"` parametresi eklenir (CLI verilmezse PLAN.md'deki Odak-persona dikkate alınır); geçersiz veya bilinmeyen persona girilirse uyarı verilip varsayılan eşit ağırlıkla devam edilir; moderatör sentez isteminde (Tur 3 Uzlaşı) seçilen odak persona ve çarpanı (`×3`) açıkça vurgulanır; kırmızı kapı (red gate) ve sağlayıcı kota yetersizlikleri gibi bloklayıcı teknik engellerin hiçbir ağırlıkla bastırılamayacağı emniyet kuralı moderatör ve motor çıktısına (`tartisma.json: odak, agirlik, emniyet`) yansıtılır
   - Ne: (a) `panel/plan.mjs:76-95`: `- Odak-persona:` alanını ayrıştırma. (b) `panel/durum.mjs:255-265`: snapshot'ta `epikler` nesnesine `odakPersona` ekleme. (c) `epic-tartis.mjs:10-25, 100-145`: `--odak` argümanı ve PLAN.md'den odak okuma, `tartisma.json` nesnesine `odak` (`{ ad, carpan: 3 }`) ekleme, Tur 3 moderatör istemine ağırlıklandırma ve bastırılamaz emniyet katmanı direktifini entegre etme.
   - Kapı: `node test/persona-odak-sentez.test.mjs`

@@ -6,14 +6,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { ocSec } from './oc-sec.mjs';
+import { parse } from './panel/plan.mjs';
 
 const arglar = process.argv.slice(2);
 const no = arglar[0];
 let personaFiltre = null;
 let neden = '';
+let odakArg = null;
 for (let i = 1; i < arglar.length; i++) {
   if (arglar[i] === '--persona') personaFiltre = (arglar[++i] || '').split(',').map((s) => s.trim()).filter(Boolean);
   else if (arglar[i] === '--neden') neden = arglar[++i] || '';
+  else if (arglar[i] === '--odak') odakArg = arglar[++i] || '';
 }
 
 const OC = ocSec();
@@ -84,6 +87,7 @@ async function ana() {
   if (!personalar.length) return cik2('persona/takim.json personalar listesi boş ya da --persona ile hiçbir ad eşleşmedi');
 
   // Modeller: PLAN.md'deki "Görev persona:" (yoksa "Modeller:") satırı, virgülle ayrılmış.
+  let odak = odakArg;
   try {
     const plan = readFileSync('PLAN.md', 'utf8');
     const satir = (etiket) => {
@@ -92,13 +96,38 @@ async function ana() {
       return s ? s.slice(etiket.length) : '';
     };
     modeller = (satir('Görev persona:') || satir('Modeller:')).split(',').map((s) => s.trim()).filter(Boolean);
+    if (!odak) {
+      const parsedPlan = parse(plan);
+      const kat = (parsedPlan.kategoriler || []).find((k) => String(k.no) === String(no));
+      if (kat?.odakPersona) odak = kat.odakPersona;
+    }
   } catch {}
   if (!modeller.length) return cik2("PLAN.md'de 'Görev persona:' ya da 'Modeller:' satırı yok");
+
+  let seciliOdak = null;
+  if (odak) {
+    const bulunan = personalar.find((p) => p.ad.toLowerCase() === odak.toLowerCase());
+    if (bulunan) {
+      seciliOdak = { ad: bulunan.ad, carpan: 3 };
+    } else {
+      console.warn(`UYARI: '${odak}' adında persona bulunamadı, varsayılan eşit ağırlık uygulanacak.`);
+    }
+  }
 
   // Çıktı dosyası: her yanıttan sonra yeniden yazılır; durum başta 'suruyor'.
   ciktiYolu = join('epic', no, 'tartisma.json');
   mkdirSync(join('epic', no), { recursive: true });
-  const sonuc = { epic: no, is, neden, durum: 'suruyor', personalar: personalar.map((p) => ({ ad: p.ad })), turlar: [], cozum: null, ts: '' };
+  const sonuc = {
+    epic: no,
+    is,
+    neden,
+    odak: seciliOdak,
+    durum: 'suruyor',
+    personalar: personalar.map((p) => ({ ad: p.ad })),
+    turlar: [],
+    cozum: null,
+    ts: '',
+  };
   const yaz = () => { sonuc.ts = new Date().toISOString(); writeFileSync(ciktiYolu, JSON.stringify(sonuc, null, 2) + '\n'); };
   yaz();
 
@@ -135,10 +164,16 @@ async function ana() {
   }
 
   // Tur 3: Uzlaşı — tek çağrı; tarafsız moderatör yanıtı belli başlıklarla verir.
+  let odakMetni = '';
+  if (seciliOdak) {
+    odakMetni = `\n\nÖNEMLİ (AĞIRLIKLI KARAR MOTORU): Bu iş için stratejik odak persona "${seciliOdak.ad}" olarak belirlenmiştir (çarpan: 3 kat / ×3 ağırlık).\n` +
+      `Nihai "## Çözüm" ve "## Tahmini story listesi" çıktısında "${seciliOdak.ad}" personasının öneri ve önceliklerine 3 kat ağırlık vererek kazanan öneriyi belirle.\n` +
+      `MUTLAK EMNİYET KURALI: Kırmızı kapı (red gate), model/kota yetersizliği ve bloklayıcı teknik riskler hiçbir ağırlıkla bastırılamaz! Bir emniyet riski varsa, odak persona ağırlığı ne olursa olsun "## Çözüm"ün en başında belirgin bir emniyet uyarısı olarak yer almalıdır.`;
+  }
   const turBloklari = sonuc.turlar.map((t) => `## Tur ${t.tur} (${t.ad})\n\n${t.mesajlar.map((m) => `${m.persona}: ${m.metin}`).join('\n\n')}`).join('\n\n');
   const tur3Istem = `Tarafsız moderatörsün; iş ve iki turun tüm metinleri aşağıda. Ortak uzlaşı metni yaz; yanıtın TAM ŞU başlıkları bu sırayla içersin:\n` +
     `## Çözüm\n## UI/UX etkisi\n## Entegrasyon\n## Anlaşmazlıklar ve açık sorular\n## Tahmini story listesi\n\n` +
-    `Görüş ayrılıklarını ve kimlerin hangi noktada ayrıştığını persona adlarıyla (${gecerli.map((r) => r.p.ad).join(', ')}) açıkça an.\n\nİş:\n${is}\n\n${turBloklari}`;
+    `Görüş ayrılıklarını ve kimlerin hangi noktada ayrıştığını persona adlarıyla (${gecerli.map((r) => r.p.ad).join(', ')}) açıkça an.\n\nİş:\n${is}\n\n${turBloklari}${odakMetni}`;
   const tur3 = await cagir(tur3Istem, personalar.length);
   if (!tur3.metin) { sonuc.durum = 'yetersiz'; yaz(); console.log(ciktiYolu); return 1; }
   sonuc.cozum = { model: tur3.model, metin: tur3.metin };

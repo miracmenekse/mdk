@@ -256,6 +256,7 @@ export function snapshot(dir) {
         etki: k.etki ?? null,
         etkiMtime,
         senaryo: k.senaryo ?? null,
+        odakPersona: k.odakPersona ?? null,
         figma: k.figma ?? null,
         onay: k.onay === true,
         karar,
