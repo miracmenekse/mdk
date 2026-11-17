@@ -1129,6 +1129,9 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 ## Epic 48 — Persona ağırlıklandırma ile sadeleşmiş çözüm çıktısı
 - Durum: analiz
 - Tartışma: epic/48
+- Etki: etki/persona-agirlik-sentez.html
+- Senaryo: Ürün Sahibi veya Geliştirici | Panelde veya adımda tek tıkla odak persona seçer | Sentez tablosunda kazanan öneri öne çıkar, emniyet riskleri en üstte kilitli kalır | Hata durumunda varsayılan ağırlığa dönülür
+- Ana: antigravity
 
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
