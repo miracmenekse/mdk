@@ -517,6 +517,77 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .drawer-gosterge .gosterge-nokta.aktif .gosterge-simge { background: var(--vurgu); border-color: var(--vurgu); box-shadow: 0 0 6px var(--vurgu); }
 @media (max-width: 900px) { .drawer-gosterge { left: 8px; min-width: auto; padding: 6px 4px; } .drawer-gosterge .gosterge-baslik, .drawer-gosterge .gosterge-ad { display: none; } .drawer-gosterge .gosterge-nokta { padding: 4px; } }
 .rozet-yeni { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; text-transform: none; background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); margin-left: 6px; vertical-align: middle; }
+.odak-persona-rozet {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rozet-calisiyor-z);
+  color: var(--vurgu-metin);
+  border: 1px solid var(--vurgu);
+  vertical-align: middle;
+  margin-left: 6px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.emniyet-bandi {
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--rozet-hata-z, #fef2f2);
+  border: 1px solid var(--rozet-hata, #ef4444);
+  color: var(--rozet-hata, #b91c1c);
+  font-size: 12px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.emniyet-simge {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.odak-secici-kapsayici {
+  margin: 10px 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.odak-etiket {
+  font-size: 11px;
+  color: var(--soluk);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.odak-secici {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.odak-secim-btn {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--cizgi);
+  background: var(--kart);
+  color: var(--metin);
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.odak-secim-btn:hover {
+  background: var(--zemin);
+  border-color: var(--vurgu);
+}
+.odak-secim-btn.aktif {
+  background: var(--vurgu);
+  color: #fff;
+  border-color: var(--vurgu);
+  font-weight: 600;
+}
 .drawer-ic h4 { font-size: 13px; margin: 14px 0 6px; }
 .epic-karar { margin: 10px 0 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
 .epic-karar textarea { flex: 1 1 100%; font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); resize: vertical; }
@@ -992,6 +1063,20 @@ drawerEl.addEventListener('click', (e) => {
         geriAlDugme.disabled = false;
       })
       .catch(() => { geriAlDugme.disabled = false; });
+  }
+  const odakBtn = e.target.closest('.odak-secim-btn');
+  if (odakBtn) {
+    const parent = odakBtn.closest('.odak-secici');
+    if (parent) {
+      parent.querySelectorAll('.odak-secim-btn').forEach((b) => {
+        b.classList.remove('aktif');
+        b.textContent = b.dataset.persona;
+      });
+      odakBtn.classList.add('aktif');
+      odakBtn.textContent = `${odakBtn.dataset.persona} (×3)`;
+      const rozet = drawerEl.querySelector('.odak-persona-rozet');
+      if (rozet) rozet.textContent = `Odak: ${odakBtn.dataset.persona} ×3`;
+    }
   }
 });
 drawerOverlayEl.addEventListener('click', drawerKapat);

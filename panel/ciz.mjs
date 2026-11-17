@@ -747,7 +747,27 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
   }
 
   // (2) ÇÖZÜM
-  html += `<h3 class="drawer-bolum">ÇÖZÜM${guncelMi('cozum') ? rozetYeni : ''}</h3>`;
+  const aktifOdak = tartisma?.odak?.ad || e.odakPersona || null;
+  const carpan = tartisma?.odak?.carpan || 3;
+  const odakRozet = aktifOdak
+    ? ` <span class="odak-persona-rozet">Odak: ${esc(aktifOdak)} ×${esc(carpan)}</span>`
+    : '';
+  html += `<h3 class="drawer-bolum">ÇÖZÜM${odakRozet}${guncelMi('cozum') ? rozetYeni : ''}</h3>`;
+
+  if (aktifOdak) {
+    html += '<div class="emniyet-bandi"><span class="emniyet-simge">🛡</span> ' +
+      '<b>BASTIRILAMAZ EMNİYET KATMANI:</b> Kırmızı kapı (red gate) ve model/kota riskleri hiçbir ağırlıkla bastırılamaz.</div>';
+  }
+
+  if (personalar.length > 0 && statu !== 'tamamlandi') {
+    html += '<div class="odak-secici-kapsayici"><span class="odak-etiket">Odak Persona:</span><div class="odak-secici">';
+    for (const p of personalar) {
+      const aktif = aktifOdak === p.ad ? ' aktif' : '';
+      html += `<button type="button" class="odak-secim-btn${aktif}" data-epic="${esc(e.no)}" data-persona="${esc(p.ad)}">${esc(p.ad)}${aktif ? ' (×3)' : ''}</button>`;
+    }
+    html += '</div></div>';
+  }
+
   html += tartisma?.cozum?.metin
     ? cozumHtml(tartisma.cozum.metin)
     : '<p class="bos">henüz çözüm yok</p>';

@@ -1139,7 +1139,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/plan.mjs:76-95`: `- Odak-persona:` alanını ayrıştırma. (b) `panel/durum.mjs:255-265`: snapshot'ta `epikler` nesnesine `odakPersona` ekleme. (c) `epic-tartis.mjs:10-25, 100-145`: `--odak` argümanı ve PLAN.md'den odak okuma, `tartisma.json` nesnesine `odak` (`{ ad, carpan: 3 }`) ekleme, Tur 3 moderatör istemine ağırlıklandırma ve bastırılamaz emniyet katmanı direktifini entegre etme.
   - Kapı: `node test/persona-odak-sentez.test.mjs`
 
-- [ ] 216. Sentez çıktısında odak persona rozeti, emniyet bandı ve panel görünümü
+- [x] 216. Sentez çıktısında odak persona rozeti, emniyet bandı ve panel görünümü
   - Kabul: Epic detay çekmecesindeki ÇÖZÜM bölümünde odak persona seçilmişse başlıkta veya çözüm üstünde belirgin bir rozet (`[Odak: <ad> ×3]`) görünür; emniyet katmanı (kırmızı kapı, kota yetersizliği uyarısı) çözümün en üstünde bastırılamayan dikkat çekici bir uyarı bandı olarak gösterilir; çözüme ek olarak panelde odak persona seçimi veya mevcut odak durumu temiz bir görsel hiyerarşi ve açık/koyu tema uyumuyla çizilir
   - Ne: (a) `panel/ciz.mjs:730-745`: `epicDrawerHtml` içinde çözüm sentezinde odak persona rozetini ve emniyet bandını (`.emniyet-bandi`, `.odak-persona-rozet`) çizme. (b) `panel/index.html:480-510`: `.emniyet-bandi`, `.odak-persona-rozet` CSS stilleri.
   - Kapı: `node test/persona-odak-ui.test.mjs`
