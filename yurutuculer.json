@@ -48,7 +48,8 @@
           "agy/gemini-3.8-flash-medium"
         ],
         "eskale": [
-          "agy/gemini-4-argon-medium"
+          "agy/gemini-3.8-flash-high",
+          "agy/gemini-4-hydrogen-medium"
         ],
         "hakem": [
           "agy/gemini-4-argon-medium",
