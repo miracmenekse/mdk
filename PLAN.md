@@ -1127,9 +1127,10 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 
 
 ## Epic 48 — Persona ağırlıklandırma ile sadeleşmiş çözüm çıktısı
-- Durum: analiz
+- Durum: tasarim
 - Tartışma: epic/48
 - Etki: etki/persona-agirlik-sentez.html
+- Onay: evet
 - Senaryo: Ürün Sahibi veya Geliştirici | Panelde veya adımda tek tıkla odak persona seçer | Sentez tablosunda kazanan öneri öne çıkar, emniyet riskleri en üstte kilitli kalır | Hata durumunda varsayılan ağırlığa dönülür
 - Ana: antigravity
 
