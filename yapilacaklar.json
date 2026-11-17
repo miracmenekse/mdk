@@ -28,7 +28,7 @@
     "baslik": "Modeller sekmesi, Model × adım grafiğinde bir adım veya epic için tüketilen tüm tokenların doğru gösterimini görmek.",
     "not": "tüm görevlerde harcanan tüm tokenlar. epic bazında ve adım bazında gösterilecek.",
     "durum": "bekliyor",
-    "epic": null,
+    "epic": 46,
     "ts": "2026-11-16T17:48:48.498Z"
   }
 ]
