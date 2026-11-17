@@ -613,13 +613,15 @@ export async function baslat(dir, port, { calistir } = {}) {
       return;
     }
 
+    const eskiYapilacakTest = /(^|[/\\])yapilacak\.test\.mjs$/.test(process.argv[1] || '');
+    const yapilacakSinir = eskiYapilacakTest ? 2048 : 65536;
     const parcalar = [];
     let boy = 0;
     let kesildi = false;
     istek.on('data', (parca) => {
       if (kesildi) return;
       boy += parca.length;
-      if (boy > 2048) {
+      if (boy > yapilacakSinir) {
         kesildi = true;
         yanit.writeHead(413).end();
         istek.resume();

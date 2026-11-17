@@ -364,8 +364,8 @@ const EPIC_ETIKET = { analiz: 'Analiz', tasarim: 'Tasarım', gelistirme: 'Geliş
 export function yapilacaklarHtml(liste, izleyici = false) {
   const form = izleyici ? '' :
     '<form id="yapilacak-form" class="yapilacak-form">' +
-    '<input name="baslik" maxlength="120" placeholder="Yeni iş…" required>' +
-    '<input name="not" maxlength="1000" placeholder="not (isteğe bağlı)">' +
+    '<input name="baslik" maxlength="300" placeholder="Yeni iş…" required>' +
+    '<textarea name="not" rows="3" placeholder="not (isteğe bağlı)"></textarea>' +
     '<button type="submit">Ekle</button></form>';
   if (!liste || liste.length === 0) return `${form}<p class="bos">yapılacak iş yok</p>`;
   const acik = liste.filter((o) => o.durum !== 'bitti');
