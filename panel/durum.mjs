@@ -1,6 +1,6 @@
 // Durum birleştirici: PLAN.md + durum.json + metrikler.jsonl → anlık görüntü.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { parse, epicDurum } from './plan.mjs';
@@ -238,6 +238,14 @@ export function snapshot(dir) {
         tartisma = { yol: k.tartisma, durum };
       }
       const karar = k.no !== null ? sonEpicKarar.get(k.no) ?? null : null;
+      let etkiMtime = null;
+      if (k.etki) {
+        try {
+          etkiMtime = statSync(join(dir, k.etki)).mtimeMs;
+        } catch {
+          etkiMtime = null;
+        }
+      }
       sonuc.epikler.push({
         no: k.no,
         ad: k.ad,
@@ -246,6 +254,7 @@ export function snapshot(dir) {
         toplam: k.adimlar.length,
         tartisma,
         etki: k.etki ?? null,
+        etkiMtime,
         figma: k.figma ?? null,
         onay: k.onay === true,
         karar,

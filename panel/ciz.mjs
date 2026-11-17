@@ -673,11 +673,19 @@ function epicBalon(mesaj, personalar) {
 }
 
 // Epic detay çekmecesi: TARTIŞMA, ÇÖZÜM, UI/UX ETKİSİ, KARAR.
-export function epicDrawerHtml(epik, tartisma, izleyici = false) {
+export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = null) {
   const e = epik || {};
   const statu = e.statu || 'analiz';
   const personalar = tartisma?.personalar || [];
   const turlar = Array.isArray(tartisma?.turlar) ? tartisma.turlar : [];
+  const guncelMi = (bolum) => {
+    if (!guncellenen) return false;
+    if (typeof guncellenen === 'string') return guncellenen.toLowerCase() === bolum.toLowerCase();
+    if (Array.isArray(guncellenen)) return guncellenen.some((x) => String(x).toLowerCase() === bolum.toLowerCase());
+    if (guncellenen instanceof Set) return guncellenen.has(bolum) || guncellenen.has(bolum.toLowerCase());
+    return false;
+  };
+  const rozetYeni = ' <span class="rozet-yeni">güncellendi</span>';
   let html = '<div class="drawer-ic">' +
     '<div class="drawer-bas">' +
     `<div><span class="etiket">EPIC</span> <b>${esc(e.no ?? '—')}</b></div>` +
@@ -687,7 +695,7 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
     `<div class="drawer-durum">${rozet('epic-' + statu, EPIC_ETIKET[statu] || statu)}</div>`;
 
   // (1) TARTIŞMA
-  html += '<h3 class="drawer-bolum">TARTIŞMA</h3>';
+  html += `<h3 class="drawer-bolum">TARTIŞMA${guncelMi('tartisma') ? rozetYeni : ''}</h3>`;
   if (!tartisma) {
     html += '<p class="bos">bu Epic için persona tartışması yok</p>';
   } else {
@@ -701,17 +709,18 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
   }
 
   // (2) ÇÖZÜM
-  html += '<h3 class="drawer-bolum">ÇÖZÜM</h3>';
+  html += `<h3 class="drawer-bolum">ÇÖZÜM${guncelMi('cozum') ? rozetYeni : ''}</h3>`;
   html += tartisma?.cozum?.metin
     ? cozumHtml(tartisma.cozum.metin)
     : '<p class="bos">henüz çözüm yok</p>';
 
   // (3) UI/UX ETKİSİ
-  html += '<h3 class="drawer-bolum">UI/UX ETKİSİ</h3>';
+  html += `<h3 class="drawer-bolum">UI/UX ETKİSİ${guncelMi('kroki') || guncelMi('etki') ? rozetYeni : ''}</h3>`;
   if (e.etki) {
+    const tParam = `&t=${e.etkiMtime || ''}`;
     const src = '/dosya?yol=' + encodeURIComponent(e.etki);
-    const once = esc(src) + '&goster=once';
-    const sonra = esc(src) + '&goster=sonra';
+    const once = esc(src) + '&goster=once' + tParam;
+    const sonra = esc(src) + '&goster=sonra' + tParam;
     html += '<div class="kroki">' +
       '<div><div class="etiket">önce</div>' +
       `<button type="button" class="buyut" data-src="${once}" aria-label="önce taslağını büyüt"></button>` +
@@ -744,7 +753,7 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false) {
 
   // (4) KARAR
   if (statu !== 'tamamlandi') {
-    html += '<h3 class="drawer-bolum">KARAR</h3>';
+    html += `<h3 class="drawer-bolum">KARAR${guncelMi('karar') ? rozetYeni : ''}</h3>`;
     if (e.onay) {
       html += '<p class="karar-durum">çözüm onaylandı</p>';
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
@@ -779,6 +788,7 @@ export function epicImza(epik, tartisma) {
     e.onay ?? null,
     e.figma ?? null,
     e.etki ?? null,
+    e.etkiMtime ?? null,
     e.karar?.ts ?? null,
     e.alindi ?? null,
     t.durum ?? null,

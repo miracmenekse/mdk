@@ -454,7 +454,9 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 #drawer .ilerleme { height: 8px; border-radius: 999px; background: var(--cizgi); overflow: hidden; margin: 12px 0 2px; }
 #drawer .ilerleme span { display: block; height: 100%; background: var(--vurgu); }
 #drawer .yuzde { font-size: 12px; color: var(--soluk); }
-.drawer-bolum { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--soluk); margin: 20px 0 10px; text-transform: uppercase; }
+.drawer-bolum { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--soluk); margin: 20px 0 10px; text-transform: uppercase; transition: color .2s; }
+.drawer-bolum.vurgu { color: var(--vurgu); }
+.rozet-yeni { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; text-transform: none; background: var(--rozet-calisiyor-z); color: var(--rozet-calisiyor-m); margin-left: 6px; vertical-align: middle; }
 .drawer-ic h4 { font-size: 13px; margin: 14px 0 6px; }
 .epic-karar { margin: 10px 0 0; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
 .epic-karar textarea { flex: 1 1 100%; font: inherit; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--metin); resize: vertical; }
@@ -721,6 +723,7 @@ let drawerAdim = null;   // açık drawer'ın adım no'su
 let drawerEpic = null;   // açık drawer'ın epic no'su (drawer kapatınca null)
 let drawerEpicTartisma = null; // çekmecedeki epic'in son çekilen tartışma verisi
 let drawerEpicSonImza = null;  // epic çekmecesinin en son çizilen veri imzası
+let drawerEpicKayit = null;    // epic çekmecesinin en son çizilen epik kaydı
 let drawerZaman = null;  // çalışan adımda geçen süre sayacı
 let drawerSonImza = null; // açık drawer'ın en son çizilen veri imzası
 
@@ -812,6 +815,7 @@ async function epicDrawerAc(no) {
   }
   if (drawerEpic !== no) return;
   const kayit = epik || { no, ad: '', statu: 'analiz' };
+  drawerEpicKayit = kayit;
   drawerEpicTartisma = tartisma;
   drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici);
   drawerEl.classList.add('tam-sayfa');
@@ -830,6 +834,7 @@ function drawerKapat() {
   drawerEpic = null;
   drawerEpicTartisma = null;
   drawerEpicSonImza = null;
+  drawerEpicKayit = null;
   drawerSonImza = null;
   clearInterval(drawerZaman);
   drawerZaman = null;
@@ -1069,9 +1074,38 @@ function ciz(d) {
         const yeniImza = epicImza(kayit, tartisma);
         const not = drawerEl.querySelector('textarea[name=metin]');
         if (yeniImza !== drawerEpicSonImza && (!not || not.value === '')) {
+          const degisen = [];
+          if (drawerEpicKayit && kayit.etkiMtime !== drawerEpicKayit.etkiMtime) degisen.push('kroki');
+          if (drawerEpicTartisma && tartisma?.cozum?.metin !== drawerEpicTartisma?.cozum?.metin) degisen.push('cozum');
+          if (drawerEpicTartisma && (tartisma?.durum !== drawerEpicTartisma?.durum || (tartisma?.turlar?.length || 0) !== (drawerEpicTartisma?.turlar?.length || 0))) degisen.push('tartisma');
+          if (drawerEpicKayit && (kayit.onay !== drawerEpicKayit.onay || kayit.karar?.ts !== drawerEpicKayit.karar?.ts)) degisen.push('karar');
+          if (degisen.length === 0) degisen.push('kroki');
+
           drawerEpicTartisma = tartisma;
+          drawerEpicKayit = kayit;
           drawerEpicSonImza = yeniImza;
-          drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, d.kararIzleyici);
+          const scrollY = drawerEl.scrollTop;
+          drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, d.kararIzleyici, degisen);
+          drawerEl.scrollTop = scrollY;
+
+          // değişen bölüm başlığına geçici vurgu sınıfı verilir
+          for (const b of degisen) {
+            const h3 = Array.from(drawerEl.querySelectorAll('h3.drawer-bolum')).find((el) => {
+              const txt = el.textContent || '';
+              if (b === 'kroki') return txt.includes('UI/UX ETKİSİ');
+              if (b === 'cozum') return txt.includes('ÇÖZÜM');
+              if (b === 'tartisma') return txt.includes('TARTIŞMA');
+              if (b === 'karar') return txt.includes('KARAR');
+              return false;
+            });
+            if (h3) {
+              h3.classList.add('vurgu');
+              setTimeout(() => h3.classList.remove('vurgu'), 3000);
+            }
+          }
+          setTimeout(() => {
+            drawerEl.querySelectorAll('.rozet-yeni').forEach((r) => r.remove());
+          }, 3000);
         }
       })
       .catch(() => {});
