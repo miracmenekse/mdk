@@ -1,0 +1,79 @@
+{
+  "epic": "47",
+  "is": "# Etki krokisinin yanına kullanım senaryosu örneği\n\nUI/UX etkisi varsa ve iş bir senaryoyla çalışıyorsa, etki krokisinin (etki/*.html) yanında örnek kullanım senaryosu da çıksın (kim, hangi adımlarla, ne görür).\n\nKaynak: yapılacaklar #3 (panelden).",
+  "neden": "",
+  "durum": "bitti",
+  "personalar": [
+    {
+      "ad": "Bilişsel Yük Bekçisi"
+    },
+    {
+      "ad": "Geliştirme Yöneticisi"
+    },
+    {
+      "ad": "Ürün Yöneticisi"
+    },
+    {
+      "ad": "UI/UX Uzmanı"
+    }
+  ],
+  "turlar": [
+    {
+      "tur": 1,
+      "ad": "Değerlendirme",
+      "mesajlar": [
+        {
+          "persona": "Bilişsel Yük Bekçisi",
+          "model": "agy/gemini-3.8-flash-medium",
+          "metin": "**Etki:** Kullanıcı soyut UI taslağını zihninde canlandırmak, bağlamı ve akışı hatırlamak zorunda kalmaz; zihinsel tamamlama yükü sisteme devredilir.\n\n**Gereksinim:** Senaryo üretimi kullanıcıya yeni bir komut, bayrak veya karar adımı yüklememeli; sistem UI/UX etkisini sezdiği anda bunu varsayılan olarak kendisi üretmelidir. Bilgi yükünü asgariye indirmek için çıktı tek bakışta taranabilir standart bir kalıpla (Kim, Adım, Sonuç) sunulmalıdır.\n\n**Endişe:** Krokinin yanında belirecek kontrolsüz metin blokları ekranı kalabalıklaştırıp görsel gürültü yaratabilir. Kullanıcının odağını dağıtmamak adına senaryo özeti varsayılan olarak kompakt veya katlanabilir tutulmalıdır."
+        },
+        {
+          "persona": "Geliştirme Yöneticisi",
+          "model": "agy/gemini-4-hydrogen-medium",
+          "metin": "**Etki:** Etki krokisi (`etki/*.html`) yanında somut senaryo görmek, değişiklik sonrası neyi kontrol edeceğimi tek bakışta netleştirir; gereksiz tık ve tahmin süresini azaltır. Özellikle kapı kırmızıya döndüğünde veya UI akışı bozulduğunda hangi adımda ne beklendiğini hızla anlamamı sağlar.\n\n**Gereksinim:** Senaryo üretimi ek model turu ve token yakmamalı; mevcut plan/etki çıktısından kısa, şablonlu (kim, adım, beklenen sonuç ve takılma/hata ipucu) üretilmeli. Yalnızca gerçek UI/UX etkisi olan işlerde otomatik eklenmeli.\n\n**Endişe:** Her işe uzun senaryo yazdırılırsa token maliyeti ve bekleme süresi artar. Krokiden kopuk veya güncel olmayan senaryo günlük akışta güveni düşürür; hata anında ne yapacağımı göstermeyen soyut metin bana hız kazandırmaz."
+        },
+        {
+          "persona": "Ürün Yöneticisi",
+          "model": "agy/gemini-3.8-flash-medium",
+          "metin": "**Etki:** Krokiler tek başına soyut kalıyor; paydaşlar özelliğin kime, hangi somut değeri sunduğunu anlamakta zorlanıyor. Senaryo eklemek işlevin değerini ve akışını netleştirir, hizalanmayı hızlandırır. Şimdi yapmazsak yanlış kurgulanmış deneyimler üretilip ürün değeri ve zaman kaybedilir.\n\n**Gereksinim (MVP):** Yalnızca UI/UX etkisi barındıran işlerde; aktör (kim), temel 3-4 adımlık akış ve beklenen sonucu içeren en yalın şablon etki çıktısına bağlanmalı. Başarı ölçütü, teslim sonrası kapsam/tasarım revizyon taleplerinin en az %30 azalmasıdır.\n\n**Endişe:** Kapsamın şişmesi; her iş için uç durumları içeren uzun kullanıcı hikâyeleri yazılarak sürecin bürokrasiye boğulması. Yalnızca en kritik ana akışa odaklanılmalı."
+        },
+        {
+          "persona": "UI/UX Uzmanı",
+          "model": "agy/gemini-3.8-flash-medium",
+          "metin": "**Etki:** Krokinin soyut görseli, somut kullanıcı adımlarıyla (aktör, eylem, ekran çıktısı) anlam kazanır. Kullanıcının nereye bakıp neye tıklayacağını ve hangi geri bildirimi alacağını netleştirerek bilişsel yükü azaltır.\n\n**Gereksinim:**\n1. **Görsel Hiyerarşi & Düzen:** Mevcut panel desenlerine sadık, kroki ile senaryoyu bağlayan iki bölmeli (veya sekmeli) yapı.\n2. **Akış Şablonu:** Adım adım ilerleyen, okunabilirliği yüksek \"Kim → Ne Yapar → Ne Görür\" bilgi kartı.\n3. **Durum Tasarımları:** Senaryo bulunmadığında anlamlı boş durum (*empty state*), yükleniyor göstergesi ve açık/koyu tema/kontrast uyumu.\n\n**Endişe:** Senaryo metninin krokinin önüne geçerek görsel odağı dağıtması, dar ekranlarda taşması ve durum geçişlerinin (boş/hata) atlanması."
+        }
+      ]
+    },
+    {
+      "tur": 2,
+      "ad": "Tartışma",
+      "mesajlar": [
+        {
+          "persona": "Bilişsel Yük Bekçisi",
+          "model": "agy/gemini-3.8-flash-medium",
+          "metin": "**Katıldığım:** Ürün ve Geliştirme Yöneticilerinin senaryoyu yalnızca gerçek UI/UX işleriyle sınırlayıp 3-4 adımlık katı bir şablona bağlamasına katılıyorum; kapsamın dar tutulması kullanıcının zihnini yormaz ve odak kaybını önler.\n\n**İtiraz ettiğim:** UI/UX Uzmanının varsayılan iki bölmeli düzenine itiraz ediyorum. Krokiyle metni yan yana sürekli açık tutmak görsel gürültü yaratır; senaryo varsayılan olarak katlanabilir (kompakt) sunulmalıdır.\n\n**Fikrimi değiştirdiğim:** Senaryonun her koşulda üretilmesi gerektiği fikrimden vazgeçtim. Geliştirme Yöneticisinin token/gecikme uyarısı ve UI/UX Uzmanının durum tasarımları doğrultusunda; senaryo yokken ekranı zorlamak yerine anlamlı bir boş durum (*empty state*) gösterilerek kullanıcının zihinsel akışının korunmasını benimsedim."
+        },
+        {
+          "persona": "Geliştirme Yöneticisi",
+          "model": "agy/gemini-4-hydrogen-medium",
+          "metin": "**Katıldığım:** Bilişsel Yük Bekçisi'nin katlanabilir/kompakt sunum önerisine ve Ürün Yöneticisi'nin yalnızca UI/UX işlerinde 3-4 adımlık yalın şablon sınırına katılıyorum. Ekran kalabalığını önlerken token ve bekleme maliyetini de düşük tutar.\n\n**İtiraz ettiğim:** UI/UX Uzmanı'nın \"Kim → Ne Yapar → Ne Görür\" şablonunda hata/takılma ipucunu dışarıda bırakmasına itiraz ediyorum. Kapı kırmızıya döndüğünde veya akış bozulduğunda geliştiriciye hız kazandıracak olan, beklenen sonucun yanında kısa bir takılma ipucudur.\n\n**Fikrimi değiştirdiğim:** Her UI/UX işinde mutlaka senaryo bloğu zorlanması fikrimden vazgeçtim. Bekçinin de benimsediği anlamlı boş durum (*empty state*) yaklaşımıyla, senaryo üretilemeyen durumlarda güncel olmayan metin basmak yerine temiz bir boş durum göstermek güvenilirliği korur."
+        },
+        {
+          "persona": "Ürün Yöneticisi",
+          "model": "agy/gemini-3.8-flash-medium",
+          "metin": "**Katıldığım:** Bilişsel Yük Bekçisi'nin kompakt/katlanabilir sunum önerisine ve Geliştirme Yöneticisi'nin şablona tek satırlık \"takılma ipucu\" ekleme talebine katılıyorum. Bu detay, kapsamı şişirmeden teslim sonrası revizyonları önleme hedefimizi doğrudan destekler.\n\n**İtiraz ettiğim:** UI/UX Uzmanı'nın varsayılan iki bölmeli açık düzenine itiraz ediyorum. Senaryonun sürekli açık kalması paydaş odağını dağıtır ve MVP yalınlığına ters düşer; varsayılan görünüm katlanabilir olmalıdır.\n\n**Fikrimi değiştirdiğim:** İlk turda kapsamı dar tutmak adına takılma/hata durumlarını tamamen dışarıda bırakıp yalnızca mutlu yola odaklanmıştım. Geliştirme Yöneticisi'nin uyarısıyla, tek satırlık takılma ipucunun bürokrasi yaratmadan yanlış kurgulanmış deneyimleri engelleyeceğini kabul ederek kapsam tanımımı esnettim."
+        },
+        {
+          "persona": "UI/UX Uzmanı",
+          "model": "agy/gemini-4-hydrogen-medium",
+          "metin": "**Katıldığım:** Geliştirme Yöneticisinin şablona tek satırlık \"takılma ipucu\" ekleme önerisine ve herkesin anlamlı boş durum (*empty state*) üzerinde uzlaşmasına katılıyorum; bu, bilgi kartını hem işlevsel kılar hem de durum tutarlılığını korur.\n\n**İtiraz ettiğim:** Katlanabilir sunuma rağmen senaryonun varsayılan olarak tamamen kapalı gelmesine itiraz ediyorum. Aktör ve kısa özet başlığını görünür kılan bir önizleme olmadan kullanıcı orada bir akış rehberi olduğunu fark etmeyebilir.\n\n**Fikrimi değiştirdiğim:** İki bölmeli sürekli açık düzen ısrarımdan vazgeçtim. Bilişsel Yük Bekçisi ve Ürün Yöneticisinin görsel gürültü uyarıları doğrultusunda, krokinin odağını korumak için dar ekranlara da uyan katlanabilir kompakt kart tasarımını benimsedim."
+        }
+      ]
+    }
+  ],
+  "cozum": {
+    "model": "agy/gemini-3.8-flash-medium",
+    "metin": "## Çözüm\n\nEtki krokilerinin (`etki/*.html`) üretildiği akışta, yalnızca gerçek UI/UX etkisi barındıran işler için krokileri tamamlayıcı somut bir **Örnek Kullanım Senaryosu Kartı** sunulacaktır. \n\nTüm paydaşların mutabakatıyla belirlenen standart senaryo şablonu şu bileşenlerden oluşur:\n* **Kim (Aktör):** İşlevi kullanan birincil rol.\n* **Adımlar (Ne Yapar):** En fazla 3–4 maddelik mutlu yol ana akışı.\n* **Beklenen Sonuç (Ne Görür):** Akış tamamlandığında ekranda beliren görsel çıktı veya durum.\n* **Takılma / Hata İpucu:** Akış kesintiye uğradığında veya kapı kırmızıya döndüğünde kontrol edilmesi gereken tek satırlık hızlı tanı ipucu.\n\nSenaryo bulunmadığında veya UI/UX etkisi taşımayan işlerde zorlama metin üretilmeyecek; temiz ve anlamlı bir boş durum (*empty state*) gösterilecektir.\n\n---\n\n## UI/UX etkisi\n\n* **Kompakt ve Katlanabilir Kart Mimarisi:** Krokinin görsel odağını dağıtmamak ve dar ekranlarda taşmayı engellemek adına, senaryo kalıcı iki bölmeli (split) bir yerleşim yerine krokinin yanında/altında **katlanabilir (collapsible) bilgi kartı** olarak sunulur.\n* **Boş ve Hata Durumları (*Empty & Error States*):** Senaryonun üretilmediği ya da başarısız olduğu durumlarda görsel kirlilik yaratmayan, açık/koyu tema uyumlu, bilgilendirici boş durum desenleri kullanılır.\n* **Bilişsel Yük Optimizasyonu:** Kullanıcı soyut HTML taslağı zihninde canlandırmak zorunda kalmaz; neyi kontrol edeceğini tek bakışta tarayabilir.\n\n---\n\n## Entegrasyon\n\n* **Sıfır Ek Tur / Model Maliyeti:** Senaryo üretimi bağımsız bir model çağrısı veya yeni bir tur tetiklemez; mevcut planlama ve etki analizi aşamasındaki bağlamdan (tek seferde) şablonlu JSON/Markdown olarak çekilir.\n* **Tetikleme Mantığı:** Yalnızca sistem tarafından UI/UX etkisi tespit edilen işlerde devreye girer; ek kullanıcı komutu, bayrak veya manuel tetikleme gerektirmez.\n* **Bağlantı & Çıktı:** Üretilen senaryo doğrudan ilgili krokiyle (`etki/*.html`) eşleştirilerek panel arayüzüne veya statik önizleme çıktısına iliştirilir.\n\n---\n\n## Anlaşmazlıklar ve açık sorular\n\n1. **Varsayılan Görünüm Durumu (Görsel Gürültü vs. Keşfedilebilirlik):**\n   * **Bilişsel Yük Bekçisi** ve **Ürün Yöneticisi**, ekran kalabalığını ve odak dağılmasını önlemek için kartın varsayılan olarak tamamen kapalı (kompakt) gelmesini savunmaktadır.\n   * **UI/UX Uzmanı**, kart tamamen kapalı olduğunda kullanıcının akış rehberini gözden kaçırabileceğini belirterek; aktör ve kısa başlığı gösteren tek satırlık bir önizleme (akordiyon başlığı) ile kısmen görünür olmasını talep etmektedir.\n   * **Açık Soru:** Kart varsayılan olarak kapalı bir buton/başlık mı olacak, yoksa ilk satırı (\"Aktör: ...\") açık bir önizleme şeridi mi barındıracak?\n\n2. **Takılma İpucunun Sınırları ve Kapsam Riski:**\n   * **Geliştirme Yöneticisi**, hata/kırmızı kapı anlarında hız kazanmak için hata ve takılma ipucunun senaryoda yer almasını şart koşmuştur.\n   * **Ürün Yöneticisi**, bu durumun uç senaryoları tetikleyip kapsamı ve token maliyetini şişirmesinden endişelenmiş; ancak ipucunun kesinlikle \"tek satır\" ile sınırlandırılması şartıyla uzlaşmaya varmıştır.\n   * **Açık Soru:** Modelin takılma ipucu üretirken kapsam dışına çıkmaması ve metni 1 satırla sınırlı tutması prompt düzeyinde nasıl garanti altına alınacak?\n\n3. **UI/UX Etkisinin Tespiti:**\n   * **Geliştirme Yöneticisi** ve **Ürün Yöneticisi**, bu mekanizmanın yalnızca gerçek UI/UX etkisi olan işlerde çalışmasını şart koşmuştur.\n   * **Bilişsel Yük Bekçisi**, kararın kullanıcıya bırakılmamasını, sistemin sezmesini istemektedir.\n   * **Açık Soru:** Sistemin bir işin \"UI/UX etkisi barındırdığını\" anlaması için kullanılacak eşik veya kural seti (dosya uzantıları, etiketler veya model sınıflandırması) nedir?\n\n---\n\n## Tahmini story listesi\n\n1. **Story 1: UI/UX Etkisi Sezme ve Senaryo Şablonu Prompt Entegrasyonu**\n   * Plan/etki üretim boru hattına \"Kim → Adımlar (3-4 adım) → Beklenen Sonuç → Takılma İpucu (1 satır)\" şablonunun eklenmesi; ek token maliyeti getirmeden tek turda yapılandırılmış çıktı üretilmesi.\n2. **Story 2: Katlanabilir Senaryo Kartı Bileşeni ve Empty State Tasarımı**\n   * Krokinin (`etki/*.html`) yanında yer alacak katlanabilir kart UI bileşeninin, açık/koyu tema uyumunun ve senaryo bulunmadığında gösterilecek boş durum (*empty state*) ekranının geliştirilmesi.\n3. **Story 3: Önizleme / Başlık Davranışı ve Panel Entegrasyonu**\n   * Kartın varsayılan daraltılmış/genişletilmiş davranışının netleştirilerek kroki görüntüleyicisine bağlanması, dar ekran duyarlılığının (responsive) sağlanması."
+  },
+  "ts": "2026-11-17T14:56:45.305Z"
+}
