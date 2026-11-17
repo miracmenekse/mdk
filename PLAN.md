@@ -1079,7 +1079,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 
 - [ ] 210. Tıklanabilir mini bölüm göstergesi ve aktif bölüm takibi
   - Kabul: Tam sayfa Epic detayının kenarında hangi bölümde olunduğunu gösteren dikey küçük bir gösterge yer alır; kaydırdıkça o anki bölüm vurgulanır; göstergedeki bir bölüme tıklandığında doğrudan o bölümün başına yumuşak geçişle gider
-  - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml`): `#drawer.tam-sayfa` içine `.drawer-gosterge` dikey navigasyon çubuğu eklenir; her ana bölüm (`.drawer-bolum`) için bir nokta/etiket üretilir. (b) `panel/index.html`: `IntersectionObserver` ile görünür bölüm tespit edilip aktif nokta `.aktif` yapılır; gösterge öğesine tıklandığında ilgili bölüme `scrollIntoView({ behavior: 'smooth' })` yapılır.
+  - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml`): `#drawer` içinde veya drawer-ic kenarında `.drawer-gosterge` dikey navigasyon çubuğu eklenir (mevcut `<h3 class="drawer-bolum">` başlık regex'leri korunur); ana bölümler (`.drawer-bolum`) için tıklanabilir nokta/bağlantı üretilir. (b) `panel/index.html`: `IntersectionObserver` ile görünür bölüm tespit edilip aktif gösterge noktasına `.aktif` sınıfı verilir; gösterge öğesine tıklandığında ilgili `.drawer-bolum`'a `scrollIntoView({ behavior: 'smooth' })` yapılır.
   - Kapı: `node test/epic-bolum-gosterge.test.mjs`
 - Onay: evet
 - Ana: antigravity
