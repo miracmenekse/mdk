@@ -75,9 +75,14 @@ export function olaylariTopla(log) {
     }
     if (x.event === 'result' && x.result?.usage) {
       const u = x.result.usage;
-      const top = u.total_tokens ?? ((u.input_tokens || 0) + (u.output_tokens || 0) + (u.thinking_tokens || 0) + (u.cache_read_tokens || 0));
-      token += top;
-      etkin += top - (u.cache_read_tokens || 0);
+      const cr = u.cache_read_tokens || 0;
+      const inp = u.input_tokens || 0;
+      const out = u.output_tokens || 0;
+      const th = u.thinking_tokens || 0;
+      const freshInp = inp >= cr ? inp - cr : inp;
+      const fresh = Math.max(0, freshInp + out + th);
+      token += Math.max(u.total_tokens || 0, fresh + cr);
+      etkin += fresh;
     }
     if (x.type === 'tool_use' && x.part?.tool === 'read' && x.part?.state?.status === 'completed') {
       const dosya = x.part.state.input?.filePath || x.part.state.input?.path;

@@ -1101,7 +1101,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Ana: antigravity
 - Onay: evet
 
-- [ ] 212. Model × adım matrisinde doğru token hesaplama ve adım/epic agregasyonu
+- [x] 212. Model × adım matrisinde doğru token hesaplama ve adım/epic agregasyonu
   - Kabul: Agy ve diğer sağlayıcı loglarından token toplanırken etkin token negatif çıkmaz, taze üretilen ve girilen tokenlar sıfır veya pozitif olarak toplanır; durum matris hesaplamasında o adımda harcanan tüm görevlerin (kod, kapı, hakem, eskale) tokenları ve istekleri adım toplamı olarak hesaplanır; plan hiyerarşisine göre adımlar gruplanarak her Epic için harcanan net token ve istek toplamları (`epikler: [{ no, ad, token, istek }]`) üretilir; bozuk eski log kayıtlarında token negatif gösterilmez
   - Ne: (a) `mdk-ortak.mjs:76-81`: `olaylariTopla` içinde `result.usage` işlenirken `fresh = (u.input_tokens || 0) + (u.output_tokens || 0) + (u.thinking_tokens || 0); token += Math.max(u.total_tokens || 0, fresh + (u.cache_read_tokens || 0)); etkin += fresh;` yapılarak negatifliğin önüne geçilir. (b) `panel/durum.mjs:291-340`: `hucre` içinde `sayisal(s.etkin)` negatifse 0 veya `token` alınır; `matris(satirlar, plan)` fonksiyonu `plan` parametresini alarak `adimToplam` (`{ [adim]: { token, istek } }`) ve `epikler` (`[{ no, ad, token, istek }]`) nesnelerini üretir; `snapshot` içinde `matris(satirlar, sonuc.plan)` olarak çağrılır.
   - Kapı: `node test/matris-epik-token.test.mjs`

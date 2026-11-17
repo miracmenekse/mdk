@@ -181,7 +181,7 @@ export function snapshot(dir) {
     });
 
   sonuc.gecmis = gecmis(dir, satirlar);
-  sonuc.matris = matris(satirlar);
+  sonuc.matris = matris(satirlar, sonuc.plan);
 
   // gerçek token: OpenCode veritabanı (salt-okunur); referans fiyat proje kökünde
   let fiyat = null;
@@ -290,14 +290,20 @@ const sayisal = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null);
 
 // hücre: durum + hücredeki TÜM satırların etkin token'ı (yoksa token, o da yoksa 0) ve istek toplamı
 function hucre(durum, deneme, sure, liste) {
-  const tokenler = liste.map((s) => sayisal(s.etkin) ?? sayisal(s.token)).filter((x) => x !== null);
+  const tokenler = liste.map((s) => {
+    const e = sayisal(s.etkin);
+    const t = sayisal(s.token);
+    if (e !== null) return e < 0 ? (t !== null && t >= 0 ? t : 0) : e;
+    if (t !== null) return t < 0 ? 0 : t;
+    return null;
+  }).filter((x) => x !== null);
   const token = tokenler.length ? tokenler.reduce((a, b) => a + b, 0) : null;   // hiç ölçülmediyse 0 değil null
   const istekler = liste.map((s) => sayisal(s.istek)).filter((x) => x !== null);
   return { durum, deneme, sure, token, istek: istekler.length ? istekler.reduce((a, b) => a + b, 0) : null };
 }
 
 // model × adım: hücre = o modelin o adımdaki sonucu; sessiz (yanit_yok) satırlar gerçek deneme değildir
-function matris(satirlar) {
+export function matris(satirlar, plan) {
   const metrik = satirlar.filter((s) => s.tur !== 'inceleme' && typeof s.adim === 'number' && Number.isFinite(s.adim));
   const adimlar = [...new Set(metrik.map((s) => s.adim))].sort((a, b) => a - b);
   const harita = new Map();
@@ -329,5 +335,45 @@ function matris(satirlar) {
       }
       return { yurutucu, model, deney, hucreler };
     });
-  return { adimlar, modeller };
+
+  if (!plan) {
+    return { adimlar, modeller };
+  }
+
+  const adimToplam = {};
+  for (const s of metrik) {
+    const a = s.adim;
+    const e = sayisal(s.etkin);
+    const t = sayisal(s.token);
+    const tok = e !== null ? (e < 0 ? (t !== null && t >= 0 ? t : 0) : e) : (t !== null && t >= 0 ? t : 0);
+    const ist = sayisal(s.istek) ?? 0;
+    if (!adimToplam[a]) adimToplam[a] = { token: 0, istek: 0 };
+    adimToplam[a].token += tok;
+    adimToplam[a].istek += ist;
+  }
+
+  const epikler = [];
+  if (Array.isArray(plan.kategoriler)) {
+    for (const k of plan.kategoriler) {
+      let epikToken = 0;
+      let epikIstek = 0;
+      if (Array.isArray(k.adimlar)) {
+        for (const ad of k.adimlar) {
+          if (typeof ad.no === 'number' && adimToplam[ad.no]) {
+            epikToken += adimToplam[ad.no].token;
+            epikIstek += adimToplam[ad.no].istek;
+          }
+        }
+      }
+      const sadeAd = (k.ad || '').replace(/^(?:Epic|Faz)\s+\d+(?:\.\d+)?\s*[-—–:]\s*/i, '').trim() || k.ad;
+      epikler.push({
+        no: k.no,
+        ad: sadeAd,
+        token: epikToken,
+        istek: epikIstek,
+      });
+    }
+  }
+
+  return { adimlar, modeller, adimToplam, epikler };
 }
