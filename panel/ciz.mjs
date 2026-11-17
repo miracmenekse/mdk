@@ -686,7 +686,24 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
     return false;
   };
   const rozetYeni = ' <span class="rozet-yeni">güncellendi</span>';
+  const bolumListesi = [
+    { ad: 'Tartışma', hedef: 'tartisma' },
+    { ad: 'Çözüm', hedef: 'cozum' },
+    { ad: 'UI/UX Etkisi', hedef: 'etki' },
+  ];
+  if (statu !== 'tamamlandi') {
+    bolumListesi.push({ ad: 'Karar', hedef: 'karar' });
+  }
+
+  let gostergeHtml = '<nav class="drawer-gosterge" aria-label="Bölüm navigasyonu">';
+  for (let i = 0; i < bolumListesi.length; i++) {
+    const b = bolumListesi[i];
+    gostergeHtml += `<button type="button" class="gosterge-nokta${i === 0 ? ' aktif' : ''}" data-indeks="${i}" data-hedef="${b.hedef}" title="${b.ad}" aria-label="${b.ad}"></button>`;
+  }
+  gostergeHtml += '</nav>';
+
   let html = '<div class="drawer-ic">' +
+    gostergeHtml +
     '<div class="drawer-bas">' +
     `<div><span class="etiket">EPIC</span> <b>${esc(e.no ?? '—')}</b></div>` +
     '<div class="drawer-bas-sag">' +

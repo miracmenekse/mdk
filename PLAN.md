@@ -1077,7 +1077,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/index.html` ve `panel/ciz.mjs`: `#drawer.tam-sayfa` için kaydırma dinleyicisi; `wheel` ve `touch` olaylarında hız (`deltaY / deltaT`) hesaplanır; eşik aşıldığında ve `activeElement` input/textarea değilken bir sonraki/önceki `.drawer-bolum`'a `scrollIntoView({ behavior: 'smooth' })` yapılır ve 700ms kilit konur. (b) Üst çubukta aç/kapa toggle düğmesi (`#hizli-atlama-toggle`) ve `localStorage.getItem('mdk_hizli_atlama')` okuma/yazma.
   - Kapı: `node test/epic-bolum-atlama.test.mjs`
 
-- [ ] 210. Tıklanabilir mini bölüm göstergesi ve aktif bölüm takibi
+- [x] 210. Tıklanabilir mini bölüm göstergesi ve aktif bölüm takibi
   - Kabul: Tam sayfa Epic detayının kenarında hangi bölümde olunduğunu gösteren dikey küçük bir gösterge yer alır; kaydırdıkça o anki bölüm vurgulanır; göstergedeki bir bölüme tıklandığında doğrudan o bölümün başına yumuşak geçişle gider
   - Ne: (a) `panel/ciz.mjs` (`epicDrawerHtml`): `#drawer` içinde veya drawer-ic kenarında `.drawer-gosterge` dikey navigasyon çubuğu eklenir (mevcut `<h3 class="drawer-bolum">` başlık regex'leri korunur); ana bölümler (`.drawer-bolum`) için tıklanabilir nokta/bağlantı üretilir. (b) `panel/index.html`: `IntersectionObserver` ile görünür bölüm tespit edilip aktif gösterge noktasına `.aktif` sınıfı verilir; gösterge öğesine tıklandığında ilgili `.drawer-bolum`'a `scrollIntoView({ behavior: 'smooth' })` yapılır.
   - Kapı: `node test/epic-bolum-gosterge.test.mjs`
