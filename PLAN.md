@@ -1095,11 +1095,22 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 
 
 ## Epic 46 — Modeller sekmesi, Model × adım grafiğinde bir adım veya epic için tüketilen tüm tokenların doğru gösterimini görmek.
-- Durum: tasarim
+- Durum: gelistirme
 - Tartışma: epic/46
 - Etki: etki/model-adim-token.html
 - Ana: antigravity
 - Onay: evet
+
+- [ ] 212. Model × adım matrisinde doğru token hesaplama ve adım/epic agregasyonu
+  - Kabul: Agy ve diğer sağlayıcı loglarından token toplanırken etkin token negatif çıkmaz, taze üretilen ve girilen tokenlar sıfır veya pozitif olarak toplanır; durum matris hesaplamasında o adımda harcanan tüm görevlerin (kod, kapı, hakem, eskale) tokenları ve istekleri adım toplamı olarak hesaplanır; plan hiyerarşisine göre adımlar gruplanarak her Epic için harcanan net token ve istek toplamları (`epikler: [{ no, ad, token, istek }]`) üretilir; bozuk eski log kayıtlarında token negatif gösterilmez
+  - Ne: (a) `mdk-ortak.mjs:76-81`: `olaylariTopla` içinde `result.usage` işlenirken `fresh = (u.input_tokens || 0) + (u.output_tokens || 0) + (u.thinking_tokens || 0); token += Math.max(u.total_tokens || 0, fresh + (u.cache_read_tokens || 0)); etkin += fresh;` yapılarak negatifliğin önüne geçilir. (b) `panel/durum.mjs:291-340`: `hucre` içinde `sayisal(s.etkin)` negatifse 0 veya `token` alınır; `matris(satirlar, plan)` fonksiyonu `plan` parametresini alarak `adimToplam` (`{ [adim]: { token, istek } }`) ve `epikler` (`[{ no, ad, token, istek }]`) nesnelerini üretir; `snapshot` içinde `matris(satirlar, sonuc.plan)` olarak çağrılır.
+  - Kapı: `node test/matris-epik-token.test.mjs`
+
+- [ ] 213. Model × matris arayüzünde Epic/Adım görünüm seçici ve toplam satırı
+  - Kabul: Model × matris kartı başlığında "Adım Görünümü" ve "Epic Görünümü" arasında tek tıkla geçiş sağlayan bir toggle/seçici bulunur; Adım görünümünde her adım için tüm görevlerin toplamını gösteren bir toplam satırı yer alır; Epic görünümünde sütunlar doğrudan Epic'ler olur ve modellerin o epic altındaki toplam tüketimi görünür; hücrelerin ve toplamların üzerine gelindiğinde (tooltip) tam token sayısı ve görev dökümü okunur; açık/koyu temada kontrast korunur
+  - Ne: (a) `panel/ciz.mjs:1188-1240`: `matrisHtml(m, secilenGorunum)` içinde `gorunum` seçici butonları (`.matris-gorunum-toggle`), adım görünümünde alt toplam satırı (`tr.matris-toplam`) ve `m.epikler` üzerinden oluşturulan alternatif `epic` matris görünümü üretilir; hücre başlıklarına (title) zengin döküm eklenir. (b) `panel/index.html:595-600`: matris stili ve görünüm toggle'ı dinleyicisi; `localStorage`'da seçili görünümün saklanması.
+  - Kapı: `node test/matris-gorunum-ui.test.mjs`
+
 
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
