@@ -12,7 +12,7 @@
     "baslik": "Etki krokisinin yanına kullanım senaryosu örneği",
     "not": "UI/UX etkisi varsa ve iş bir senaryoyla çalışıyorsa, etki krokisinin (etki/*.html) yanında örnek kullanım senaryosu da çıksın (kim, hangi adımlarla, ne görür).",
     "durum": "bekliyor",
-    "epic": null,
+    "epic": 47,
     "ts": "2026-11-16T17:51:09.937Z"
   },
   {
