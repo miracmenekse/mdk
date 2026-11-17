@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Scrollsuz kroki ve yanına örnek kullanım senaryosu</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 760px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: Kroki iframe'i 300px sabit yükseklikte olduğu için içinde dikey/yatay kaydırma çubukları çıkar ve içerik kesilir; yanında kullanım senaryosu yoktur, kullanıcı akışı tahmin etmek zorundadır.</figcaption>
+  <svg id="once" viewBox="0 0 760 360" role="img" aria-label="Önce: Scroll çubuklu dar kroki ve senaryosuz görünüm">
+    <text x="24" y="28" font-size="13" font-weight="bold" fill="#444">UI/UX ETKİSİ</text>
+
+    <!-- önce iframe kutusu (dar ve scroll çubuklu) -->
+    <rect x="24" y="44" width="340" height="240" fill="#fff" stroke="#ccc" rx="6"/>
+    <text x="36" y="64" font-size="11" fill="#777">önce</text>
+    <!-- kesilen svg içeriği simülasyonu -->
+    <rect x="36" y="74" width="300" height="180" fill="#f5f5f5" stroke="#e0e0e0"/>
+    <text x="50" y="110" font-size="12" fill="#999">Kroki Taslağı (viewBox 680x400)</text>
+    <!-- dikey scrollbar -->
+    <rect x="350" y="45" width="12" height="238" fill="#eee"/>
+    <rect x="352" y="80" width="8" height="60" fill="#999" rx="4"/>
+    <!-- yatay scrollbar -->
+    <rect x="25" y="270" width="324" height="12" fill="#eee"/>
+    <rect x="60" y="272" width="70" height="8" fill="#999" rx="4"/>
+
+    <!-- sonra iframe kutusu (aynı scroll sorunu) -->
+    <rect x="396" y="44" width="340" height="240" fill="#fff" stroke="#ccc" rx="6"/>
+    <text x="408" y="64" font-size="11" fill="#777">sonra</text>
+    <rect x="408" y="74" width="300" height="180" fill="#f5f5f5" stroke="#e0e0e0"/>
+    <text x="422" y="110" font-size="12" fill="#999">Kroki Taslağı (viewBox 680x400)</text>
+    <rect x="722" y="45" width="12" height="238" fill="#eee"/>
+    <rect x="724" y="80" width="8" height="60" fill="#999" rx="4"/>
+
+    <text x="24" y="320" font-size="11" fill="#b91c1c">⚠ Kroki kutusuna sığmıyor, iframe içinde kaydırmak gerekiyor.</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: Kroki iframe'i içeriğe tam oturan (scrollsuz, oran korumalı ve taşmasız) yapıda açılır; hemen yanında/altında kompakt "Örnek Kullanım Senaryosu" kartı (Kim, Adımlar, Ne Görür, Takılma İpucu) yer alır.</figcaption>
+  <svg id="sonra" viewBox="0 0 760 380" role="img" aria-label="Sonra: Scrollsuz tam oturan kroki ve yanında kullanım senaryosu">
+    <text x="24" y="28" font-size="13" font-weight="bold" fill="#444">UI/UX ETKİSİ</text>
+
+    <!-- sol: tam oturan scrollsuz kroki kutusu -->
+    <g class="degisen">
+      <rect x="24" y="44" width="440" height="270" fill="#fff" stroke="#c2410c" rx="8" stroke-width="1.5"/>
+      <rect x="24" y="44" width="440" height="28" fill="#ffedd5" rx="8 8 0 0"/>
+      <text class="degisen-text" x="36" y="63" font-size="11">✓ Scrollsuz Tam Oturan Görünüm (Önce / Sonra)</text>
+
+      <!-- oranlı ve net oturan svg taslağı -->
+      <rect x="36" y="80" width="195" height="180" fill="#fdfdfd" stroke="#e2e8f0" rx="4"/>
+      <text x="44" y="98" font-size="10" font-weight="bold" fill="#64748b">ÖNCE</text>
+      <rect x="44" y="106" width="179" height="144" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="3"/>
+      <text x="54" y="140" font-size="9" fill="#94a3b8">Kroki Taşmadan Tam Oturur</text>
+
+      <rect x="250" y="80" width="200" height="180" fill="#fdfdfd" stroke="#fed7aa" rx="4"/>
+      <text class="degisen-text" x="258" y="98" font-size="10">SONRA</text>
+      <rect x="258" y="106" width="184" height="144" fill="#fff7ed" stroke="#fed7aa"/>
+      <text class="degisen-text" x="268" y="140" font-size="9">Kaydırma Çubuğu Yok</text>
+      <text x="36" y="295" font-size="10" fill="#166534">✓ İframe içinde kaydırma çubuğu çıkmaz, tüm kroki tek bakışta görünür.</text>
+    </g>
+
+    <!-- sağ: kullanım senaryosu kartı -->
+    <g class="degisen">
+      <rect x="480" y="44" width="256" height="270" fill="#fff" stroke="#c2410c" rx="8" stroke-width="1.5"/>
+      <rect x="480" y="44" width="256" height="28" fill="#ffedd5" rx="8 8 0 0"/>
+      <text class="degisen-text" x="492" y="63" font-size="11">📋 Örnek Kullanım Senaryosu</text>
+
+      <text x="492" y="92" font-size="10" font-weight="bold" fill="#475569">👤 Kim (Aktör):</text>
+      <text x="492" y="108" font-size="10" fill="#334155">Geliştirici / Proje Yöneticisi</text>
+
+      <text x="492" y="132" font-size="10" font-weight="bold" fill="#475569">👣 Adımlar (Ne Yapar):</text>
+      <text x="492" y="148" font-size="9" fill="#334155">1. Paneli açar, Modeller sekmesine tıklar.</text>
+      <text x="492" y="164" font-size="9" fill="#334155">2. "Epic Görünümü" düğmesini seçer.</text>
+      <text x="492" y="180" font-size="9" fill="#334155">3. İlgili Epic sütununun toplamını inceler.</text>
+
+      <text x="492" y="206" font-size="10" font-weight="bold" fill="#475569">🎯 Beklenen Sonuç (Ne Görür):</text>
+      <text x="492" y="222" font-size="9" fill="#166534">Her modelin o Epic'te tükettiği net token</text>
+      <text x="492" y="236" font-size="9" fill="#166534">ve alt toplam satırında genel toplam.</text>
+
+      <rect x="488" y="252" width="240" height="48" fill="#f8fafc" stroke="#e2e8f0" rx="4"/>
+      <text x="496" y="268" font-size="9" font-weight="bold" fill="#991b1b">💡 Takılma İpucu (Kırmızı Kapı):</text>
+      <text x="496" y="284" font-size="8.5" fill="#475569">Sayılar görünmüyorsa snapshot.matris'i kontrol et.</text>
+    </g>
+
+    <text x="24" y="340" font-size="10" fill="#64748b">Çekmece ve tam sayfa görünümünde kroki taşmaz, senaryo kartıyla birlikte uyumlu açılır.</text>
+  </svg>
+</figure>
+
+</body>
+</html>
