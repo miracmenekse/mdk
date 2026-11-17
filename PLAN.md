@@ -1072,7 +1072,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Onay: evet
 - Ana: antigravity
 
-- [ ] 209. Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama motoru ve form koruması
+- [x] 209. Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama motoru ve form koruması
   - Kabul: Tam sayfa Epic detayında çok hızlı kaydırıldığında bir sonraki ya da önceki bölüme yumuşak geçişle atlar; normal kaydırmada standart serbest kaydırma devam eder; bir metin kutusu veya form alanı odaktayken hızlı kaydırma bölüm atlamaz; atlama sonrası eylemsizlik koruması (debounce kilidi) çalışır; üst çubukta hızlı atlama açılıp kapatılabilir ve seçim localStorage'da saklanır
   - Ne: (a) `panel/index.html` ve `panel/ciz.mjs`: `#drawer.tam-sayfa` için kaydırma dinleyicisi; `wheel` ve `touch` olaylarında hız (`deltaY / deltaT`) hesaplanır; eşik aşıldığında ve `activeElement` input/textarea değilken bir sonraki/önceki `.drawer-bolum`'a `scrollIntoView({ behavior: 'smooth' })` yapılır ve 700ms kilit konur. (b) Üst çubukta aç/kapa toggle düğmesi (`#hizli-atlama-toggle`) ve `localStorage.getItem('mdk_hizli_atlama')` okuma/yazma.
   - Kapı: `node test/epic-bolum-atlama.test.mjs`

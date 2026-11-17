@@ -673,7 +673,7 @@ function epicBalon(mesaj, personalar) {
 }
 
 // Epic detay çekmecesi: TARTIŞMA, ÇÖZÜM, UI/UX ETKİSİ, KARAR.
-export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = null) {
+export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = null, hizliAtlama = true) {
   const e = epik || {};
   const statu = e.statu || 'analiz';
   const personalar = tartisma?.personalar || [];
@@ -689,7 +689,10 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
   let html = '<div class="drawer-ic">' +
     '<div class="drawer-bas">' +
     `<div><span class="etiket">EPIC</span> <b>${esc(e.no ?? '—')}</b></div>` +
+    '<div class="drawer-bas-sag">' +
+    `<button type="button" id="drawer-hizli-atlama-toggle" data-islem="hizli-atlama" class="hizli-atlama-toggle${hizliAtlama ? ' aktif' : ''}" aria-pressed="${hizliAtlama ? 'true' : 'false'}" title="Hızlı kaydırmayla bölüm atlama">${hizliAtlama ? '⚡ Hızlı Atlama: Açık' : '⚡ Hızlı Atlama: Kapalı'}</button>` +
     '<button type="button" id="drawer-kapat" aria-label="kapat">×</button>' +
+    '</div>' +
     '</div>' +
     `<h2 class="drawer-baslik">${esc(e.ad || '—')}</h2>` +
     `<div class="drawer-durum">${rozet('epic-' + statu, EPIC_ETIKET[statu] || statu)}</div>`;

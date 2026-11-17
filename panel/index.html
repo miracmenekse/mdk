@@ -445,6 +445,11 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .drawer-bas { display: flex; align-items: center; justify-content: space-between; }
 .drawer-bas .etiket { font-size: 12px; color: var(--soluk); letter-spacing: .04em; }
 .drawer-bas .etiket + b { font-size: 18px; margin-left: 4px; }
+.drawer-bas-sag { display: flex; align-items: center; gap: 8px; }
+.hizli-atlama-toggle { font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--soluk); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all .15s ease; }
+.hizli-atlama-toggle:hover { border-color: var(--vurgu); color: var(--metin); }
+.hizli-atlama-toggle.aktif { background: var(--rozet-calisiyor-z); border-color: var(--vurgu); color: var(--vurgu-metin); }
+.ust-cubuk { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 #drawer-kapat { font-size: 22px; line-height: 1; border: none; background: none; color: var(--soluk); cursor: pointer; padding: 2px 8px; border-radius: 6px; }
 #drawer-kapat:hover { background: var(--zemin); color: var(--metin); }
 .drawer-baslik { font-size: 17px; margin: 8px 0 10px; text-transform: none; }
@@ -521,8 +526,13 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 </head>
 <body>
 <main>
-  <h1>MDK</h1>
-  <p class="baglanti" id="baglanti">bağlanıyor…</p>
+  <div class="ust-cubuk">
+    <div>
+      <h1 style="margin: 10px 0 2px;">MDK</h1>
+      <p class="baglanti" id="baglanti" style="margin: 0 0 10px;">bağlanıyor…</p>
+    </div>
+    <button type="button" id="hizli-atlama-toggle" data-islem="hizli-atlama" class="hizli-atlama-toggle aktif" aria-pressed="true" title="Hızlı kaydırmayla bölüm atlama">⚡ Hızlı Atlama: Açık</button>
+  </div>
 
   <section id="depo-serit"></section>
   <section id="kpi"></section>
@@ -817,12 +827,13 @@ async function epicDrawerAc(no) {
   const kayit = epik || { no, ad: '', statu: 'analiz' };
   drawerEpicKayit = kayit;
   drawerEpicTartisma = tartisma;
-  drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici);
+  drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici, null, hizliAtlamaAcikMi());
   drawerEl.classList.add('tam-sayfa');
   drawerEl.hidden = false;
   drawerOverlayEl.hidden = false;
   document.body.classList.add('drawer-acik');
   drawerEpicSonImza = epicImza(kayit, tartisma);
+  hizliAtlamaGuncelleUI();
 }
 
 function drawerKapat() {
@@ -838,6 +849,9 @@ function drawerKapat() {
   drawerSonImza = null;
   clearInterval(drawerZaman);
   drawerZaman = null;
+  hizliAtlamaKilitli = false;
+  sonWheelZaman = 0;
+  dokunmaBasZaman = 0;
 }
 
 // Epic satırı: o anki görünen durumun tersine çevir, yeniden çiz
@@ -903,6 +917,155 @@ drawerOverlayEl.addEventListener('click', drawerKapat);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !drawerEl.hidden) drawerKapat();
 });
+
+// --- Tam sayfa Epic detayında hızlı kaydırmayla bölüm atlama motoru ve form koruması ---
+const HIZLI_ATLAMA_ANAHTAR = 'mdk_hizli_atlama';
+
+function hizliAtlamaAcikMi() {
+  const kayit = localStorage.getItem('mdk_hizli_atlama');
+  return kayit === null ? true : (kayit === '1' || kayit === 'true');
+}
+
+function hizliAtlamaAyarla(acik) {
+  localStorage.setItem('mdk_hizli_atlama', acik ? '1' : '0');
+  hizliAtlamaGuncelleUI();
+}
+
+function hizliAtlamaGuncelleUI() {
+  const acik = hizliAtlamaAcikMi();
+  document.querySelectorAll('#hizli-atlama-toggle, [data-islem="hizli-atlama"]').forEach((b) => {
+    b.classList.toggle('aktif', acik);
+    b.setAttribute('aria-pressed', acik ? 'true' : 'false');
+    b.textContent = acik ? '⚡ Hızlı Atlama: Açık' : '⚡ Hızlı Atlama: Kapalı';
+  });
+}
+
+document.addEventListener('click', (e) => {
+  const toggleBtn = e.target.closest('#hizli-atlama-toggle, [data-islem="hizli-atlama"]');
+  if (!toggleBtn) return;
+  hizliAtlamaAyarla(!hizliAtlamaAcikMi());
+});
+
+let hizliAtlamaKilitli = false;
+let sonWheelZaman = 0;
+let dokunmaBasY = 0;
+let dokunmaBasZaman = 0;
+
+function hizliAtlamaKilitVer() {
+  hizliAtlamaKilitli = true;
+  setTimeout(() => {
+    hizliAtlamaKilitli = false;
+  }, 700);
+}
+
+function hizliBolumAtla(yon) {
+  if (hizliAtlamaKilitli) return false;
+  const aktif = document.activeElement;
+  if (aktif && (aktif.tagName === 'INPUT' || aktif.tagName === 'TEXTAREA' || aktif.isContentEditable)) {
+    return false;
+  }
+
+  const bolumler = Array.from(drawerEl.querySelectorAll('.drawer-bolum'));
+  if (!bolumler.length) return false;
+
+  const dRect = drawerEl.getBoundingClientRect();
+  if (yon > 0) {
+    // Aşağı hızlı kaydırma: sonraki .drawer-bolum öğesine yumuşak geçiş
+    const sonraki = bolumler.find((b) => {
+      const r = b.getBoundingClientRect();
+      return r.top > dRect.top + 50;
+    });
+    if (sonraki) {
+      sonraki.scrollIntoView({ behavior: 'smooth' });
+      hizliAtlamaKilitVer();
+      return true;
+    }
+  } else if (yon < 0) {
+    // Yukarı hızlı kaydırma: önceki .drawer-bolum öğesine yumuşak geçiş
+    const oncekiler = bolumler.filter((b) => {
+      const r = b.getBoundingClientRect();
+      return r.top < dRect.top - 50;
+    });
+    if (oncekiler.length > 0) {
+      const onceki = oncekiler[oncekiler.length - 1];
+      onceki.scrollIntoView({ behavior: 'smooth' });
+      hizliAtlamaKilitVer();
+      return true;
+    } else {
+      drawerEl.scrollTo({ top: 0, behavior: 'smooth' });
+      hizliAtlamaKilitVer();
+      return true;
+    }
+  }
+  return false;
+}
+
+// wheel olayı: deltaY / deltaT hız hesabı ve eşik kontrolü
+drawerEl.addEventListener('wheel', (e) => {
+  if (!drawerEl.classList.contains('tam-sayfa') || drawerEl.hidden) return;
+  if (!hizliAtlamaAcikMi()) return;
+
+  const aktif = document.activeElement;
+  if (aktif && (aktif.tagName === 'INPUT' || aktif.tagName === 'TEXTAREA' || aktif.isContentEditable)) {
+    return;
+  }
+
+  const simdi = performance.now();
+  const deltaT = Math.max(sonWheelZaman ? (simdi - sonWheelZaman) : 50, 1);
+  sonWheelZaman = simdi;
+
+  if (hizliAtlamaKilitli) return;
+
+  const deltaY = e.deltaY;
+  const hiz = Math.abs(deltaY) / deltaT;
+  const HIZ_ESIGI = 1.0;
+
+  if (Math.abs(deltaY) > 50 && hiz > HIZ_ESIGI) {
+    const atlandi = hizliBolumAtla(deltaY > 0 ? 1 : -1);
+    if (atlandi) {
+      e.preventDefault();
+    }
+  }
+}, { passive: false });
+
+// touch olayları: dokunmatik kaydırmada deltaY / deltaT hız hesabı
+drawerEl.addEventListener('touchstart', (e) => {
+  if (!drawerEl.classList.contains('tam-sayfa') || drawerEl.hidden) return;
+  if (e.touches && e.touches.length > 0) {
+    dokunmaBasY = e.touches[0].clientY;
+    dokunmaBasZaman = performance.now();
+  }
+}, { passive: true });
+
+drawerEl.addEventListener('touchmove', (e) => {
+  if (!drawerEl.classList.contains('tam-sayfa') || drawerEl.hidden) return;
+  if (!hizliAtlamaAcikMi()) return;
+
+  const aktif = document.activeElement;
+  if (aktif && (aktif.tagName === 'INPUT' || aktif.tagName === 'TEXTAREA' || aktif.isContentEditable)) {
+    return;
+  }
+
+  if (hizliAtlamaKilitli) return;
+  if (!dokunmaBasZaman || !e.touches || e.touches.length === 0) return;
+
+  const simdi = performance.now();
+  const dokunmaSonY = e.touches[0].clientY;
+  const deltaY = dokunmaBasY - dokunmaSonY;
+  const deltaT = Math.max(simdi - dokunmaBasZaman, 1);
+  const hiz = Math.abs(deltaY) / deltaT;
+  const DOKUNMA_HIZ_ESIGI = 1.0;
+
+  if (Math.abs(deltaY) > 50 && hiz > DOKUNMA_HIZ_ESIGI) {
+    const atlandi = hizliBolumAtla(deltaY > 0 ? 1 : -1);
+    if (atlandi) {
+      e.preventDefault();
+      dokunmaBasZaman = 0;
+    }
+  }
+}, { passive: false });
+
+hizliAtlamaGuncelleUI();
 
 // kroki büyütme: saydam düğme kendi iframe'inin adresini büyük pencerede açar (drawer içindeki etki kartı)
 const buyukEl = document.getElementById('buyuk');
@@ -1085,8 +1248,9 @@ function ciz(d) {
           drawerEpicKayit = kayit;
           drawerEpicSonImza = yeniImza;
           const scrollY = drawerEl.scrollTop;
-          drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, d.kararIzleyici, degisen);
+          drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, d.kararIzleyici, degisen, hizliAtlamaAcikMi());
           drawerEl.scrollTop = scrollY;
+          hizliAtlamaGuncelleUI();
 
           // değişen bölüm başlığına geçici vurgu sınıfı verilir
           for (const b of degisen) {
