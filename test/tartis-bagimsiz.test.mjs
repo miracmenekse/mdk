@@ -16,7 +16,7 @@ function fakeYaz(dir) {
   writeFileSync(
     p,
     `#!/usr/bin/env node
-import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, appendFileSync, mkdirSync, rmdirSync } from 'node:fs';
 import { join } from 'node:path';
 const dir = process.env.STUB_DIR;
 const args = process.argv.slice(2);
@@ -24,11 +24,22 @@ let model = '';
 for (let i = 0; i < args.length; i++) if (args[i] === '-m') model = args[i + 1];
 const istem = args.length ? args[args.length - 1] : '';
 const cfile = join(dir, 'counter');
+const lfile = join(dir, 'counter.lock');
+while (true) {
+  try {
+    mkdirSync(lfile);
+    break;
+  } catch {
+    const start = Date.now();
+    while (Date.now() - start < 2) {}
+  }
+}
 let n = 0;
 try { n = parseInt(readFileSync(cfile, 'utf8'), 10) || 0; } catch {}
 n += 1;
 writeFileSync(cfile, String(n));
 appendFileSync(join(dir, 'calls.log'), JSON.stringify({ model: model, istem: istem, sira: n, ts: Date.now() }) + '\\n');
+try { rmdirSync(lfile); } catch {}
 const bosModeller = (process.env.EPIC_BOS_MODEL || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 const bosMetinler = (process.env.EPIC_BOS_METIN || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 const bosSiralar = (process.env.EPIC_BOS_SIRA || '').split(',').map(function (s) { return parseInt(s.trim(), 10); }).filter(function (x) { return !isNaN(x); });
