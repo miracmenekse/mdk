@@ -366,11 +366,15 @@ export function matris(satirlar, plan) {
         }
       }
       const sadeAd = (k.ad || '').replace(/^(?:Epic|Faz)\s+\d+(?:\.\d+)?\s*[-—–:]\s*/i, '').trim() || k.ad;
+      const adimlarListesi = (k.adimlar || [])
+        .map((a) => (typeof a === 'number' ? a : a?.no))
+        .filter((n) => typeof n === 'number');
       epikler.push({
         no: k.no,
         ad: sadeAd,
         token: epikToken,
         istek: epikIstek,
+        adimlar: adimlarListesi,
       });
     }
   }

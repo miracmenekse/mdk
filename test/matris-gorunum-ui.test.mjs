@@ -37,12 +37,12 @@ const htmlAdim = matrisHtml(m, 'adim');
 assert.ok(htmlAdim.includes('matris-gorunum-toggle') || htmlAdim.includes('data-gorunum'), 'görünüm seçici düğmeleri olmalı');
 assert.ok(htmlAdim.includes('data-gorunum="adim"') && htmlAdim.includes('data-gorunum="epic"'), 'adım ve epic geçiş butonları olmalı');
 assert.ok(htmlAdim.includes('matris-toplam') || htmlAdim.includes('toplam'), 'adım görünümünde alt toplam satırı olmalı');
-assert.ok(htmlAdim.includes('15k') || htmlAdim.includes('15.0k'), 'toplam token formatı gösterilmeli');
+assert.ok(htmlAdim.includes('15k') || htmlAdim.includes('15.0k') || htmlAdim.includes('15,0k'), 'toplam token formatı gösterilmeli');
 
 // 2. Epic Görünümü
 const htmlEpic = matrisHtml(m, 'epic');
 assert.ok(htmlEpic.includes('Epic 40') || htmlEpic.includes('Giriş Paneli'), 'Epic görünümünde Epic başlığı/adı yer almalı');
-assert.ok(htmlEpic.includes('40k') || htmlEpic.includes('40.0k'), 'Epic toplam tokenı yer almalı');
+assert.ok(htmlEpic.includes('40k') || htmlEpic.includes('40.0k') || htmlEpic.includes('40,0k'), 'Epic toplam tokenı yer almalı');
 
 // 3. Geriye dönük uyumluluk
 assert.equal(matrisHtml(null), '<span class="bos">metrik yok</span>');

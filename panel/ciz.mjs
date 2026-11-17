@@ -1185,8 +1185,54 @@ function kisaToken(n) {
 }
 
 // model × adım matrisi; renk tek başına anlam taşımaz, hücrede simge + sayı var
-export function matrisHtml(m) {
+export function matrisHtml(m, secilenGorunum = 'adim') {
   if (!m || !m.adimlar?.length || !m.modeller?.length) return '<span class="bos">metrik yok</span>';
+  const gorunum = secilenGorunum === 'epic' ? 'epic' : 'adim';
+
+  const toggle = '<div class="matris-gorunum-toggle" style="margin-bottom: 8px; display: flex; gap: 6px;">' +
+    `<button type="button" class="yap-islem${gorunum === 'adim' ? ' secili' : ''}" data-gorunum="adim">Adım Görünümü</button>` +
+    `<button type="button" class="yap-islem${gorunum === 'epic' ? ' secili' : ''}" data-gorunum="epic">Epic Görünümü</button>` +
+    '</div>';
+
+  if (gorunum === 'epic' && Array.isArray(m.epikler) && m.epikler.length > 0) {
+    const epikBasliklar = m.epikler.map((e) => `<th>Epic ${esc(e.no)}<br><small style="font-weight:normal;">${esc(e.ad)}</small></th>`).join('');
+    const satirlar = m.modeller.map((r) => {
+      const ad = r.model.startsWith(`${r.yurutucu || 'opencode'}/`) ? r.model : `${r.yurutucu || 'opencode'}/${r.model}`;
+      const etiket = r.deney ? `${ad} · ${r.deney}` : ad;
+      const hucreler = m.epikler.map((e) => {
+        let topTok = 0;
+        let gectiMi = false;
+        let deneme = 0;
+        const hedefAdimlar = e.adimlar && e.adimlar.length ? e.adimlar : Object.keys(r.hucreler || {}).map(Number);
+        for (const aNo of hedefAdimlar) {
+          const h = r.hucreler?.[aNo];
+          if (h && Number.isFinite(h.token)) {
+            topTok += h.token;
+            if (h.durum === 'ilk' || h.durum === 'cok') gectiMi = true;
+            deneme += (h.deneme || 0);
+          }
+        }
+        if (topTok === 0 && !gectiMi) return '<td class="hucre bos" title="bu epic için denenmedi"></td>';
+        const sinif = gectiMi ? 'ilk' : 'cok';
+        return `<td class="hucre ${sinif}" title="Epic ${esc(e.no)}: ${topTok.toLocaleString('tr-TR')} token"><b>${esc(kisaToken(topTok))}</b></td>`;
+      }).join('');
+      return `<tr><th class="model">${esc(etiket)}</th>${hucreler}</tr>`;
+    }).join('');
+
+    const toplamHucreler = m.epikler.map((e) => {
+      const tok = e.token || 0;
+      const ist = e.istek || 0;
+      return `<td class="hucre matris-toplam" title="Epic ${esc(e.no)} toplam: ${tok.toLocaleString('tr-TR')} token · ${ist.toLocaleString('tr-TR')} istek"><b>${esc(kisaToken(tok))}</b></td>`;
+    }).join('');
+    const toplamSatiri = `<tr class="matris-toplam"><th class="model">Toplam</th>${toplamHucreler}</tr>`;
+
+    return '<div class="kaydir"><table class="matris"><thead><tr><th class="model">model</th>' +
+      epikBasliklar +
+      `</tr></thead><tbody>${satirlar}${toplamSatiri}</tbody></table></div>` +
+      toggle +
+      '<p class="lejant">Epic bazında toplam etkin token tüketimi · alttaki sayı = harcanan etkin token</p>';
+  }
+
   const hucre = (h, no) => {
     if (!h) return `<td class="hucre bos" title="adım ${esc(no)}: denenmedi"></td>`;
     const sure = h.sure == null ? '' : ` · ${h.sure} sn`;
@@ -1212,9 +1258,23 @@ export function matrisHtml(m) {
       m.adimlar.map((no) => hucre(r.hucreler?.[no], no)).join('') +
       '</tr>';
   }).join('');
+
+  let toplamSatiri = '';
+  if (m.adimToplam) {
+    const toplamHucreler = m.adimlar.map((no) => {
+      const top = m.adimToplam[no];
+      if (!top || !top.token) return '<td class="hucre matris-toplam">—</td>';
+      const tok = top.token;
+      const ist = top.istek || 0;
+      return `<td class="hucre matris-toplam" title="adım ${esc(no)} toplam: ${tok.toLocaleString('tr-TR')} token · ${ist.toLocaleString('tr-TR')} istek"><b>${esc(kisaToken(tok))}</b></td>`;
+    }).join('');
+    toplamSatiri = `<tr class="matris-toplam"><th class="model">Adım Toplamı</th>${toplamHucreler}</tr>`;
+  }
+
   return '<div class="kaydir"><table class="matris"><thead><tr><th class="model">model</th>' +
     m.adimlar.map((no) => `<th>${esc(no)}</th>`).join('') +
-    `</tr></thead><tbody>${satirlar}</tbody></table></div>` +
+    `</tr></thead><tbody>${satirlar}${toplamSatiri}</tbody></table></div>` +
+    toggle +
     '<p class="lejant">✓N = N. denemede geçti · ✕N = N gerçek denemede geçmedi · ○ = yalnız kota sessizliği · boş = denenmedi · alttaki sayı = harcanan etkin token</p>';
 }
 

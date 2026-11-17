@@ -532,6 +532,8 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .yapilacak-biten ul { margin: 6px 0 0; padding-left: 18px; }
 #yapilacaklar .yap-hata { font-size: 12px; margin: 6px 0 0; }
 #profiller .not { font-size: 12px; color: var(--soluk); margin: 0 0 8px; }
+.matris-gorunum-toggle button.secili { background: var(--vurgu); color: #fff; border-color: var(--vurgu); font-weight: 600; }
+.matris tr.matris-toplam th, .matris tr.matris-toplam td { border-top: 2px solid var(--cizgi); font-weight: 600; background: var(--zemin); }
 @media (max-width: 600px) { .profiller { flex-direction: column; } }
 </style>
 </head>
@@ -663,6 +665,7 @@ const yapilacaklarEl = document.getElementById('yapilacaklar');
 const kapiUretimEl = document.getElementById('kapi-uretim');
 const telemetriEl = document.getElementById('telemetri');
 const matrisEl = document.getElementById('matris');
+let matrisGorunum = localStorage.getItem('mdk_matris_gorunum') || 'adim';
 const claudeEl = document.getElementById('claude');
 const tokenPayiEl = document.getElementById('token-payi');
 const modelCubukEl = document.getElementById('model-cubuk');
@@ -1399,7 +1402,7 @@ function ciz(d) {
   tokenPayiEl.innerHTML = tokenPayiHtml(d);
   modelCubukEl.innerHTML = modelTokenCubukHtml(d);
   telemetriEl.innerHTML = telemetriHtml(d.telemetri);
-  matrisEl.innerHTML = matrisHtml(d.matris);
+  matrisEl.innerHTML = matrisHtml(d.matris, matrisGorunum);
   claudeEl.innerHTML = claudeHtml(d.claude);
   // etki artık sekme değil: açık drawer'daki adımın kartında gösterilir (drawerAc)
 }
@@ -1572,6 +1575,17 @@ profillerEl.addEventListener('click', async (e) => {
     p.textContent = 'bağlantı hatası';
     kart.append(p);
     dugme.disabled = false;
+  }
+});
+
+// Model × matris görünüm toggle'ı
+matrisEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-gorunum]');
+  if (!btn) return;
+  matrisGorunum = btn.dataset.gorunum;
+  localStorage.setItem('mdk_matris_gorunum', matrisGorunum);
+  if (sonD?.matris) {
+    matrisEl.innerHTML = matrisHtml(sonD.matris, matrisGorunum);
   }
 });
 
