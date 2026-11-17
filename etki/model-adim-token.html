@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etki taslağı: Model × adım matrisinde doğru token ve Epic/Adım dökümü</title>
+<style>
+  body { font-family: system-ui, sans-serif; color: #333; margin: 1rem; }
+  figure { margin: 0 0 1.25rem; }
+  figcaption { font-size: .85rem; color: #666; margin-bottom: .35rem; }
+  svg { display: block; width: 100%; max-width: 720px; height: auto; background: #f7f7f7; border: 1px solid #ccc; }
+  .degisen { stroke: #c2410c; fill: #ffedd5; }
+  .degisen-text { fill: #9a3412; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<figure>
+  <figcaption>Önce: Model × adım matrisinde yalnızca adımlar listelenir; Epic toplamı yoktur; sağlayıcı önbellek farkından kaynaklanan negatif etkin tokenlar (-48k gibi) hatalı görünür; tüm görevlerin (kod, kapı, hakem vb.) adım toplamı tek bakışta okunamaz.</figcaption>
+  <svg id="once" viewBox="0 0 720 340" role="img" aria-label="Önce: Epic toplamsız ve negatif token içeren matris">
+    <!-- başlık -->
+    <text x="24" y="32" font-size="14" font-weight="bold" fill="#333">MODEL × ADIM</text>
+    <rect x="24" y="44" width="672" height="260" fill="#fff" stroke="#ddd" rx="8"/>
+
+    <!-- tablo başlıkları -->
+    <rect x="24" y="44" width="672" height="34" fill="#f0f2f5" rx="8 8 0 0"/>
+    <text x="36" y="66" font-size="12" font-weight="bold" fill="#555">Model</text>
+    <text x="220" y="66" font-size="12" fill="#666">207</text>
+    <text x="320" y="66" font-size="12" fill="#666">208</text>
+    <text x="420" y="66" font-size="12" fill="#666">209</text>
+    <text x="520" y="66" font-size="12" fill="#666">210</text>
+    <text x="620" y="66" font-size="12" fill="#666">211</text>
+
+    <!-- satır 1: agy -->
+    <line x1="24" y1="110" x2="696" y2="110" stroke="#eee"/>
+    <text x="36" y="100" font-size="11" font-family="monospace" fill="#333">agy/gemini-3.8-flash</text>
+    <text x="220" y="96" font-size="12" fill="#166534">✓1</text>
+    <text x="220" y="108" font-size="9" fill="#dc2626">-1.0M</text>
+    <text x="320" y="96" font-size="12" fill="#166534">✓1</text>
+    <text x="320" y="108" font-size="9" fill="#dc2626">-2.0M</text>
+    <text x="420" y="96" font-size="12" fill="#166534">✓1</text>
+    <text x="420" y="108" font-size="9" fill="#dc2626">-1.7M</text>
+    <text x="520" y="96" font-size="12" fill="#166534">✓1</text>
+    <text x="520" y="108" font-size="9" fill="#dc2626">-1.7M</text>
+    <text x="620" y="96" font-size="12" fill="#166534">✓2</text>
+    <text x="620" y="108" font-size="9" fill="#dc2626">-1.1M</text>
+
+    <!-- satır 2: opencode -->
+    <line x1="24" y1="145" x2="696" y2="145" stroke="#eee"/>
+    <text x="36" y="132" font-size="11" font-family="monospace" fill="#333">opencode/beam-free</text>
+    <text x="220" y="132" font-size="10" fill="#999">—</text>
+    <text x="320" y="132" font-size="10" fill="#999">—</text>
+    <text x="420" y="132" font-size="10" fill="#999">—</text>
+    <text x="520" y="132" font-size="10" fill="#999">—</text>
+    <text x="620" y="132" font-size="10" fill="#999">—</text>
+
+    <!-- lejant -->
+    <text x="36" y="280" font-size="10" fill="#777">✓N = N. denemede geçti · boş = denenmedi · alttaki sayı = harcanan etkin token</text>
+  </svg>
+</figure>
+
+<figure>
+  <figcaption>Sonra: Model × Matris başlığında "Epic Görünümü / Adım Görünümü" geçişi; pozitif doğrulanmış token hesaplaması; her adım sütununda tüm görevlerin (kod, kapı, hakem) toplamı; Epic döküm çubuğu veya sekmesinde her Epic için harcanan net token gösterimi.</figcaption>
+  <svg id="sonra" viewBox="0 0 720 340" role="img" aria-label="Sonra: Epic/Adım geçişli, doğru pozitif token ve toplam gösterimi">
+    <!-- başlık ve görünüm seçici -->
+    <text x="24" y="32" font-size="14" font-weight="bold" fill="#333">MODEL × MATRİS</text>
+    <g class="degisen">
+      <rect x="490" y="16" width="206" height="24" rx="12" stroke-width="1"/>
+      <rect x="492" y="18" width="100" height="20" rx="10" fill="#c2410c"/>
+      <text x="510" y="32" font-size="10" font-weight="bold" fill="#fff">Adım Görünümü</text>
+      <text x="605" y="32" font-size="10" fill="#9a3412">Epic Görünümü</text>
+    </g>
+
+    <!-- kart gövdesi -->
+    <rect x="24" y="44" width="672" height="260" fill="#fff" stroke="#ddd" rx="8"/>
+
+    <!-- epic başlık gruplaması şeridi -->
+    <g class="degisen">
+      <rect x="24" y="44" width="672" height="20" fill="#ffedd5" stroke="#fed7aa" rx="8 8 0 0"/>
+      <text class="degisen-text" x="240" y="58" font-size="10">Epic 43 (322k)</text>
+      <text class="degisen-text" x="440" y="58" font-size="10">Epic 44 (361k)</text>
+      <text class="degisen-text" x="610" y="58" font-size="10">Epic 45 (133k)</text>
+    </g>
+
+    <!-- tablo başlıkları -->
+    <rect x="24" y="64" width="672" height="30" fill="#f0f2f5"/>
+    <text x="36" y="84" font-size="12" font-weight="bold" fill="#555">Model</text>
+    <text x="220" y="84" font-size="12" fill="#666">207</text>
+    <text x="320" y="84" font-size="12" fill="#666">208</text>
+    <text x="420" y="84" font-size="12" fill="#666">209</text>
+    <text x="520" y="84" font-size="12" fill="#666">210</text>
+    <text x="620" y="84" font-size="12" fill="#666">211</text>
+
+    <!-- satır 1: agy (doğru pozitif tokenlar) -->
+    <line x1="24" y1="128" x2="696" y2="128" stroke="#eee"/>
+    <text x="36" y="118" font-size="11" font-family="monospace" fill="#333">agy/gemini-3.8-flash</text>
+    <text x="220" y="114" font-size="12" fill="#166534">✓1</text>
+    <text class="degisen-text" x="220" y="125" font-size="9">150k</text>
+    <text x="320" y="114" font-size="12" fill="#166534">✓1</text>
+    <text class="degisen-text" x="320" y="125" font-size="9">185k</text>
+    <text x="420" y="114" font-size="12" fill="#166534">✓1</text>
+    <text class="degisen-text" x="420" y="125" font-size="9">190k</text>
+    <text x="520" y="114" font-size="12" fill="#166534">✓1</text>
+    <text class="degisen-text" x="520" y="125" font-size="9">171k</text>
+    <text x="620" y="114" font-size="12" fill="#166534">✓2</text>
+    <text class="degisen-text" x="620" y="125" font-size="9">133k</text>
+
+    <!-- adım toplamı satırı -->
+    <g class="degisen">
+      <rect x="24" y="140" width="672" height="26" fill="#fff7ed" stroke="#fed7aa"/>
+      <text class="degisen-text" x="36" y="157" font-size="11">Σ Adım Toplamı</text>
+      <text class="degisen-text" x="220" y="157" font-size="10">150k</text>
+      <text class="degisen-text" x="320" y="157" font-size="10">185k</text>
+      <text class="degisen-text" x="420" y="157" font-size="10">190k</text>
+      <text class="degisen-text" x="520" y="157" font-size="10">171k</text>
+      <text class="degisen-text" x="620" y="157" font-size="10">133k</text>
+    </g>
+
+    <!-- lejant ve özet döküm -->
+    <text x="36" y="275" font-size="10" fill="#777">✓N = N. denemede geçti · alttaki sayı = etkin token · üzerine gelince (hover) tüm görevlerin (kod, kapı, hakem) ayrıntısı</text>
+  </svg>
+</figure>
+
+</body>
+</html>
