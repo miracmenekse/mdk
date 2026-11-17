@@ -1116,10 +1116,11 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Durum: gelistirme
 - Tartışma: epic/47
 - Etki: etki/kroki-senaryo-scrollsuz.html
+- Senaryo: Geliştirici veya Tasarımcı | Epic çekmecesini açar, UI/UX krokisini inceler | Kroki penceresi scroll çubuğu olmadan tam oturur, senaryo kartı görünür | Karmaşık SVG taslaklarında büyüt veya tam sayfa moduna geçer
 - Ana: antigravity
 - Onay: evet
 
-- [ ] 214. Scrollsuz tam oturan kroki yapısı ve örnek kullanım senaryosu kartı
+- [x] 214. Scrollsuz tam oturan kroki yapısı ve örnek kullanım senaryosu kartı
   - Kabul: Kroki iframe'leri dikey veya yatay scroll çubuğu çıkarmayacak şekilde içeriğe tam oturur (en az 420px yükseklik ve scrolling="no"); çekmecede krokinin yanında veya altında "Örnek Kullanım Senaryosu" kartı yer alır; senaryo kartında Aktör (Kim), Adımlar, Beklenen Sonuç ve Takılma İpucu bölümleri düzenli gösterilir; PLAN.md'de Epic altında `- Senaryo:` satırı varsa bu metin/kart arayüzde gösterilir; senaryo olmadığında boş durum temiz kalır
   - Ne: (a) `panel/index.html:316-322`: `.kroki iframe` yüksekliği 420px ve `overflow: hidden` yapılır, `#drawer.tam-sayfa .kroki iframe` 440px ayarlanır; `.kroki-senaryo` CSS stilleri eklenir. (b) `panel/ciz.mjs:745-760`: `epicDrawerHtml` içinde iframe'lere `scrolling="no"` eklenir ve `e.senaryo` varsa krokinin yanına/altına `.kroki-senaryo` kartı basılır. (c) `panel/plan.mjs:88-95` ve `panel/durum.mjs:255-265`: `- Senaryo:` alanı ayrıştırılır ve anlık durum nesnesine aktarılır.
   - Kapı: `node test/kroki-senaryo.test.mjs`

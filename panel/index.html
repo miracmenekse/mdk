@@ -315,10 +315,55 @@ table.matris th.model { position: sticky; left: 0; background: var(--kart); z-in
 .buyut:focus-visible { outline: 2px solid var(--vurgu); }
 .kroki iframe {
   width: 100%;
-  height: 300px;
+  height: 420px;
   border: 1px solid var(--cizgi);
   border-radius: 8px;
   background: var(--kart);
+  overflow: hidden;
+}
+#drawer.tam-sayfa .kroki iframe {
+  height: 440px;
+}
+.kroki-senaryo {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+}
+.kroki-senaryo h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vurgu-metin);
+}
+.senaryo-izgara {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.senaryo-oge {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.senaryo-etiket {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--soluk);
+  font-weight: 600;
+}
+.senaryo-deger {
+  font-size: 13px;
+  color: var(--metin);
+  line-height: 1.4;
+}
+.senaryo-metin {
+  font-size: 13px;
+  color: var(--metin);
+  margin: 0;
+  line-height: 1.4;
 }
 .kroki .etiket { font-size: 12px; color: var(--soluk); margin-bottom: 4px; }
 form.karar { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }

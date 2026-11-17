@@ -672,6 +672,23 @@ function epicBalon(mesaj, personalar) {
     `<p class="metin">${govde}</p></div></div>`;
 }
 
+// Kroki yanındaki / altındaki örnek kullanım senaryosu kartı
+export function senaryoHtml(metin) {
+  if (!metin) return '';
+  const parcalar = metin.split('|').map((s) => s.trim());
+  if (parcalar.length >= 2) {
+    const basliklar = ['Aktör', 'Adımlar', 'Beklenen Sonuç', 'Takılma İpucu'];
+    let icerik = '<div class="kroki-senaryo"><h4>Örnek Kullanım Senaryosu</h4><div class="senaryo-izgara">';
+    for (let i = 0; i < parcalar.length; i++) {
+      const etiket = basliklar[i] || `Detay ${i + 1}`;
+      icerik += `<div class="senaryo-oge"><span class="senaryo-etiket">${esc(etiket)}</span><span class="senaryo-deger">${esc(parcalar[i])}</span></div>`;
+    }
+    icerik += '</div></div>';
+    return icerik;
+  }
+  return `<div class="kroki-senaryo"><h4>Örnek Kullanım Senaryosu</h4><p class="senaryo-metin">${esc(metin)}</p></div>`;
+}
+
 // Epic detay çekmecesi: TARTIŞMA, ÇÖZÜM, UI/UX ETKİSİ, KARAR.
 export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = null, hizliAtlama = true) {
   const e = epik || {};
@@ -745,13 +762,16 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
     html += '<div class="kroki">' +
       '<div><div class="etiket">önce</div>' +
       `<button type="button" class="buyut" data-src="${once}" aria-label="önce taslağını büyüt"></button>` +
-      `<iframe loading="lazy" src="${once}"></iframe></div>` +
+      `<iframe loading="lazy" scrolling="no" src="${once}"></iframe></div>` +
       '<div><div class="etiket">sonra</div>' +
       `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
-      `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
+      `<iframe loading="lazy" scrolling="no" src="${sonra}"></iframe></div>` +
       '</div>';
   } else {
     html += '<p class="bos">taslak yok</p>';
+  }
+  if (e.senaryo) {
+    html += senaryoHtml(e.senaryo);
   }
   if (e.figma) html += figmaBilgi(e);
   const bekleyen = Boolean(e.karar && !e.alindi);
@@ -1344,10 +1364,10 @@ function etkiKart(e, maxToken, izleyici) {
     '<div class="kroki">' +
     '<div><div class="etiket">önce</div>' +
     `<button type="button" class="buyut" data-src="${once}" aria-label="önce taslağını büyüt"></button>` +
-    `<iframe loading="lazy" src="${once}"></iframe></div>` +
+    `<iframe loading="lazy" scrolling="no" src="${once}"></iframe></div>` +
     '<div><div class="etiket">sonra</div>' +
     `<button type="button" class="buyut" data-src="${sonra}" aria-label="sonra taslağını büyüt"></button>` +
-    `<iframe loading="lazy" src="${sonra}"></iframe></div>` +
+    `<iframe loading="lazy" scrolling="no" src="${sonra}"></iframe></div>` +
     '</div>' +
     figmaBilgi(e) +
     kararBolum(e, izleyici) +

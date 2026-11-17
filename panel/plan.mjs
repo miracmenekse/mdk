@@ -36,7 +36,7 @@ export function parse(text) {
     if (kat) {
       const ad = kat[1].trim();
       const nm = ad.match(/^(?:Epic|Faz)\s+(\d+(?:\.\d+)?)\b/);
-      kategori = { ad, no: nm ? nm[1] : null, durum: null, tartisma: null, etki: null, figma: null, onay: false, adimlar: [] };
+      kategori = { ad, no: nm ? nm[1] : null, durum: null, tartisma: null, etki: null, senaryo: null, figma: null, onay: false, adimlar: [] };
       sonuc.kategoriler.push(kategori);
       adim = null;
       continue;
@@ -59,7 +59,7 @@ export function parse(text) {
       };
       kabulAlanlari(adim);
       if (!kategori) {
-        kategori = { ad: '', no: null, durum: null, tartisma: null, etki: null, figma: null, onay: false, adimlar: [] };
+        kategori = { ad: '', no: null, durum: null, tartisma: null, etki: null, senaryo: null, figma: null, onay: false, adimlar: [] };
         sonuc.kategoriler.push(kategori);
       }
       kategori.adimlar.push(adim);
@@ -73,7 +73,7 @@ export function parse(text) {
       continue;
     }
 
-    const alan = satir.match(/^\s*-\s+(Kabul onayı|Kabul|Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma|Durum|Tartışma):\s*(.*)$/);
+    const alan = satir.match(/^\s*-\s+(Kabul onayı|Kabul|Kapı|Yürütücü|Etki|Değer|Bütçe|Persona|Figma|Durum|Tartışma|Senaryo):\s*(.*)$/);
     if (alan) {
       const [, anahtar, deger] = alan;
       if (!adim) {
@@ -87,6 +87,8 @@ export function parse(text) {
             kategori.tartisma = y.startsWith('epic/') && !y.includes('..') ? y : null;
           } else if (anahtar === 'Etki') {
             kategori.etki = deger.trim() || null;
+          } else if (anahtar === 'Senaryo') {
+            kategori.senaryo = deger.trim() || null;
           } else if (anahtar === 'Figma') {
             const y = deger.trim();
             kategori.figma = /^https:\/\/(www\.)?figma\.com\//.test(y) ? y : null;
