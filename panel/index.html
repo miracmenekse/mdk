@@ -439,9 +439,9 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 #drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(460px, 92vw); background: var(--kart); border-left: 1px solid var(--cizgi); box-shadow: -8px 0 28px rgba(0, 0, 0, .18); z-index: 41; overflow-y: auto; }
 .drawer-ic { padding: 18px 20px 40px; }
 #drawer.tam-sayfa { top: 0; right: 0; left: 0; width: 100vw; border-left: none; box-shadow: none; }
-#drawer.tam-sayfa .drawer-ic { max-width: 920px; margin: 0 auto; padding: 28px 32px 60px; font-size: 15px; line-height: 1.6; }
+#drawer.tam-sayfa .drawer-ic { max-width: 920px; margin: 0 auto; padding: 28px 32px min(65vh, 520px); font-size: 15px; line-height: 1.6; }
 #drawer.tam-sayfa .drawer-baslik { font-size: 24px; }
-@media (max-width: 640px) { #drawer.tam-sayfa .drawer-ic { padding: 18px 16px 40px; } }
+@media (max-width: 640px) { #drawer.tam-sayfa .drawer-ic { padding: 18px 16px min(50vh, 360px); } }
 .drawer-bas { display: flex; align-items: center; justify-content: space-between; }
 .drawer-bas .etiket { font-size: 12px; color: var(--soluk); letter-spacing: .04em; }
 .drawer-bas .etiket + b { font-size: 18px; margin-left: 4px; }
@@ -904,7 +904,15 @@ drawerEl.addEventListener('click', (e) => {
     const idx = Number(gostergeNokta.dataset.indeks);
     const bolumler = Array.from(drawerEl.querySelectorAll('.drawer-bolum'));
     if (!Number.isNaN(idx) && bolumler[idx]) {
-      bolumler[idx].scrollIntoView({ behavior: 'smooth' });
+      const gosterge = drawerEl.querySelector('.drawer-gosterge');
+      if (gosterge) {
+        gosterge.querySelectorAll('.gosterge-nokta').forEach((n, i) => {
+          n.classList.toggle('aktif', i === idx);
+        });
+      }
+      gostergeTiklamaKilidi = true;
+      setTimeout(() => { gostergeTiklamaKilidi = false; }, 800);
+      bolumler[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
       atlananBolumBildir(bolumler[idx]);
     }
   }
@@ -1114,8 +1122,10 @@ hizliAtlamaGuncelleUI();
 
 // --- Epic detay dikey mini bölüm göstergesi (adım 210) ---
 let epicGostergeGozlemci = null;
+let gostergeTiklamaKilidi = false;
 
 function epicGostergeGuncelle() {
+  if (gostergeTiklamaKilidi) return;
   const gosterge = drawerEl.querySelector('.drawer-gosterge');
   if (!gosterge) return;
   const noktalar = Array.from(gosterge.querySelectorAll('.gosterge-nokta'));
@@ -1123,11 +1133,18 @@ function epicGostergeGuncelle() {
   if (!noktalar.length || !bolumler.length) return;
 
   const dRect = drawerEl.getBoundingClientRect();
+  const enAltta = (drawerEl.scrollTop + drawerEl.clientHeight) >= (drawerEl.scrollHeight - 60);
+
   let aktifIdx = 0;
-  for (let i = 0; i < bolumler.length; i++) {
-    const r = bolumler[i].getBoundingClientRect();
-    if (r.top <= dRect.top + 120) {
-      aktifIdx = i;
+  if (enAltta) {
+    aktifIdx = bolumler.length - 1;
+  } else {
+    const esik = dRect.top + Math.min(dRect.height * 0.45, 300);
+    for (let i = 0; i < bolumler.length; i++) {
+      const r = bolumler[i].getBoundingClientRect();
+      if (r.top <= esik) {
+        aktifIdx = i;
+      }
     }
   }
   noktalar.forEach((n, i) => n.classList.toggle('aktif', i === aktifIdx));
