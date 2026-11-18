@@ -646,6 +646,9 @@ details.kat > summary, details.etki-gecmis > summary { cursor: pointer; font-siz
 .yapilacak-biten { margin-top: 10px; font-size: 13px; color: var(--soluk); }
 .yapilacak-biten summary { cursor: pointer; }
 .yapilacak-biten ul { margin: 6px 0 0; padding-left: 18px; }
+.yapilacak-biten li { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0; }
+.yap-islem.yap-sil { color: var(--rozet-eskale-m, #dc2626); }
+.yap-islem.yap-sil:hover { border-color: #dc2626; background: rgba(220, 38, 38, .08); }
 #yapilacaklar .yap-hata { font-size: 12px; margin: 6px 0 0; }
 #profiller .not { font-size: 12px; color: var(--soluk); margin: 0 0 8px; }
 .matris-gorunum-toggle button.secili { background: var(--vurgu); color: #fff; border-color: var(--vurgu); font-weight: 600; }
@@ -1673,8 +1676,13 @@ yapilacaklarEl.addEventListener('click', (e) => {
   }
   const dugme = e.target.closest('.yap-islem');
   if (!dugme) return;
-  const id = Number(dugme.closest('li').dataset.id);
+  const li = dugme.closest('li');
+  const id = li ? Number(li.dataset.id) : null;
+  if (!id) return;
   if (dugme.dataset.islem === 'tasi') yapilacakIstek({ islem: 'tasi', id, yon: Number(dugme.dataset.deger) });
+  else if (dugme.dataset.islem === 'sil') {
+    if (confirm('Bu iş listeden silinsin mi?')) yapilacakIstek({ islem: 'sil', id });
+  }
   else yapilacakIstek({ islem: 'durum', id, durum: dugme.dataset.deger });
 });
 

@@ -371,7 +371,7 @@ export function yapilacaklarHtml(liste, izleyici = false) {
   const acik = liste.filter((o) => o.durum !== 'bitti');
   const biten = liste.filter((o) => o.durum === 'bitti');
   const dugme = (islem, deger, etiket) =>
-    `<button type="button" class="yap-islem" data-islem="${islem}" data-deger="${esc(deger)}">${etiket}</button>`;
+    `<button type="button" class="yap-islem${islem === 'sil' ? ' yap-sil' : ''}" data-islem="${islem}" data-deger="${esc(deger)}">${etiket}</button>`;
   const satirlar = acik.map((o) => {
     const rozet = (o.durum === 'ertelendi' ? ' <span class="rozet bekliyor">ertelendi</span>' : '') +
       (o.epic ? ` <span class="rozet calisiyor">Epic ${esc(o.epic)}</span>` : '');
@@ -382,6 +382,7 @@ export function yapilacaklarHtml(liste, izleyici = false) {
         dugme('durum', 'bitti', 'bitti'),
         dugme('tasi', '-1', '↑'),
         dugme('tasi', '1', '↓'),
+        dugme('sil', '', 'sil'),
       ].join('') +
       (o.durum === 'bekliyor' && !o.epic ? `<button type="button" class="yap-epic" data-id="${esc(o.id)}">Epic'e çevir</button>` : '') +
       '</span>';
@@ -390,7 +391,7 @@ export function yapilacaklarHtml(liste, izleyici = false) {
   }).join('');
   const bitenHtml = biten.length === 0 ? '' :
     `<details class="yapilacak-biten"><summary>biten işler (${biten.length})</summary><ul>` +
-    biten.map((o) => `<li>${esc(o.baslik)}</li>`).join('') + '</ul></details>';
+    biten.map((o) => `<li data-id="${esc(o.id)}"><span>${esc(o.baslik)}</span>${izleyici ? '' : ' ' + dugme('sil', '', 'sil')}</li>`).join('') + '</ul></details>';
   const acikHtml = satirlar ? `<ol class="yapilacaklar">${satirlar}</ol>` : '<p class="bos">açık iş yok</p>';
   return form + acikHtml + bitenHtml;
 }

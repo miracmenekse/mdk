@@ -1167,7 +1167,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/yapilacak.mjs`: `yapilacakSil(liste, id)` işlevini dışa aktarma. (b) `panel/sunucu.mjs:640-660`: `POST /api/yapilacak` içinde `girdi?.islem === 'sil'` durumunda `yapilacakSil` çağrısı ve `yapılacak: sil #<id>` commit işlemi.
   - Kapı: `node test/yapilacak-sil-api.test.mjs`
 
-- [ ] 220. Panel yapılacaklar listesinde açık ve bitmiş işler için sil düğmesi ve arayüz etkileşimi
+- [x] 220. Panel yapılacaklar listesinde açık ve bitmiş işler için sil düğmesi ve arayüz etkileşimi
   - Kabul: `yapilacaklarHtml` açık işler listesinde her öğenin yanındaki buton grubuna silme düğmesi (`sil`) ekler; biten işler listesinde her öğenin yanında da silme düğmesi yer alır (`izleyici: true` iken silme butonları render edilmez); sil butonuna tıklandığında `/api/yapilacak` uç noktasına silme isteği iletilir ve liste anında güncellenir; silme butonları panel temasıyla uyumlu kırmızımsı/vurgulu ve kompakt olarak çizilir
   - Ne: (a) `panel/ciz.mjs:370-396`: `yapilacaklarHtml` içinde açık işler buton grubuna `dugme('sil', '', 'sil')` ekleme, `biten` işler listesinde her öğeye `data-id` ve sil butonu ekleme. (b) `panel/index.html:1670-1685`: `yapilacaklarEl` click dinleyicisinde `dugme.dataset.islem === 'sil'` durumunu yakalayıp `yapilacakIstek({ islem: 'sil', id })` gönderme; `.yap-sil` CSS stilleri.
   - Kapı: `node test/yapilacak-sil-ui.test.mjs`
