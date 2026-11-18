@@ -54,5 +54,13 @@
     "durum": "bekliyor",
     "epic": null,
     "ts": "2026-11-18T08:00:40.119Z"
+  },
+  {
+    "id": 8,
+    "baslik": "Depo / kod haritası desteği",
+    "not": "Adım geliştirirken modellerin dosya aramakla token harcamasını önlemek için projenin sembol ve bağımlılık haritasının (repo map) çıkarılması ve bağlama eklenmesi.",
+    "durum": "bekliyor",
+    "epic": null,
+    "ts": "2026-11-18T08:00:40.138Z"
   }
 ]
