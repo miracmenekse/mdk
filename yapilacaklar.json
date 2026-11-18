@@ -19,7 +19,7 @@
     "id": 4,
     "baslik": "Persona ağırlıklandırma ile sadeleşmiş çözüm çıktısı",
     "not": "Özellik başına bir persona daha ağır bassın (ör. bilişsel sorumlu ya da müşteri personası). Ağırlık adımda - Persona-ağırlık: bilişsel=3, müşteri=1 gibi verilir; sentez tablosu ağırlıklı öneri üretir.",
-    "durum": "bekliyor",
+    "durum": "bitti",
     "epic": 48,
     "ts": "2026-11-16T17:51:09.939Z"
   },
