@@ -38,5 +38,13 @@
     "durum": "bekliyor",
     "epic": null,
     "ts": "2026-11-18T08:00:40.058Z"
+  },
+  {
+    "id": 6,
+    "baslik": "Başarısız test çıktısının ayıklanarak modele yapılandırılmış geri bildirim olarak verilmesi",
+    "not": "Koşturucu denemesi başarısız olduğunda komut ve test çıktısının ayıklanıp gereksiz gürültüden arındırılarak sonraki denemeye yüksek kaliteli hata tanısı (ipucu) olarak sunulması.",
+    "durum": "bekliyor",
+    "epic": null,
+    "ts": "2026-11-18T08:00:40.097Z"
   }
 ]
