@@ -35,6 +35,52 @@ export function hataOzeti(metin, sinir = 1500) {
   return birlesik.length > sinir ? birlesik.slice(0, sinir) : birlesik;
 }
 
+const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]/g;
+
+// Başarısız test ve komut çıktısını gürültüden arındırarak yapılandırılmış tanı nesnesine dönüştürür.
+export function yapilandirilmisTani(metin, { komut = '', sinir = 1500 } = {}) {
+  const ham = metin == null ? '' : String(metin);
+  const temiz = ham.replace(ANSI_RE, '');
+  const s = temiz.split(/\r?\n/);
+
+  let hataTuru = 'CikisHatasi';
+  if (s.some((l) => l.includes('AssertionError'))) {
+    hataTuru = 'AssertionError';
+  } else {
+    const errMatch = temiz.match(/\b([A-Za-z_$][\w$]*Error)\s*:/);
+    if (errMatch) hataTuru = errMatch[1];
+    else if (s.some((l) => l.includes('BAŞARISIZ'))) hataTuru = 'TestHatasi';
+  }
+
+  let konum = null;
+  for (const l of s) {
+    if (/node:|node_modules/.test(l)) continue;
+    const m = l.match(/([^\s():]+\.(?:mjs|cjs|js|ts|sh):\d+(?::\d+)?)/);
+    if (m) {
+      konum = m[1];
+      break;
+    }
+  }
+
+  const ozet = hataOzeti(temiz, sinir);
+  const kmt = String(komut || '').trim() || null;
+  const basliklar = [];
+  if (kmt) basliklar.push(`Komut: ${kmt}`);
+  basliklar.push(`Hata Türü: ${hataTuru}`);
+  if (konum) basliklar.push(`Konum: ${konum}`);
+  const ust = basliklar.join(' | ');
+  const tam = ozet ? `${ust}\nDetay:\n${ozet}` : ust;
+  const geriBildirim = tam.length > sinir ? tam.slice(0, sinir) : tam;
+
+  return {
+    komut: kmt,
+    hataTuru,
+    konum,
+    ozet,
+    geriBildirim,
+  };
+}
+
 // Story boyutu: 60 satırın altı küçük, 250 satır / 3 dosyanın üstü büyük; arası normal (null).
 export function boyutDenetle({ dosya = 0, satir = 0 } = {}) {
   if (satir < 60) {

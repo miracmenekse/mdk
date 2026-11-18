@@ -51,24 +51,24 @@
     "id": 6,
     "baslik": "Başarısız test çıktısının ayıklanarak modele yapılandırılmış geri bildirim olarak verilmesi",
     "not": "Koşturucu denemesi başarısız olduğunda komut ve test çıktısının ayıklanıp gereksiz gürültüden arındırılarak sonraki denemeye yüksek kaliteli hata tanısı (ipucu) olarak sunulması.",
-    "durum": "bekliyor",
-    "epic": null,
+    "durum": "bitti",
+    "epic": 53,
     "ts": "2026-11-18T08:00:40.097Z"
   },
   {
     "id": 7,
     "baslik": "Yalıtılmış çalışma alanı (git worktree / overlay workspace)",
     "not": "Adım ve test koşularının yalıtılmış bir kopyada çalıştırılması, olası çakışmaların önlenmesi ve başarısız adımlarda temiz geri alma (checkpoint/revert) imkanı sağlanması.",
-    "durum": "bekliyor",
-    "epic": null,
+    "durum": "bitti",
+    "epic": 54,
     "ts": "2026-11-18T08:00:40.119Z"
   },
   {
     "id": 8,
     "baslik": "Depo / kod haritası desteği",
     "not": "Adım geliştirirken modellerin dosya aramakla token harcamasını önlemek için projenin sembol ve bağımlılık haritasının (repo map) çıkarılması ve bağlama eklenmesi.",
-    "durum": "bekliyor",
-    "epic": null,
+    "durum": "bitti",
+    "epic": 55,
     "ts": "2026-11-18T08:00:40.138Z"
   },
   {

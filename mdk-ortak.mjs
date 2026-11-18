@@ -1,6 +1,6 @@
 // Koşturucuların ortak parçaları (mdk-adim, mdk-incele, persona-tur, mdk-paralel). Yan etkisiz: yalnız dışa aktarım.
 // Bash sürümlerindeki awk/grep/sed/setsid/flock parçalarının JS karşılığı; Windows'ta da çalışır.
-import { closeSync, copyFileSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs';
+import { closeSync, copyFileSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -369,6 +369,101 @@ export function denemeWorktreeAktar(wtYol, kok = process.cwd()) {
 // Salt okunur agy çağrısı: plan kipinde, model verilmişse --model ile başlar.
 export function agySaltOkuArgs(ad, istem) {
   return [...(ad === 'varsayilan' ? [] : ['--model', ad]), '--mode', 'plan', '--output-format', 'stream-json', '-p', istem];
+}
+
+// Yalıtılmış çalışma alanının etkin olup olmadığını denetler (MDK_YALITIM=1, adımda - Yalıtım: evet ya da PLAN başında Yalıtım: evet).
+export function yalitimEtkinMi(planMetni = '', adimBlok = '', env = process.env) {
+  if (env.MDK_YALITIM === '0') return false;
+  if (env.MDK_YALITIM === '1') return true;
+  if (adimBlok && /^\s*-\s*(?:Yalıtım|Yalitim):\s*evet\b/im.test(adimBlok)) return true;
+  if (planMetni) {
+    const ust = planMetni.split(/^##\s/m)[0] || '';
+    if (/^(?:Yalıtım|Yalitim):\s*evet\b/im.test(ust)) return true;
+  }
+  return false;
+}
+
+// Başarısız denemede çalışma ağacını hedef commit'e temiz geri alır (.mdk-log, durum.json, metrikler.jsonl korunur).
+export function temizGeriAl(kok = process.cwd(), hedefCommit = 'HEAD') {
+  try {
+    const r1 = spawnSync('git', ['reset', '--hard', hedefCommit], { cwd: kok, stdio: 'ignore' });
+    const r2 = spawnSync('git', ['clean', '-fdq', '-e', '.mdk-log', '-e', 'durum.json', '-e', 'metrikler.jsonl', '-e', 'hakem.jsonl'], { cwd: kok, stdio: 'ignore' });
+    return r1.status === 0 && r2.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+// Sıfır bağımlılıklı yerel depo / kod haritası: dışa aktarılan sembolleri (satır numarasıyla) ve yerel bağımlılıkları çıkarır.
+export function depoHaritasi({ kok = process.cwd(), sorgu = '', adimBlok = '', butce = 1200 } = {}) {
+  try {
+    const ATLA_DIZIN = new Set(['.git', '.mdk-log', 'node_modules', 'graphify-out', 'test', 'kapi', 'epic', 'persona-tur']);
+    const dosyalar = [];
+    const tara = (dizin, goreceli = '', derinlik = 0) => {
+      if (derinlik > 2) return;
+      let girdiler = [];
+      try { girdiler = readdirSync(dizin, { withFileTypes: true }); } catch { return; }
+      for (const g of girdiler) {
+        if (g.name.startsWith('.')) continue;
+        const rel = goreceli ? `${goreceli}/${g.name}` : g.name;
+        if (g.isDirectory()) {
+          if (!ATLA_DIZIN.has(g.name)) tara(join(dizin, g.name), rel, derinlik + 1);
+        } else if (/\.(mjs|js)$/i.test(g.name) && !/\.test\.(mjs|js)$/i.test(g.name)) {
+          dosyalar.push(rel);
+        }
+      }
+    };
+    tara(kok);
+    if (!dosyalar.length) return '';
+
+    const hedefSet = new Set();
+    for (const m of String(adimBlok || '').matchAll(/`([\w./-]+\.(?:mjs|js))(?::[\d,-]+)?`/g)) {
+      hedefSet.add(m[1]);
+    }
+    const kelimeler = String(`${sorgu || ''} ${adimBlok || ''}`)
+      .toLowerCase()
+      .match(/[a-z0-9ğüşıöç_]{3,}/g) || [];
+
+    const satirListesi = [];
+    for (const rel of dosyalar.sort()) {
+      const icerik = oku(join(kok, rel));
+      if (!icerik) continue;
+      const semboller = [];
+      const s = icerik.split(/\r?\n/);
+      for (let i = 0; i < s.length; i++) {
+        const m = s[i].match(/^export\s+(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/);
+        if (m) semboller.push(`${m[1]}:L${i + 1}`);
+      }
+      const bagimliliklar = [];
+      for (const m of icerik.matchAll(/from\s+['"](\.[^'"]+)['"]/g)) {
+        if (!bagimliliklar.includes(m[1])) bagimliliklar.push(m[1]);
+      }
+      if (!semboller.length && !bagimliliklar.length) continue;
+
+      let puan = hedefSet.has(rel) ? 100 : 0;
+      const kucukRel = rel.toLowerCase();
+      for (const k of kelimeler) {
+        if (kucukRel.includes(k)) puan += 5;
+        if (semboller.some((sym) => sym.toLowerCase().includes(k))) puan += 3;
+      }
+      const sembolBilgi = semboller.length ? semboller.join(', ') : '(yok)';
+      const bagBilgi = bagimliliklar.length ? ` -> ${bagimliliklar.join(', ')}` : '';
+      satirListesi.push({ rel, puan, metin: `${rel}: ${sembolBilgi}${bagBilgi}` });
+    }
+
+    satirListesi.sort((a, b) => b.puan - a.puan || a.rel.localeCompare(b.rel));
+    const secilen = [];
+    let toplam = 0;
+    for (const oge of satirListesi) {
+      const ek = (secilen.length ? 1 : 0) + oge.metin.length;
+      if (toplam + ek > butce) break;
+      secilen.push(oge.metin);
+      toplam += ek;
+    }
+    return secilen.join('\n');
+  } catch {
+    return '';
+  }
 }
 
 

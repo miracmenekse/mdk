@@ -1195,6 +1195,33 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/sunucu.mjs:1150-1210`: `GET /api/epic` uç noktasında `epic/<no>/plan.md` ve `is.md` dosyalarını güvenli biçimde okuyup yanıta `{ plan, is }` ekleme. (b) `panel/ciz.mjs:641, 707-745, 835-870`: `epicDrawerHtml` içinde `UYGULAMA PLANI` bölümü ve navigasyon noktası çizimi, plan varken karar formunun aktifleşmesi, `epicImza`'ya plan uzunluğu eklenmesi. (c) `panel/index.html:952-965, 1488-1520`: `/api/epic` yanıtındaki `plan` ve `is` alanlarının çekmece kaydına aktarılması.
   - Kapı: `node test/epic-plan-gorunum.test.mjs`
 
+## Epic 53 — Başarısız test çıktısının ayıklanarak modele yapılandırılmış geri bildirim olarak verilmesi
+- Durum: gelistirme
+- Ana: antigravity
+
+- [x] 224. Yapılandırılmış hata tanısı ayıklayıcı (`yapilandirilmisTani`) ve koşturucu geri bildirim entegrasyonu
+  - Kabul: Başarısız kapı çıktısındaki ANSI renk kodları ve gürültü temizlenerek hangi komutun kırıldığı (`Komut`), hatanın türü (`Hata Türü`), kaynak dosya/satır/sütun (`Konum`) ve özet iddia (`Detay`) yapılandırılmış olarak sonraki denemeye ipucu verilir
+  - Ne: (a) `mdk-denetim.mjs`: `yapilandirilmisTani(metin, { komut, sinir })` saf işlevini dışa aktarma. (b) `mdk-adim.mjs`: kırılan kapı komutunu izleme ve `yapilandirilmisTani` geri bildirimini `ipucu` içine bağlama.
+  - Kapı: `node test/yapilandirilmis-tani.test.mjs`
+
+## Epic 54 — Yalıtılmış çalışma alanı (git worktree / overlay workspace)
+- Durum: gelistirme
+- Ana: antigravity
+
+- [x] 225. Plan/adım bazlı yalıtılmış çalışma alanı etkinleştirme (`yalitimEtkinMi`) ve temiz geri alma (`temizGeriAl`)
+  - Kabul: Yalıtılmış çalışma alanı `MDK_YALITIM=1` yanı sıra `PLAN.md` başında `Yalıtım: evet` ya da adımda `- Yalıtım: evet` ile de etkinleştirilebilir; başarısız denemelerde çalışma ağacı `.mdk-log`, `durum.json` ve `metrikler.jsonl` korunarak hedef commit'e temiz biçimde geri alınır
+  - Ne: (a) `mdk-ortak.mjs`: `yalitimEtkinMi(planMetni, adimBlok, env)` ve `temizGeriAl(kok, hedefCommit)` işlevlerini dışa aktarma. (b) `mdk-adim.mjs`: `yalitimEtkinMi` ile yalıtılmış worktree denetimini bağlama.
+  - Kapı: `node test/yalitim-alan.test.mjs`
+
+## Epic 55 — Depo / kod haritası desteği
+- Durum: gelistirme
+- Ana: antigravity
+
+- [x] 226. Sıfır bağımlılıklı yerel depo / kod haritası (`depoHaritasi`) ve istem bağlamı entegrasyonu
+  - Kabul: Dış bağımlılık kullanmadan projenin kaynak dosyalarındaki dışa aktarılan semboller (satır numaralarıyla) ve yerel bağımlılıklar çıkarılır; adımda adı geçen dosyalar en üstte önceliklendirilerek bütçe sınırına uygun kod haritası üretilir ve `MDK_HARITA=1` ya da `- Harita: evet` / `Harita: evet` ile istem bağlamına eklenir
+  - Ne: (a) `mdk-ortak.mjs`: `depoHaritasi({ kok, sorgu, adimBlok, butce })` işlevini dışa aktarma. (b) `mdk-adim.mjs`: `HARITA_IPUCU` hesaplaması ve istem bağlamına eklenmesi.
+  - Kapı: `node test/depo-haritasi.test.mjs`
+
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
   - Epic 28 Sağlayıcı hataları (8+9) → Epic 29 Koşturucu denetimleri (6+12) → Epic 30 Kapıyı sade dille göster (1) → Epic 31 Maliyet ve deneme göstergesi (3) → Epic 32 Rol → model profilleri (10) → Epic 33 Yapılacaklar listesi ve panelden iş girişi (4+5) → Epic 34 Bağlam bütçesi (13) → Epic 35 Persona bağımsız ilk görüş (14) → Epic 36 Yalıtılmış test ve geri alma (15) → Epic 37 Terminalsiz kurulum (2+11; Windows denemesi 7 bu Epic'in elle adımı).

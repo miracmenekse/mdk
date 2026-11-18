@@ -19,7 +19,7 @@ if (!process.env.MDK_DONMUS) {
   process.exit(r.status ?? 1);
 }
 
-const { adimBlogu, agacKilidi, denemeWorktreeAc, denemeWorktreeAktar, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, zombiTemizle } = await import('./mdk-ortak.mjs');
+const { adimBlogu, agacKilidi, denemeWorktreeAc, denemeWorktreeAktar, depoHaritasi, epicBlogu, grafDilimi, kilitAl, kilitBirak, kos, modelListesi, olaylariTopla, opencodeSec, oturumKapat, planSatiri, yalitimEtkinMi, zombiTemizle } = await import('./mdk-ortak.mjs');
 const { eksikKapilar, izinYapilandirmasi, kabukKos, kapiUret, temizOrtam } = await import('./mdk-adim-kapi.mjs');
 // donmuş kopya elde mdk-hata.mjs yoksa (ör. eski bir depo) koşturucu yine açılsın: hata yönetimi devre dışı kalır
 const hata = await import('./mdk-hata.mjs').catch(() => ({ gunlukHatasi: () => null, iletiBul: () => null, bekleMs: (t, b = 5000, c = 60000) => Math.min(c, b * 3 ** (t - 1)) }));
@@ -27,12 +27,13 @@ const { gunlukHatasi, iletiBul, bekleMs } = hata;
 // mdk-denetim.mjs yoksa (ör. eski bir depo) kapı ipucu son baytlara, boyut denetimi kapalıya düşer
 const denetim = await import('./mdk-denetim.mjs').catch(() => ({
   hataOzeti: (m, n = 1500) => kirp(String(m || '').slice(-n)),
+  yapilandirilmisTani: (m, { sinir = 1500 } = {}) => ({ geriBildirim: kirp(String(m || '').slice(-sinir)) }),
   boyutDenetle: () => null,
   baglamSiniri: () => ({ dosya: 5, satir: 800 }),
   baglamIpucu: () => '',
   baglamDenetle: () => ({ asim: false, ileti: null }),
 }));
-const { hataOzeti, boyutDenetle, baglamSiniri, baglamIpucu, baglamDenetle } = denetim;
+const { hataOzeti, yapilandirilmisTani, boyutDenetle, baglamSiniri, baglamIpucu, baglamDenetle } = denetim;
 
 // pipe'a yazılan çıktı process.exit'te kesilmesin: eşzamanlı yaz
 const yaz = (s) => writeSync(1, s + '\n');
@@ -170,6 +171,10 @@ const BAGLAM_SINIR = baglamSiniri(gorev, plan, blok);
 const BAGLAM_IPUCU = baglamIpucu(BAGLAM_SINIR);
 const GRAF = grafDilimi({ sorgu: `${baslik} ${(blok.match(/^\s*- Ne:(.*)$/m) || [])[1] || ''}`.slice(0, 400) });
 const GRAF_IPUCU = GRAF ? `Graph bağlamı (graphify; ilgili dosya/fonksiyon ve satırlar; ipucudur, dosyayı okuyup doğrula):\n${GRAF}\n` : '';
+const HARITA_ETKIN = e.MDK_HARITA === '1' || /^\s*-\s*Harita:\s*evet\b/im.test(blok) || /^Harita:\s*evet\b/im.test(plan.split(/^##\s/m)[0] || '');
+const HARITA = HARITA_ETKIN ? depoHaritasi({ kok: process.cwd(), sorgu: baslik, adimBlok: blok, butce: Number(e.MDK_HARITA_BUTCE) || 1200 }) : '';
+const HARITA_IPUCU = HARITA ? `Depo kod haritası (semboller ve bağımlılıklar):\n${HARITA}\n` : '';
+const YALITIM_ETKIN = yalitimEtkinMi(plan, blok, e);
 
 // Cursor CLI (cursor/<model>): --force yok, izin listesi proje .cursor/cli.json'da; dosya her denemede yeniden yazılır, git'ten gizlenir
 const CURSOR_IZIN = '{"permissions":{"allow":["Read(**)","Write(**)","Shell(bash)","Shell(sh)","Shell(node)","Shell(npm)","Shell(npx)","Shell(git)","Shell(grep)","Shell(sed)","Shell(awk)","Shell(cat)","Shell(ls)","Shell(head)","Shell(tail)","Shell(wc)","Shell(find)","Shell(sort)","Shell(diff)","Shell(mkdir)","Shell(cp)","Shell(mv)","Shell(rm)","Shell(touch)","Shell(chmod)","Shell(echo)","Shell(test)","Shell(python3)"],"deny":["Shell(sudo)","Shell(git push)"]}}';
@@ -269,11 +274,11 @@ while (aday.length) {
     let geciciTekrar = 0, d = 1;
     while (d <= DENEME) {
       const ANA_KOK = process.cwd();
-      const wt = e.MDK_YALITIM === '1' ? denemeWorktreeAc(ANA_KOK, N) : null;
+      const wt = YALITIM_ETKIN ? denemeWorktreeAc(ANA_KOK, N) : null;
       if (wt) process.chdir(wt.yol);
       yazDurum(m, d, 'calisiyor');
       const log = join(LOGD, `adim${N}-${sn()}.jsonl`);
-      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${BAGLAM_IPUCU}\n${GRAF_IPUCU}${SADE_IPUCU}\n${ipucu}`;
+      const istem = `${KURALLAR}\n\nAşağıdaki adımı yap, yalnızca onu (PLAN.md adım ${N}; metnin tamamı burada).\n${PROJE_KURAL}\nAdım:\n${blok}\n${personaIpucu}\n${BAGLAM_IPUCU}\n${GRAF_IPUCU}${HARITA_IPUCU}${SADE_IPUCU}\n${ipucu}`;
       const r = await calistir(m, `adim-${N}`, istem, log, true);
       let neden = r.neden;
       // 0-sn doktor: CLI argüman/ikili hatası varsa (0 olay + stderr'de CLI hatası) diğer modelleri boşuna deneme
@@ -291,6 +296,7 @@ while (aday.length) {
         if (!neden) neden = 'sorun';
       }
       const kapiLog = log + '.kapi'; sonKapiLog = kapiLog;
+      let basarisizKapiKomutu = '';
       if (!neden) {
         // kurcalama: model kapı dosyasını (test/, *.test.*, PLAN.md) değiştirip ya da silip geçmesin
         let kurcalama = git('diff', '--cached', '--name-only', '--no-renames', '--diff-filter=MD', CP).stdout.split('\n').filter((f) => f && /(^|\/)test\/|^kapi\/|\.test\.[a-z]+$|^PLAN\.md$/.test(f));
@@ -301,7 +307,7 @@ while (aday.length) {
         } else {
           for (const k of KAPILAR) { // ilk başarısız kapıda dur; o kapının çıktısı kapiLog'da kalır
             const s = kabukKos(k, { env: temizOrtam() }); writeFileSync(kapiLog, s.metin);
-            if (!s.ok) { neden = 'kapi'; break; }
+            if (!s.ok) { neden = 'kapi'; basarisizKapiKomutu = k; break; }
           }
           // kapı sonrası regresyon: adım kapısı geçse de başka test kırıldıysa deneme başarısız
           if (!neden && REGRESYON) {
@@ -375,7 +381,8 @@ while (aday.length) {
         break; // geçici tekrar sınırı doldu: kota gibi sıradaki modele geç
       }
       if (neden === 'kapi' || neden === 'kurcalama') {
-        ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısından başarısız iddia:\n${hataOzeti(oku(kapiLog), 1500)}`;
+        const tani = yapilandirilmisTani(oku(kapiLog), { komut: basarisizKapiKomutu, sinir: 1500 });
+        ipucu = `Önceki deneme kapıyı geçemedi. Kapı çıktısından başarısız iddia:\n${tani.geriBildirim}`;
         const err = oku(log + '.err');
         if (err.includes('auto-denied')) {
           const ilk = (err.split('\n').find((l) => l.trim()) || '').trim();
