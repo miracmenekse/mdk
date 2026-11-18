@@ -72,7 +72,7 @@
     "ts": "2026-11-18T08:00:40.138Z"
   },
   {
-    "id": 9,
+    "id": 10,
     "baslik": "dbeaver-mm: yeni navigation pane (bağlantı/proje gezgini gibi, kendi UI'ı, kolay aranabilir)",
     "not": "Mevcut connection/project navigator'a benzer ama kullanıcının istediği UI'a göre tasarlanacak yeni bir navigation pane; kolayca aranabilir olacak. Başka bir sohbette geliştirilecek (tasarım ayrıntıları orada konuşulacak). Bağlam: K112/K113/K130 gezgin işleri (tek şemalı zincir düzleştirme, aramada otomatik açma) mevcut navigator'ın sınırlarını gösterdi.",
     "durum": "bekliyor",
