@@ -1148,7 +1148,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Durum: gelistirme
 - Ana: antigravity
 
-- [ ] 217. Araştırma sekmesinde details kendiliğinden açılma kusurunun giderilmesi
+- [x] 217. Araştırma sekmesinde details kendiliğinden açılma kusurunun giderilmesi
   - Kabul: URL parçası `#arastirma` olduğunda tarayıcı "Eski araştırma notu" details öğesini otomatik açmaz (kapalı kalır); içteki bölüm `id="arastirma-eski"` olarak adlandırılır; API'den gelen araştırma verileri bu bölümde sorunsuz listelenir; stil tanımları ve sekme testleri güncellenir
   - Ne: (a) `panel/index.html:411-445, 727, 1568`: `<section id="arastirma">` kimliği `id="arastirma-eski"` olarak değiştirilir, script referansı ve CSS güncellenir. (b) `panel/arastirma.test.mjs:70` ve `panel/sekme.test.mjs:55`: yeni kimlik doğrulamasına uyarlanır.
   - Kapı: `node test/arastirma-details-kusur.test.mjs`

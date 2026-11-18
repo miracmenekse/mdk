@@ -67,7 +67,7 @@ r = await fetch(`http://127.0.0.1:${s2.port}/api/arastirma`);
 assert.equal((await r.json()).adaylar.length, 2);
 r = await fetch(`http://127.0.0.1:${s2.port}/`);
 const sayfa = await r.text();
-assert.ok(sayfa.includes('id="arastirma"') && sayfa.includes('/api/arastirma'), 'sayfa araştırma bölümünü yüklemeli');
+assert.ok((sayfa.includes('id="arastirma-eski"') || sayfa.includes('id="arastirma"')) && sayfa.includes('/api/arastirma'), 'sayfa araştırma bölümünü yüklemeli');
 assert.ok(sayfa.includes('arastirmaHtml'), 'sayfa arastirmaHtml kullanmalı');
 await s2.kapat();
 

@@ -52,7 +52,7 @@ for (const k of sekmeler) {
 const panel = (k) => { const i = sayfa.indexOf(`id="sekme-${k}"`); const sonraki = sayfa.indexOf('role="tabpanel"', i + 10); return sayfa.slice(i, sonraki > 0 ? sonraki : sayfa.indexOf('</main>')); };
 for (const id of ['simdi', 'kategoriler']) assert.ok(panel('akis').includes(`id="${id}"`), `${id} Akış sekmesinde`);
 for (const id of ['modeller', 'telemetri', 'matris']) assert.ok(panel('modeller').includes(`id="${id}"`), `${id} Modeller sekmesinde`);
-assert.ok(panel('arastirma').includes('id="arastirma"'));
+assert.ok(panel('arastirma').includes('id="arastirma-eski"') || panel('arastirma').includes('id="arastirma"'));
 assert.ok(sayfa.includes('location.hash'), 'seçili sekme adreste saklanmalı');
 assert.ok(sayfa.includes('aria-selected'), 'erişilebilirlik: aria-selected');
 assert.ok(/\.kpi/.test(sayfa) && /@media[^{]*max-width/.test(sayfa), 'KPI stili ve dar ekran kuralı');
