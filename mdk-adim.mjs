@@ -194,8 +194,8 @@ function agyKota(log) {
 }
 const kotaVar = (log) => KOTA.test(oku(log + '.err')) || oku(log).split('\n').some((l) => /"type":"error"/.test(l) && KOTA.test(l.slice(l.indexOf('"type":"error"'))));
 // sağlayıcı sorunları: modele değil sağlayıcıya yazılır, eskale edilmez ve kalıcı olanlar sıradaki modele geçer
-const SAGLAYICI_TURLER = ['oran', 'sunucu', 'ag', 'kimlik', 'model_yok', 'kota'];
-const GECICI_TURLER = ['oran', 'sunucu', 'ag'];
+const SAGLAYICI_TURLER = ['oran', 'sunucu', 'zaman_asimi', 'ag', 'kimlik', 'model_yok', 'kota'];
+const GECICI_TURLER = ['oran', 'sunucu', 'zaman_asimi', 'ag'];
 const GECICI_TEKRAR = Number(e.MDK_GECICI_TEKRAR ?? 2);
 const GECICI_BEKLE = Number(e.MDK_GECICI_BEKLE_MS || 5000);
 
@@ -220,16 +220,20 @@ async function calistir(cm, bas, ist, log, bd) {
   };
   const r = await kos({ komut, args, env, log, ilk: ILK, sure: SURE, poll: POLL * 1000, durdur });
   let neden = r.neden || '';
+  let retryAfterMs = null;
   if (!neden && yurm === 'opencode' && kotaVar(log)) neden = 'kota'; // hızlı kota çıkışı: süreç POLL dolmadan çıkabilir
   if (!neden && yurm === 'cursor' && /usage limit|rate limit|upgrade to|quota/i.test(oku(log + '.err'))) neden = 'kota'; // tahmin; gerçek mesaj görülünce daralt
   if (!neden && yurm === 'agy' && agyKota(log)) neden = 'kota'; // Antigravity kota mesajı
   if (!neden && yurm === 'opencode') { // günlükteki hata olayından tür çıkar; bilinmeyen akışı değiştirmez
     const h = gunlukHatasi(log);
-    if (h && SAGLAYICI_TURLER.includes(h.tur)) neden = h.tur;
+    if (h && SAGLAYICI_TURLER.includes(h.tur)) {
+      neden = h.tur;
+      if (typeof h.retryAfterMs === 'number') retryAfterMs = h.retryAfterMs;
+    }
   }
   if (neden === 'izin') neden = '';
   if (neden && yurm === 'opencode') oturumKapat(OC, log, bas);
-  return { neden, yurm, t0 };
+  return { neden, yurm, t0, retryAfterMs };
 }
 
 // otomatik kapı üretimi: adımdaki kapı dosyası diskte yoksa ve PLAN'da Görev kapi: varsa önce kapıyı yazdır
@@ -361,7 +365,7 @@ while (aday.length) {
         if (geciciTekrar < GECICI_TEKRAR) {
           geciciTekrar++;
           sifirla();
-          const bekle = bekleMs(geciciTekrar, GECICI_BEKLE);
+          const bekle = bekleMs(geciciTekrar, GECICI_BEKLE, 60000, r.retryAfterMs);
           yaz(`adım ${N}: ${m} deneme ${d} başarısız (${neden}); ${bekle} ms bekleyip yeniden deniyorum`);
           await uyu(bekle);
           continue; // aynı model, aynı deneme numarası: deneme hakkı tüketilmez

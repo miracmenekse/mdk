@@ -19,6 +19,8 @@
       "baslik": "Antigravity",
       "planlayici": [
         "agy",
+        "--model",
+        "gemini-4-argon-medium",
         "-p",
         "{istem}",
         "--mode",
@@ -48,8 +50,8 @@
           "agy/gemini-3.8-flash-medium"
         ],
         "eskale": [
-          "agy/gemini-3.8-flash-high",
-          "agy/gemini-4-hydrogen-medium"
+          "agy/gemini-4-argon-medium",
+          "agy/gemini-3.8-flash-medium"
         ],
         "hakem": [
           "agy/gemini-4-argon-medium",

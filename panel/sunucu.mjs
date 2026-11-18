@@ -1187,8 +1187,26 @@ export async function baslat(dir, port, { calistir } = {}) {
           }
         }
       }
+      let planMetni = null;
+      let isMetni = null;
+      if (no && /^\d+$/.test(no)) {
+        try {
+          const kokGercek = realpathSync(kok);
+          const guvenliOku = (dosyaAdi) => {
+            try {
+              const tam = realpathSync(join(kok, 'epic', no, dosyaAdi));
+              if (tam !== kokGercek && !tam.startsWith(kokGercek + sep)) return null;
+              return readFileSync(tam, 'utf8');
+            } catch {
+              return null;
+            }
+          };
+          planMetni = guvenliOku('plan.md');
+          isMetni = guvenliOku('is.md');
+        } catch {}
+      }
       yanit.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      yanit.end(JSON.stringify({ no, tartisma }));
+      yanit.end(JSON.stringify({ no, tartisma, plan: planMetni, is: isMetni }));
       return;
     }
 

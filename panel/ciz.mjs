@@ -490,6 +490,7 @@ const NEDEN_CUMLE = {
   kurcalama: 'testi değiştirmeye çalıştı',
   oran: 'sağlayıcı çok yoğundu',
   sunucu: 'sağlayıcıda geçici sorun',
+  zaman_asimi: 'istek zaman aşımına uğradı',
   ag: 'bağlantı koptu',
   kimlik: 'giriş bilgisi kabul edilmedi',
   model_yok: 'model bulunamadı',
@@ -637,7 +638,7 @@ function cozumHtml(metin) {
       listeKapat();
       continue;
     }
-    const baslik = satir.match(/^##\s+(.+)$/);
+    const baslik = satir.match(/^#{1,3}\s+(.+)$/);
     if (baslik) {
       listeKapat();
       html += `<h4>${esc(baslik[1])}</h4>`;
@@ -704,7 +705,9 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
     return false;
   };
   const rozetYeni = ' <span class="rozet-yeni">güncellendi</span>';
+  const planMetni = tartisma?.plan || e.plan || tartisma?.is || e.is || null;
   const bolumListesi = [
+    ...(planMetni ? [{ ad: 'Uygulama Planı', hedef: 'plan' }] : []),
     { ad: 'Tartışma', hedef: 'tartisma' },
     { ad: 'Çözüm', hedef: 'cozum' },
     { ad: 'UI/UX Etkisi', hedef: 'etki' },
@@ -732,6 +735,12 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
     '</div>' +
     `<h2 class="drawer-baslik">${esc(e.ad || '—')}</h2>` +
     `<div class="drawer-durum">${rozet('epic-' + statu, EPIC_ETIKET[statu] || statu)}</div>`;
+
+  // (0) UYGULAMA PLANI (varsa)
+  if (planMetni) {
+    html += `<h3 class="drawer-bolum">UYGULAMA PLANI${guncelMi('plan') ? rozetYeni : ''}</h3>` +
+      `<div class="epic-plan-icerik">${cozumHtml(planMetni)}</div>`;
+  }
 
   // (1) TARTIŞMA
   html += `<h3 class="drawer-bolum">TARTIŞMA${guncelMi('tartisma') ? rozetYeni : ''}</h3>`;
@@ -823,7 +832,7 @@ export function epicDrawerHtml(epik, tartisma, izleyici = false, guncellenen = n
         `<button type="submit" name="tur" value="yorum"${dis}>Yorum</button>` +
         `<p class="karar-durum">${kararDurum(e, izleyici, 'cozum')}</p>` +
         '</form>';
-    } else if (tartisma?.durum === 'bitti') {
+    } else if (tartisma?.durum === 'bitti' || Boolean(planMetni)) {
       html += `<form class="epic-karar" data-epic="${esc(e.no)}" data-bolum="cozum">` +
         '<textarea name="metin" rows="2" maxlength="2000" placeholder="not (red ve yorumda zorunlu)"></textarea>' +
         `<button type="submit" name="tur" value="onay"${dis}>Çözümü onayla</button>` +
@@ -845,6 +854,7 @@ export function epicImza(epik, tartisma) {
   const t = tartisma || {};
   const turlar = Array.isArray(t.turlar) ? t.turlar : [];
   const mesajSayisi = turlar.reduce((n, tur) => n + (Array.isArray(tur?.mesajlar) ? tur.mesajlar.length : 0), 0);
+  const planMetni = t.plan || e.plan || t.is || e.is || null;
   return JSON.stringify([
     e.statu ?? null,
     e.onay ?? null,
@@ -856,6 +866,7 @@ export function epicImza(epik, tartisma) {
     t.durum ?? null,
     mesajSayisi,
     t.cozum?.metin?.length ?? null,
+    ...(planMetni ? [planMetni.length] : []),
   ]);
 }
 

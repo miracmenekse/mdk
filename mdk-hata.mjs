@@ -32,11 +32,51 @@ const KURALLAR = [
     desenler: [/\b(500|502|503|504|529)\b/],
   },
   {
+    tur: 'zaman_asimi',
+    gecici: true,
+    kaliplar: ['request timeout', 'gateway timeout', 'timed out', 'timeout', 'zaman aşımı'],
+    desenler: [/\b408\b/],
+  },
+  {
     tur: 'ag',
     gecici: true,
     kaliplar: ['enotfound', 'econnreset', 'econnrefused', 'etimedout', 'eai_again', 'fetch failed', 'socket hang up'],
   },
 ];
+
+export function retryAfterBul(girdi) {
+  if (girdi === null || girdi === undefined) return null;
+  if (typeof girdi === 'object') {
+    const h = girdi.error || girdi;
+    const d = h.data || h;
+    const msAlan = d.retryAfterMs ?? d.retry_after_ms ?? h.retryAfterMs ?? h.retry_after_ms;
+    if (typeof msAlan === 'number' && Number.isFinite(msAlan) && msAlan > 0) return Math.round(msAlan);
+    const snAlan = d.retryAfter ?? d.retry_after ?? h.retryAfter ?? h.retry_after ??
+      d.headers?.['retry-after'] ?? d.headers?.['Retry-After'] ?? h.headers?.['retry-after'] ?? h.headers?.['Retry-After'];
+    if (snAlan !== undefined && snAlan !== null && snAlan !== '') {
+      const n = Number(snAlan);
+      if (Number.isFinite(n) && n > 0) return n > 600 ? Math.round(n) : Math.round(n * 1000);
+    }
+    const mesaj = [h.name, d.message, h.message].filter(Boolean).join(' ');
+    return mesaj ? retryAfterBul(mesaj) : null;
+  }
+  const s = String(girdi).trim();
+  if (!s) return null;
+  if (s.startsWith('{')) {
+    try {
+      const j = JSON.parse(s);
+      const r = retryAfterBul(j);
+      if (r !== null) return r;
+    } catch {}
+  }
+  const m = s.match(/(?:retry[-_\s]?after|try\s+again\s+in|retry\s+in)\s*[:=]?\s*(\d+(?:\.\d+)?)\s*(ms|milisaniye|milliseconds?|s|sec|seconds?|sn|saniye)?\b/i);
+  if (!m) return null;
+  const deger = Number(m[1]);
+  if (!Number.isFinite(deger) || deger <= 0) return null;
+  const birim = (m[2] || '').toLowerCase();
+  if (birim.startsWith('ms') || birim.startsWith('mili')) return Math.round(deger);
+  return Math.round(deger * 1000);
+}
 
 export function hataSinifla(metin) {
   if (metin === null || metin === undefined) return null;
@@ -52,31 +92,44 @@ export function hataSinifla(metin) {
 
 export function gunlukHatasi(logYolu) {
   const icerik = oku(logYolu);
+  const errMetni = oku(logYolu + '.err');
+  const ekleRetry = (sinif, kaynakMetin) => {
+    if (!sinif || !sinif.gecici) return sinif;
+    const ra = retryAfterBul(kaynakMetin) ?? retryAfterBul(errMetni);
+    return ra !== null ? { ...sinif, retryAfterMs: ra } : sinif;
+  };
   if (!icerik) {
-    const err = hataSinifla(oku(logYolu + '.err'));
-    return err && err.tur !== 'bilinmeyen' ? err : null;
+    const err = hataSinifla(errMetni);
+    return err && err.tur !== 'bilinmeyen' ? ekleRetry(err, errMetni) : null;
   }
   let bilinmeyen = false;
   for (const satir of satirlar(icerik)) {
     if (!satir.includes('"type":"error"')) continue;
     let metin = satir;
+    let olayNesne = null;
     try {
-      const olay = JSON.parse(satir);
-      const hata = olay && olay.error;
+      olayNesne = JSON.parse(satir);
+      const hata = olayNesne && olayNesne.error;
       metin = [hata && hata.name, hata && hata.data && hata.data.message].filter(Boolean).join(' ');
     } catch {
       metin = satir;
     }
     const sinif = hataSinifla(metin);
-    if (sinif && sinif.tur !== 'bilinmeyen') return sinif;
+    if (sinif && sinif.tur !== 'bilinmeyen') {
+      const ra = (olayNesne ? retryAfterBul(olayNesne) : null) ?? retryAfterBul(metin) ?? retryAfterBul(errMetni);
+      return sinif.gecici && ra !== null ? { ...sinif, retryAfterMs: ra } : sinif;
+    }
     if (sinif) bilinmeyen = true;
   }
-  const err = hataSinifla(oku(logYolu + '.err'));
-  if (err && err.tur !== 'bilinmeyen') return err;
+  const err = hataSinifla(errMetni);
+  if (err && err.tur !== 'bilinmeyen') return ekleRetry(err, errMetni);
   return bilinmeyen ? { tur: 'bilinmeyen', gecici: false } : null;
 }
 
-export function bekleMs(tekrar, tabanMs = 5000, tavanMs = 60000) {
+export function bekleMs(tekrar, tabanMs = 5000, tavanMs = 60000, retryAfterMs = null) {
+  if (typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs > 0) {
+    return Math.min(tavanMs, Math.round(retryAfterMs));
+  }
   return Math.min(tavanMs, tabanMs * 3 ** (tekrar - 1));
 }
 
@@ -92,6 +145,10 @@ const ILETILER = {
   sunucu: {
     ileti: 'Model sağlayıcısının sunucusunda geçici bir sorun var.',
     oneri: 'Kısa bir süre bekleyip yeniden dene.',
+  },
+  zaman_asimi: {
+    ileti: 'Model sağlayıcısına yapılan istek zaman aşımına uğradı.',
+    oneri: 'Kısa bir süre bekleyip yeniden dene; sorun sürerse başka bir model seç.',
   },
   ag: {
     ileti: 'İnternet bağlantısı ya da sağlayıcıya erişim kesildi.',

@@ -1172,6 +1172,29 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/ciz.mjs:370-396`: `yapilacaklarHtml` içinde açık işler buton grubuna `dugme('sil', '', 'sil')` ekleme, `biten` işler listesinde her öğeye `data-id` ve sil butonu ekleme. (b) `panel/index.html:1670-1685`: `yapilacaklarEl` click dinleyicisinde `dugme.dataset.islem === 'sil'` durumunu yakalayıp `yapilacakIstek({ islem: 'sil', id })` gönderme; `.yap-sil` CSS stilleri.
   - Kapı: `node test/yapilacak-sil-ui.test.mjs`
 
+## Epic 51 — Sağlayıcı hataları sınıflandırması ve akıllı üstel bekleme (Retry-After)
+- Durum: gelistirme
+- Ana: antigravity
+
+- [x] 221. Zaman aşımı sınıflandırması, Retry-After ayıklama ve akıllı üstel bekleme motoru
+  - Kabul: Hata metninde ya da JSON yanıtında zaman aşımı (`408`, `timeout`, `timed out`, `gateway timeout`) geçtiğinde geçici `zaman_asimi` hatası olarak sınıflandırılır; sağlayıcı yanıtında `Retry-After` süresi varsa milisaniye olarak ayıklanır ve `bekleMs` bu süreye (tavan sınırı içinde) uyar; `zaman_asimi` için kullanıcıya sade Türkçe açıklama ve öneri sunulur
+  - Ne: `mdk-hata.mjs`: `KURALLAR` listesine `zaman_asimi` (`gecici: true`) ekleme; `retryAfterBul(girdi)` işlevini dışa aktarma; `gunlukHatasi` içinde geçici hatalarda `retryAfterMs` döndürme; `bekleMs` işlevine 4. parametre `retryAfterMs` desteği ekleme; `ILETILER` sözlüğüne `zaman_asimi` ekleme.
+  - Kapı: `node test/mdk-hata-retry.test.mjs`
+
+- [x] 222. Koşturucuda Retry-After bekleme, zaman aşımı tekrarı ve kalıcı hatalarda beklemeden geçiş
+  - Kabul: Koşturucu geçici sağlayıcı hatalarında (`oran`, `sunucu`, `zaman_asimi`, `ag`) `Retry-After` süresi varsa o süre kadar bekleyip aynı modeli yeniden dener; `kota`, `kimlik` ve `model_yok` hatalarında bekleme yapmadan doğrudan sıradaki modele geçer; panel harcama geçmişinde `zaman_asimi` nedeni sade Türkçe cümleyle görünür
+  - Ne: (a) `mdk-adim.mjs:197-232, 363-372`: `SAGLAYICI_TURLER` ve `GECICI_TURLER` listelerine `'zaman_asimi'` ekleme; `calistir` dönüşüne `retryAfterMs` ekleme ve `bekleMs` çağrısına aktarma. (b) `panel/ciz.mjs:482-496`: `NEDEN_CUMLE` sözlüğüne `zaman_asimi` ekleme.
+  - Kapı: `node test/mdk-adim-retry.test.mjs`
+
+## Epic 52 — Uygulama planlarının MDK panelinde görüntülenmesi
+- Durum: gelistirme
+- Ana: antigravity
+
+- [x] 223. Uygulama planlarının (`epic/<no>/plan.md` ve `is.md`) MDK panelinde Epic Detay çekmecesinde gösterilmesi
+  - Kabul: Bir Epic için hazırlanan uygulama planı (`epic/<no>/plan.md` veya `is.md`) MDK panelinde Epic Detay çekmecesi açıldığında **UYGULAMA PLANI** başlığı altında biçimli olarak görüntülenir; persona tartışması olmasa bile uygulama planı olan Epic'lerde panel üzerinden onay, red ve yorum verilebilir; plan metni değiştiğinde açık çekmece kendiliğinden güncellenir
+  - Ne: (a) `panel/sunucu.mjs:1150-1210`: `GET /api/epic` uç noktasında `epic/<no>/plan.md` ve `is.md` dosyalarını güvenli biçimde okuyup yanıta `{ plan, is }` ekleme. (b) `panel/ciz.mjs:641, 707-745, 835-870`: `epicDrawerHtml` içinde `UYGULAMA PLANI` bölümü ve navigasyon noktası çizimi, plan varken karar formunun aktifleşmesi, `epicImza`'ya plan uzunluğu eklenmesi. (c) `panel/index.html:952-965, 1488-1520`: `/api/epic` yanıtındaki `plan` ve `is` alanlarının çekmece kaydına aktarılması.
+  - Kapı: `node test/epic-plan-gorunum.test.mjs`
+
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
   - Epic 28 Sağlayıcı hataları (8+9) → Epic 29 Koşturucu denetimleri (6+12) → Epic 30 Kapıyı sade dille göster (1) → Epic 31 Maliyet ve deneme göstergesi (3) → Epic 32 Rol → model profilleri (10) → Epic 33 Yapılacaklar listesi ve panelden iş girişi (4+5) → Epic 34 Bağlam bütçesi (13) → Epic 35 Persona bağımsız ilk görüş (14) → Epic 36 Yalıtılmış test ve geri alma (15) → Epic 37 Terminalsiz kurulum (2+11; Windows denemesi 7 bu Epic'in elle adımı).

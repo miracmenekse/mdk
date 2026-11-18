@@ -950,14 +950,18 @@ async function epicDrawerAc(no) {
   drawerZaman = null;
   const epik = (sonD?.epikler || []).find((e) => e.no === no) || null;
   let tartisma = null;
+  let planMetni = null;
+  let isMetni = null;
   try {
     const j = await (await fetch('/api/epic?no=' + encodeURIComponent(no))).json();
     tartisma = j.tartisma ?? null;
+    planMetni = j.plan ?? null;
+    isMetni = j.is ?? null;
   } catch {
     tartisma = null;
   }
   if (drawerEpic !== no) return;
-  const kayit = epik || { no, ad: '', statu: 'analiz' };
+  const kayit = { ...(epik || { no, ad: '', statu: 'analiz' }), ...(planMetni ? { plan: planMetni } : {}), ...(isMetni ? { is: isMetni } : {}) };
   drawerEpicKayit = kayit;
   drawerEpicTartisma = tartisma;
   drawerEl.innerHTML = epicDrawerHtml(kayit, tartisma, sonD?.kararIzleyici, null, hizliAtlamaAcikMi());
@@ -1482,11 +1486,14 @@ function ciz(d) {
       .then((j) => {
         if (drawerEpic !== no) return;
         const tartisma = j.tartisma ?? null;
-        const kayit = epik || { no, ad: '', statu: 'analiz' };
+        const planMetni = j.plan ?? null;
+        const isMetni = j.is ?? null;
+        const kayit = { ...(epik || { no, ad: '', statu: 'analiz' }), ...(planMetni ? { plan: planMetni } : {}), ...(isMetni ? { is: isMetni } : {}) };
         const yeniImza = epicImza(kayit, tartisma);
         const not = drawerEl.querySelector('textarea[name=metin]');
         if (yeniImza !== drawerEpicSonImza && (!not || not.value === '')) {
           const degisen = [];
+          if (drawerEpicKayit && (kayit.plan !== drawerEpicKayit.plan || kayit.is !== drawerEpicKayit.is)) degisen.push('plan');
           if (drawerEpicKayit && kayit.etkiMtime !== drawerEpicKayit.etkiMtime) degisen.push('kroki');
           if (drawerEpicTartisma && tartisma?.cozum?.metin !== drawerEpicTartisma?.cozum?.metin) degisen.push('cozum');
           if (drawerEpicTartisma && (tartisma?.durum !== drawerEpicTartisma?.durum || (tartisma?.turlar?.length || 0) !== (drawerEpicTartisma?.turlar?.length || 0))) degisen.push('tartisma');
@@ -1506,6 +1513,7 @@ function ciz(d) {
           for (const b of degisen) {
             const h3 = Array.from(drawerEl.querySelectorAll('h3.drawer-bolum')).find((el) => {
               const txt = el.textContent || '';
+              if (b === 'plan') return txt.includes('UYGULAMA PLANI');
               if (b === 'kroki') return txt.includes('UI/UX ETKİSİ');
               if (b === 'cozum') return txt.includes('ÇÖZÜM');
               if (b === 'tartisma') return txt.includes('TARTIŞMA');

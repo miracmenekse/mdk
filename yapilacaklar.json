@@ -35,9 +35,17 @@
     "id": 5,
     "baslik": "Sağlayıcı hataları sınıflandırması ve akıllı üstel bekleme (Retry-After)",
     "not": "Ücretsiz modellerde oran sınırı, zaman aşımı ve 5xx hatalarında Retry-After'a uygun üstel bekleme; kimlik/kota bittiğinde beklemeden sıradaki modele geçiş ve hatanın sınıflandırılması.",
-    "durum": "bekliyor",
-    "epic": null,
+    "durum": "bitti",
+    "epic": 51,
     "ts": "2026-11-18T08:00:40.058Z"
+  },
+  {
+    "id": 9,
+    "baslik": "Uygulama planlarının MDK panelinde görüntülenmesi",
+    "not": "Hazırlanan teknik uygulama planlarının (epic/<no>/plan.md ve is.md) MDK panelinde Epic Detay çekmecesinde biçimli olarak gösterilmesi ve onaylanabilmesi.",
+    "durum": "bitti",
+    "epic": 52,
+    "ts": "2026-11-18T09:10:00.000Z"
   },
   {
     "id": 6,
