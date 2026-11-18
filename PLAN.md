@@ -1158,6 +1158,9 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Ne: (a) `panel/ciz.mjs:1056`: `kararSeridiHtml` içinde `reduce` sıralaması `b.no > a.no ? b : a` yapılır. (b) `panel/karar-seridi.test.mjs:17-25`: güncel adım doğrulamasına uyarlanır.
   - Kapı: `node panel/karar-seridi.test.mjs`
 
+## Epic 50 — Yapılacaklar listesindeki işlerin silinebilmesi
+- Durum: analiz
+
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
   - Epic 28 Sağlayıcı hataları (8+9) → Epic 29 Koşturucu denetimleri (6+12) → Epic 30 Kapıyı sade dille göster (1) → Epic 31 Maliyet ve deneme göstergesi (3) → Epic 32 Rol → model profilleri (10) → Epic 33 Yapılacaklar listesi ve panelden iş girişi (4+5) → Epic 34 Bağlam bütçesi (13) → Epic 35 Persona bağımsız ilk görüş (14) → Epic 36 Yalıtılmış test ve geri alma (15) → Epic 37 Terminalsiz kurulum (2+11; Windows denemesi 7 bu Epic'in elle adımı).
