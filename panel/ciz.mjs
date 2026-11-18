@@ -1049,14 +1049,14 @@ export function kpiHtml(snap, ara, radar) {
   return '<div class="kpi" role="tablist">' + kartlar + '</div>';
 }
 
-// bekleyen karar şeridi: kartların altında tek satır; tık ilk bekleyen adımın çekmecesini açar
+// bekleyen karar şeridi: kartların altında tek satır; tık en güncel bekleyen adımın çekmecesini açar
 export function kararSeridiHtml(etki) {
   const bekleyen = (etki || []).filter((e) => !e.bitti && !e.onay);
   if (!bekleyen.length) return '';
-  const ilk = bekleyen.reduce((a, b) => (b.no < a.no ? b : a));
-  const asama = ilk.figma ? 'adım onayı' : 'taslak onayı';
-  return `<button type="button" class="karar-seridi" data-adim="${esc(ilk.no)}">` +
-    `${esc(bekleyen.length)} adım karar bekliyor · ${esc(ilk.no)} ${esc(ilk.baslik)}: ${asama} →</button>`;
+  const guncel = bekleyen.reduce((a, b) => (b.no > a.no ? b : a));
+  const asama = guncel.figma ? 'adım onayı' : 'taslak onayı';
+  return `<button type="button" class="karar-seridi" data-adim="${esc(guncel.no)}">` +
+    `${esc(bekleyen.length)} adım karar bekliyor · ${esc(guncel.no)} ${esc(guncel.baslik)}: ${asama} →</button>`;
 }
 
 // OpenCode veritabanından gerçek token; tasarruf kartı her zaman "tahmin" etiketli
