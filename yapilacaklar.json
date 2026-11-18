@@ -46,5 +46,13 @@
     "durum": "bekliyor",
     "epic": null,
     "ts": "2026-11-18T08:00:40.097Z"
+  },
+  {
+    "id": 7,
+    "baslik": "Yalıtılmış çalışma alanı (git worktree / overlay workspace)",
+    "not": "Adım ve test koşularının yalıtılmış bir kopyada çalıştırılması, olası çakışmaların önlenmesi ve başarısız adımlarda temiz geri alma (checkpoint/revert) imkanı sağlanması.",
+    "durum": "bekliyor",
+    "epic": null,
+    "ts": "2026-11-18T08:00:40.119Z"
   }
 ]
