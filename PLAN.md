@@ -1162,7 +1162,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
 - Durum: gelistirme
 - Ana: antigravity
 
-- [ ] 219. Yapılacaklar silme saf işlevi ve API uç noktası desteği
+- [x] 219. Yapılacaklar silme saf işlevi ve API uç noktası desteği
   - Kabul: `yapilacakSil(liste, id)` saf işlevi var olmayan id verildiğinde hata fırlatır; var olan id verildiğinde öğeyi listeden çıkararak yeni dizi döner, orijinal listeyi mutasyona uğratmaz; `POST /api/yapilacak` uç noktasına `{ islem: 'sil', id }` gönderildiğinde öğe `yapilacaklar.json` dosyasından silinir, git deposunda `yapılacak: sil #<id>` commit'i atılır ve güncel liste döner; `id` eksikse veya sayı değilse 400 döner
   - Ne: (a) `panel/yapilacak.mjs`: `yapilacakSil(liste, id)` işlevini dışa aktarma. (b) `panel/sunucu.mjs:640-660`: `POST /api/yapilacak` içinde `girdi?.islem === 'sil'` durumunda `yapilacakSil` çağrısı ve `yapılacak: sil #<id>` commit işlemi.
   - Kapı: `node test/yapilacak-sil-api.test.mjs`

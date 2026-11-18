@@ -11,7 +11,7 @@ import { parse, epicDurum } from './plan.mjs';
 import { kararEkle } from './karar.mjs';
 import { gorevler, gorevModelYaz, SERBEST_MODELLER } from './gorev.mjs';
 import { profilUygula } from './profil.mjs';
-import { yapilacakOku, yapilacakEkle, yapilacakDurum, yapilacakTasi, yapilacakYaz } from './yapilacak.mjs';
+import { yapilacakOku, yapilacakEkle, yapilacakDurum, yapilacakTasi, yapilacakSil, yapilacakYaz } from './yapilacak.mjs';
 import { yazmaIzni, uzakAyar } from './uzak.mjs';
 import { takimDenetle } from './persona.mjs';
 import { doktorRaporu } from '../mdk-doktor.mjs';
@@ -654,6 +654,10 @@ export async function baslat(dir, port, { calistir } = {}) {
         } else if (girdi?.islem === 'tasi') {
           liste = yapilacakTasi(eski, Number(girdi.id), Number(girdi.yon));
           konu = `yapılacak: tasi #${girdi.id}`;
+        } else if (girdi?.islem === 'sil') {
+          if (girdi.id == null || isNaN(Number(girdi.id))) throw new Error('id gerekli');
+          liste = yapilacakSil(eski, Number(girdi.id));
+          konu = `yapılacak: sil #${girdi.id}`;
         } else {
           throw new Error('bilinmeyen işlem');
         }

@@ -46,6 +46,11 @@ export function yapilacakTasi(liste, id, yon) {
   return sonuc;
 }
 
+export function yapilacakSil(liste, id) {
+  if (!liste.some((o) => o.id === id)) throw new Error('iş bulunamadı');
+  return liste.filter((o) => o.id !== id);
+}
+
 export function yapilacakYaz(dir, liste) {
   const yol = join(dir, 'yapilacaklar.json');
   const gecici = `${yol}.${process.pid}.tmp`;
