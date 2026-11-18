@@ -1145,7 +1145,18 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node test/persona-odak-ui.test.mjs`
 
 ## Epic 49 — Panel bilinen kusurları: Araştırma sekmesi details çakışması ve karar şeridi sıralaması
-- Durum: analiz
+- Durum: gelistirme
+- Ana: antigravity
+
+- [ ] 217. Araştırma sekmesinde details kendiliğinden açılma kusurunun giderilmesi
+  - Kabul: URL parçası `#arastirma` olduğunda tarayıcı "Eski araştırma notu" details öğesini otomatik açmaz (kapalı kalır); içteki bölüm `id="arastirma-eski"` olarak adlandırılır; API'den gelen araştırma verileri bu bölümde sorunsuz listelenir; stil tanımları ve sekme testleri güncellenir
+  - Ne: (a) `panel/index.html:411-445, 727, 1568`: `<section id="arastirma">` kimliği `id="arastirma-eski"` olarak değiştirilir, script referansı ve CSS güncellenir. (b) `panel/arastirma.test.mjs:70` ve `panel/sekme.test.mjs:55`: yeni kimlik doğrulamasına uyarlanır.
+  - Kapı: `node test/arastirma-details-kusur.test.mjs`
+
+- [ ] 218. Karar şeridinde en güncel bekleyen adımın gösterilmesi
+  - Kabul: Karar şeridi (`kararSeridiHtml`), bekleyen adımlar arasından en küçük numara yerine en güncel (`no`'su en büyük) bekleyen adımı başlık ve bağlantı olarak gösterir; eski pasif adımlar yeni bekleyen kararların görülmesini engellemez; tek tıkla en güncel bekleyen adımın drawer çekmecesi açılır
+  - Ne: (a) `panel/ciz.mjs:1056`: `kararSeridiHtml` içinde `reduce` sıralaması `b.no > a.no ? b : a` yapılır. (b) `panel/karar-seridi.test.mjs:17-25`: güncel adım doğrulamasına uyarlanır.
+  - Kapı: `node panel/karar-seridi.test.mjs`
 
 ## Sonraki iyileştirmeler
 - **Yapılacaklar Epic'lere çevrildi (kullanıcı kararı, 2026-11-15).** Sıra mantığı: önce koşturucunun güvenilirliği (boşa giden deneme), sonra kullanıcının gördüğü güven ekranları, sonra iş girişi, en sonda büyük mimari işler ve kurulum. Eski madde numaraları parantezde.
