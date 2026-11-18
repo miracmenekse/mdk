@@ -1159,7 +1159,7 @@ Yalın kip. Kullanıcı (2026-11-16): Faz/Epic'e tıklayınca sağda açılan da
   - Kapı: `node panel/karar-seridi.test.mjs`
 
 ## Epic 50 — Yapılacaklar listesindeki işlerin silinebilmesi
-- Durum: analiz
+- Durum: gelistirme
 - Ana: antigravity
 
 - [ ] 219. Yapılacaklar silme saf işlevi ve API uç noktası desteği
