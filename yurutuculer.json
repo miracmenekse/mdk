@@ -23,6 +23,7 @@
         "gemini-4-argon-medium",
         "-p",
         "{istem}",
+        "--dangerously-skip-permissions",
         "--mode",
         "accept-edits",
         "--output-format",
@@ -31,6 +32,7 @@
         "{\"permissions\":{\"allow\":[\"command(node)\",\"command(npm)\",\"command(npx)\",\"command(git)\",\"command(grep)\",\"command(sed)\",\"command(awk)\",\"command(cat)\",\"command(ls)\",\"command(head)\",\"command(tail)\",\"command(wc)\",\"command(find)\",\"command(sort)\",\"command(diff)\",\"command(mkdir)\",\"command(cp)\",\"command(mv)\",\"command(rm)\",\"command(touch)\",\"command(echo)\",\"command(test)\",\"command(bash)\",\"command(sh)\",\"command(which)\",\"command(pwd)\",\"command(xargs)\",\"command(printf)\",\"command(env)\",\"command(dirname)\",\"command(basename)\",\"command(realpath)\",\"command(tr)\",\"command(cut)\",\"command(uniq)\",\"command(xcodegen)\",\"command(xcodebuild)\",\"command(xcrun)\",\"command(swiftc)\",\"command(chmod)\",\"command(defaults)\"],\"deny\":[\"command(sudo)\",\"command(git stash)\"]}}"
       ],
       "agy_ek": [
+        "--dangerously-skip-permissions",
         "--mode",
         "accept-edits",
         "--output-format",

@@ -537,11 +537,13 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kapı: `node panel/uzak-test-engel.test.mjs && node panel/test-api.test.mjs`
 - [ ] 114. iOS kabuğu: paneli WKWebView'da açar
   - Modeller: agy/gemini-3.8-flash-medium
+  - Graf: evet
   - Kabul: Uygulama xcodegen ve xcodebuild ile derlenir, iOS simülatöründe açılır, MDK_PANEL_URL ortam değişkeni veya UserDefaults panelAdresi veya http://127.0.0.1:4747 adresini WKWebView içinde tam ekran yükler ve sayfadaki JavaScript çalışır
   - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza; `test/ios-ortak.mjs` bunu `xcodegen generate --quiet` (`cwd: ios`) ve `xcodebuild -project ios/MDK.xcodeproj -scheme MDK -destination id=561893AD-5010-42ED-AC97-72AD478CA460 -derivedDataPath ios/.derle CODE_SIGNING_ALLOWED=NO -quiet build` ile derler; `INFOPLIST_KEY_NSAppTransportSecurity` / Info.plist içinde `NSAppTransportSecurity -> NSAllowsLocalNetworking = true` olmalı), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
   - Kapı: `node test/ios-kabuk.test.mjs`
 - [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
   - Modeller: agy/gemini-3.8-flash-medium
+  - Graf: evet
   - Etki: etki/ios-kabuk.html
   - Onay: evet
   - Değer: 4
@@ -550,6 +552,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kapı: `node test/ios-hata.test.mjs`
 - [ ] 116. İlk açılış adres ekranı
   - Modeller: agy/gemini-4-argon-low
+  - Graf: evet
   - Etki: etki/ios-kabuk.html
   - Onay: evet
   - Değer: 4
@@ -558,11 +561,13 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 117. Öne dönünce bayat paneli yenile
   - Modeller: agy/gemini-4-argon-low
+  - Graf: evet
   - Kabul: YenilemeKarari.gerekli(ayrilma:donus:) ayrılma nil veya 120 saniyeden kısaysa ya da saat geri alındıysa false, 120 saniye ve üzerindeyse true döner; uygulama arka plana geçtiğinde zamanı kaydeder ve öne döndüğünde 120 saniye geçtiyse WebView'ı yeniler
   - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez.
   - Kapı: `node test/ios-yenile.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
   - Modeller: agy/gemini-4-argon-low
+  - Graf: evet
   - Kabul: ios/kur.sh bağlı iPhone'u xcrun devicectl list devices ile arar, bağlı değilse ne yapılacağını açıklayıp çıkış 1 verir; bağlıysa xcodegen, imzalı xcodebuild, devicectl device install app ve devicectl device process launch adımlarını çalıştırır, imza hatasında Xcode hesap uyarısı basar
   - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.
   - Kapı: `node -e "import { existsSync, readFileSync } from 'node:fs'; import { spawnSync } from 'node:child_process'; if (!existsSync('ios/kur.sh')) process.exit(1); const s = readFileSync('ios/kur.sh', 'utf8'); for (const k of ['devicectl', 'xcodegen', 'xcodebuild', 'install', 'launch']) if (!s.includes(k)) process.exit(1); if (spawnSync('bash', ['-n', 'ios/kur.sh']).status !== 0) process.exit(1); const r = spawnSync('bash', ['ios/kur.sh'], { encoding: 'utf8' }); if (r.status === 0 || !((r.stdout || '') + (r.stderr || '')).trim()) process.exit(1);"`

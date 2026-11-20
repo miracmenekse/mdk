@@ -11,8 +11,8 @@ export const UDID = process.env.MDK_SIM || '561893AD-5010-42ED-AC97-72AD478CA460
 export const uyu = (ms) => new Promise((coz) => setTimeout(coz, ms));
 export function yalnizMac() { if (process.platform !== 'darwin') { console.log('atlandı (macOS değil): iOS testi'); process.exit(0); } }
 export const dur = (m) => { console.log(m); process.exit(1); };
-const kos = (k, a, ek = {}) => spawnSync(k, a, { stdio: 'inherit', ...ek }).status === 0;
-const sessiz = (k, a) => spawnSync(k, a, { stdio: 'ignore' });
+const kos = (k, a, ek = {}) => spawnSync(k, a, { stdio: 'ignore', timeout: 180000, ...ek }).status === 0;
+const sessiz = (k, a) => spawnSync(k, a, { stdio: 'ignore', timeout: 30000 });
 export const APP = join(KOK, 'ios/.derle/Build/Products/Debug-iphonesimulator/MDK.app');
 
 export function derle() {
@@ -31,7 +31,7 @@ export function baslat(url) {
 export const kapat = () => sessiz('xcrun', ['simctl', 'terminate', UDID, PAKET]);
 export const canli = () => (spawnSync('xcrun', ['simctl', 'spawn', UDID, 'launchctl', 'list'], { encoding: 'utf8' }).stdout || '').includes(PAKET);
 // kanıt sunucusu (test/ios-kanit.mjs): sayfa yüklenip JS koşunca 0 ile çıkar
-export const kanit = (port, sn) => new Promise((coz) => { const c = spawn(process.execPath, [join(KOK, 'test/ios-kanit.mjs'), String(port), String(sn)], { stdio: 'inherit' }); c.on('close', (k) => coz(k === 0)); });
+export const kanit = (port, sn) => new Promise((coz) => { const c = spawn(process.execPath, [join(KOK, 'test/ios-kanit.mjs'), String(port), String(sn)], { stdio: 'ignore' }); c.on('close', (k) => coz(k === 0)); });
 // Swift birim testi: kaynak + test dosyasını derleyip koşar
 export function swiftTest(kaynak, test) {
   const D = mkdtempSync(join(tmpdir(), 'ios-swift-'));

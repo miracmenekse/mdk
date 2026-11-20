@@ -169,6 +169,8 @@ const KURALLAR = kirp(oku(join(SELF, 'yurutucu-kurallar.md')));
 const PROJE_KURAL = (() => { const c = []; let on = false; for (const l of plan.split(/\r?\n/)) { if (/^Kurallar/.test(l)) on = true; if (on && /^\s*$/.test(l)) break; if (on) c.push(l); } return kirp(c.join('\n')); })();
 const BAGLAM_SINIR = baglamSiniri(gorev, plan, blok);
 const BAGLAM_IPUCU = baglamIpucu(BAGLAM_SINIR);
+if (e.MDK_GRAF === undefined && (/^\s*-\s*Graf:\s*evet\b/im.test(blok) || /^Graf:\s*evet\b/im.test(plan.split(/^##\s/m)[0] || ''))) e.MDK_GRAF = '1';
+if (e.MDK_GRAF === '1' && !e.MDK_GRAPHIFY && existsSync('/Library/Frameworks/Python.framework/Versions/3.14/bin/graphify')) e.MDK_GRAPHIFY = '/Library/Frameworks/Python.framework/Versions/3.14/bin/graphify';
 const GRAF = grafDilimi({ sorgu: `${baslik} ${(blok.match(/^\s*- Ne:(.*)$/m) || [])[1] || ''}`.slice(0, 400) });
 const GRAF_IPUCU = GRAF ? `Graph bağlamı (graphify; ilgili dosya/fonksiyon ve satırlar; ipucudur, dosyayı okuyup doğrula):\n${GRAF}\n` : '';
 const HARITA_ETKIN = e.MDK_HARITA === '1' || /^\s*-\s*Harita:\s*evet\b/im.test(blok) || /^Harita:\s*evet\b/im.test(plan.split(/^##\s/m)[0] || '');
