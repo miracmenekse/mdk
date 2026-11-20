@@ -122,6 +122,9 @@ const planIlkKisim = plan.split(/^##\s/m)[0] || '';
 const kabulZorunlu = /^Kabul onayı:\s*zorunlu\b/m.test(planIlkKisim);
 if (kabulZorunlu && !/^\s*- Kabul onayı:\s*evet\b/m.test(blok)) { yaz(`adım ${N} kabul ölçütleri onay bekliyor (panelde story kartından onayla)`); process.exit(5); }
 if (!/^\s*- Kabul:/m.test(blok)) { yaz(`UYARI: adım ${N} için kabul ölçütü yazılmamış`); }
+const GRAF_ADIM = /^\s*-\s*Graf:\s*evet\b/im.test(blok) || /^Graf:\s*evet\b/im.test(plan.split(/^##\s/m)[0] || '');
+if (GRAF_ADIM && e.MDK_ONKONTROL_YOK === undefined) e.MDK_ONKONTROL_YOK = '1';
+if (GRAF_ADIM && process.cwd() === SELF) spawnSync(process.execPath, [join(SELF, 'mdk-panel.mjs'), 'start', '.', '4747'], { stdio: 'ignore' });
 // ön kontrol: regresyon kapıları HEAD'de kırmızıysa hiçbir model geçemez (hızlı kip: uzun koşturucu testleri atlanır; eski projelerde test/hepsi.sh)
 const HEPSI = existsSync('test/hepsi.mjs') ? 'test/hepsi.mjs' : existsSync('test/hepsi.sh') ? 'test/hepsi.sh' : '';
 const REGRESYON = !!HEPSI && !e.MDK_ONKONTROL_YOK;

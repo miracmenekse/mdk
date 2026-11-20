@@ -51,7 +51,7 @@ for (const t of dosyalar) {
 }
 const sonuc = [];
 let i = 0;
-await Promise.all(Array.from({ length: 8 }, async () => { while (i < paralel.length) sonuc.push(await kos(paralel[i++])); }));
+await Promise.all(Array.from({ length: Number(process.env.HEPSI_PARALEL || 2) }, async () => { while (i < paralel.length) sonuc.push(await kos(paralel[i++])); }));
 for (const t of SIRALI) if (sirali.includes(t)) sonuc.push(await kos(t));
 
 let fail = false;

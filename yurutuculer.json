@@ -20,7 +20,7 @@
       "planlayici": [
         "agy",
         "--model",
-        "gemini-4-argon-medium",
+        "gemini-4-neon-medium",
         "-p",
         "{istem}",
         "--dangerously-skip-permissions",
