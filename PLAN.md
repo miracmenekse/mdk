@@ -518,6 +518,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Görev: mekanik
   - Kapı: `bash test/mdk-adim.test.sh && bash test/persona-tur.test.sh` (argv'de `--standalone` yok, loglevel error)
 ## Faz 16 — iPhone uygulaması (canlı paneli açan kabuk)
+- Ana: antigravity
 - **Problem ve hipotez:** Kullanıcı Mac başında değilken adımları izleyemiyor, onay bekleyen adım duruyor. Hipotez: panelin aynısı cepte olursa onay bekleme süresi kısalır; ayrı arayüz yazmadan bu sağlanır.
 - **İş değeri / başarı ölçütü:** Hücresel ağdan panel açılır, canlı güncellenir ve bir adım telefondan onaylanır; panel değişince uygulama yeniden kurulmadan değişir. Bir hafta gerçek kullanımda telefondan en az bir karar verilmesi hipotezi doğrular.
 - **Akış:** Simgeye dokun → panel (1 adım). İlk açılışta adres. Bağlantı yoksa "Mac'e ulaşılamıyor", 5 sn'de bir kendisi dener.
@@ -535,29 +536,36 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Görev: kod
   - Kapı: `node panel/uzak-test-engel.test.mjs && node panel/test-api.test.mjs`
 - [ ] 114. iOS kabuğu: paneli WKWebView'da açar
-  - Yürütücü: kodcu
-  - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
+  - Modeller: agy/gemini-3.8-flash-medium
+  - Kabul: Uygulama xcodegen ve xcodebuild ile derlenir, iOS simülatöründe açılır, MDK_PANEL_URL ortam değişkeni veya UserDefaults panelAdresi veya http://127.0.0.1:4747 adresini WKWebView içinde tam ekran yükler ve sayfadaki JavaScript çalışır
+  - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza; `test/ios-ortak.mjs` bunu `xcodegen generate --quiet` (`cwd: ios`) ve `xcodebuild -project ios/MDK.xcodeproj -scheme MDK -destination id=561893AD-5010-42ED-AC97-72AD478CA460 -derivedDataPath ios/.derle CODE_SIGNING_ALLOWED=NO -quiet build` ile derler; `INFOPLIST_KEY_NSAppTransportSecurity` / Info.plist içinde `NSAppTransportSecurity -> NSAllowsLocalNetworking = true` olmalı), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
   - Kapı: `node test/ios-kabuk.test.mjs`
 - [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
-  - Yürütücü: kodcu
+  - Modeller: agy/gemini-3.8-flash-medium
   - Etki: etki/ios-kabuk.html
+  - Onay: evet
   - Değer: 4
+  - Kabul: Panel sunucusu kapalıyken uygulama çökmeden "Mac'e ulaşılamıyor" ve "Mac uyuyor ya da panel kapalı" yerel ekranını (Yeniden dene ve Adresi değiştir düğmeleriyle) gösterir; bu ekrandayken 5 saniyede bir bağlantıyı kendiliğinden dener ve sunucu açıldığında panele geçip sayfayı yükler; WebContent süreci ölürse yeniden yükler
   - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler.
   - Kapı: `node test/ios-hata.test.mjs`
 - [ ] 116. İlk açılış adres ekranı
-  - Yürütücü: kodcu
+  - Modeller: agy/gemini-4-argon-low
   - Etki: etki/ios-kabuk.html
+  - Onay: evet
   - Değer: 4
+  - Kabul: PanelAdresi.cozumle çıplak adları küçük harfli https adresine çevirir, sondaki eğik çizgiyi atar, uzak düz http adreslerini reddedip yalnızca 127.0.0.1 ve localhost için http kabul eder; kayıtlı adres yoksa ve MDK_PANEL_URL verilmemişse ilk açılış adres formunu gösterir, hata ekranındaki Adresi değiştir bu forma döner, MDK_PANEL_URL varken form açılmadan doğrudan bağlanır
   - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar.
   - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 117. Öne dönünce bayat paneli yenile
-  - Yürütücü: kodcu
+  - Modeller: agy/gemini-4-argon-low
+  - Kabul: YenilemeKarari.gerekli(ayrilma:donus:) ayrılma nil veya 120 saniyeden kısaysa ya da saat geri alındıysa false, 120 saniye ve üzerindeyse true döner; uygulama arka plana geçtiğinde zamanı kaydeder ve öne döndüğünde 120 saniye geçtiyse WebView'ı yeniler
   - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez.
   - Kapı: `node test/ios-yenile.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
-  - Yürütücü: kodcu
+  - Modeller: agy/gemini-4-argon-low
+  - Kabul: ios/kur.sh bağlı iPhone'u xcrun devicectl list devices ile arar, bağlı değilse ne yapılacağını açıklayıp çıkış 1 verir; bağlıysa xcodegen, imzalı xcodebuild, devicectl device install app ve devicectl device process launch adımlarını çalıştırır, imza hatasında Xcode hesap uyarısı basar
   - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.
-  - Kapı: elle — iPhone bağlıyken `bash ios/kur.sh` uygulamayı kurup açar; bağlı değilken çıkış 1 ve açıklama.
+  - Kapı: `node -e "import { existsSync, readFileSync } from 'node:fs'; import { spawnSync } from 'node:child_process'; if (!existsSync('ios/kur.sh')) process.exit(1); const s = readFileSync('ios/kur.sh', 'utf8'); for (const k of ['devicectl', 'xcodegen', 'xcodebuild', 'install', 'launch']) if (!s.includes(k)) process.exit(1); if (spawnSync('bash', ['-n', 'ios/kur.sh']).status !== 0) process.exit(1); const r = spawnSync('bash', ['ios/kur.sh'], { encoding: 'utf8' }); if (r.status === 0 || !((r.stdout || '') + (r.stderr || '')).trim()) process.exit(1);"`
 - [ ] 119. Uçtan uca doğrulama (hücresel ağ)
   - Yürütücü: kodcu
   - Ne: Elle yapılacaklar bitince: Serve'den gelen Host/Origin/kimlik başlıklarını gerçek istekle gör, SSE'nin tamponlanmadan aktığını ölç, telefondan bir yorum gönderip `etki/kararlar.jsonl`'de gör, Testleri çalıştır'ın reddedildiğini gör. Host beklenenden farklıysa `uzak.mjs` için yeni adım aç.
