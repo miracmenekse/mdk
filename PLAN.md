@@ -541,7 +541,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kabul: Uygulama xcodegen ve xcodebuild ile derlenir, iOS simülatöründe açılır, MDK_PANEL_URL ortam değişkeni veya UserDefaults panelAdresi veya http://127.0.0.1:4747 adresini WKWebView içinde tam ekran yükler ve sayfadaki JavaScript çalışır
   - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza; `Info.plist` içinde `NSAppTransportSecurity -> NSAllowsLocalNetworking = true` olmalı), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz. Not: Dosyaları yazdıktan sonra doğrudan xcodebuild çalıştırma; yalnız kapı komutunu (node test/ios-kabuk.test.mjs) çalıştırıp bitir.
   - Kapı: `node test/ios-kabuk.test.mjs`
-- [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
+- [x] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
   - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Etki: etki/ios-kabuk.html
