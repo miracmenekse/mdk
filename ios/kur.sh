@@ -9,24 +9,52 @@ BUNDLE_ID="com.miracmenekse.mdk"
 
 echo "==> Bağlı iPhone aranıyor (xcrun devicectl list devices)..."
 
-# xcrun devicectl list devices ile bağlı fiziksel cihazı ara
-# Tablo çıktısında reality=physical olan ve connected/available durumundaki cihazın Identifier'ını al
-CIHAZ_ID=$(xcrun devicectl list devices 2>/dev/null | awk '
-  /physical/ && !/unavailable|shutdown/ {
-    for (i = 1; i <= NF; i++) {
-      if ($i ~ /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/ || $i ~ /^[0-9a-fA-F]{24,40}$/) {
-        if ($(i+1) == "connected" || $(i+1) == "available") {
+# xcrun devicectl list devices çıktısından simülatör olmayan, bağlı/eşli iPhone'u bul
+JSON_TMP=$(mktemp)
+CIHAZ_ID=""
+XCODE_DEST="generic/platform=iOS"
+if xcrun devicectl list devices --json-output "$JSON_TMP" >/dev/null 2>&1; then
+  BILGI=$(node -e '
+    const fs = require("fs");
+    try {
+      const d = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+      const list = d?.result?.devices || [];
+      const dev = list.find((x) => {
+        const reality = x?.hardwareProperties?.reality || "";
+        const type = x?.hardwareProperties?.deviceType || "";
+        const pairing = x?.connectionProperties?.pairingState || "";
+        const tunnel = x?.connectionProperties?.tunnelState || "";
+        if (reality === "simulated") return false;
+        if (type && type !== "iPhone") return false;
+        return pairing === "paired" || tunnel === "connected" || tunnel === "available";
+      });
+      if (dev) {
+        const id = dev.identifier || "";
+        const udid = dev?.hardwareProperties?.udid || "";
+        if (id) console.log(id + "\t" + udid);
+      }
+    } catch {}
+  ' "$JSON_TMP" 2>/dev/null || true)
+  if [ -n "$BILGI" ]; then
+    CIHAZ_ID=$(printf '%s' "$BILGI" | cut -f1)
+    UDID=$(printf '%s' "$BILGI" | cut -f2)
+    [ -n "$UDID" ] && XCODE_DEST="id=$UDID"
+  fi
+fi
+rm -f "$JSON_TMP"
+
+# JSON alınamazsa tablo çıktısından (simulated/unavailable/shutdown hariç) oku
+if [ -z "$CIHAZ_ID" ]; then
+  CIHAZ_ID=$(xcrun devicectl list devices 2>/dev/null | awk '
+    !/simulated|unavailable|shutdown/ && /(connected|available)/ {
+      for (i = 1; i <= NF; i++) {
+        if ($i ~ /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/ || $i ~ /^[0-9a-fA-F]{24,40}$/) {
           print $i;
           exit;
         }
       }
     }
-  }
-')
-
-# Eğer bulunamadıysa devicectl filter ile dene
-if [ -z "$CIHAZ_ID" ]; then
-  CIHAZ_ID=$(xcrun devicectl list devices --filter "Reality = 'physical' AND (State = 'connected' OR State = 'available')" --hide-headers --columns Identifier 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}|[0-9a-fA-F]{24,40}' | head -n 1 || true)
+  ')
 fi
 
 if [ -z "$CIHAZ_ID" ]; then
@@ -51,13 +79,14 @@ if ! xcodegen generate; then
   exit 1
 fi
 
-echo "==> Uygulama derleniyor ve imzalanıyor (xcodebuild)..."
+echo "==> Uygulama derleniyor ve imzalanıyor (xcodebuild -destination $XCODE_DEST)..."
 DERLEME_LOG=$(mktemp)
 if ! xcodebuild -project MDK.xcodeproj \
   -scheme MDK \
   -configuration Debug \
-  -destination "id=$CIHAZ_ID" \
+  -destination "$XCODE_DEST" \
   -derivedDataPath .derle \
+  -allowProvisioningUpdates \
   build > "$DERLEME_LOG" 2>&1; then
   cat "$DERLEME_LOG" >&2
   if grep -qiE "signing|code signing|provisioning profile|development team|account" "$DERLEME_LOG"; then
