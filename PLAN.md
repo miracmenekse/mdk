@@ -559,7 +559,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kabul: PanelAdresi.cozumle çıplak adları küçük harfli https adresine çevirir, sondaki eğik çizgiyi atar, uzak düz http adreslerini reddedip yalnızca 127.0.0.1 ve localhost için http kabul eder; kayıtlı adres yoksa ve MDK_PANEL_URL verilmemişse ilk açılış adres formunu gösterir, hata ekranındaki Adresi değiştir bu forma döner, MDK_PANEL_URL varken form açılmadan doğrudan bağlanır
   - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
-- [ ] 117. Öne dönünce bayat paneli yenile
+- [x] 117. Öne dönünce bayat paneli yenile
   - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Kabul: YenilemeKarari.gerekli(ayrilma:donus:) ayrılma nil veya 120 saniyeden kısaysa ya da saat geri alındıysa false, 120 saniye ve üzerindeyse true döner; uygulama arka plana geçtiğinde zamanı kaydeder ve öne döndüğünde 120 saniye geçtiyse WebView'ı yeniler

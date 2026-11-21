@@ -46,6 +46,11 @@ final class WebGorunumModeli: ObservableObject {
         yukle()
     }
 
+    func yenile() {
+        guard !formAcik else { return }
+        yukle()
+    }
+
     func adresiDegistirFormunuAc() {
         zamanlayiciyiDurdur()
         hataVar = false

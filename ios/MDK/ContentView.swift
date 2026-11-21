@@ -126,7 +126,9 @@ struct AdresFormuGorunumu: View {
 }
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model: WebGorunumModeli
+    @State private var ayrilmaZamani: Date?
 
     init(url: URL? = PanelAdresi.aktifURL()) {
         _model = StateObject(wrappedValue: WebGorunumModeli(url: url))
@@ -158,6 +160,19 @@ struct ContentView: View {
                     }
                 )
                 .ignoresSafeArea()
+            }
+        }
+        .onChange(of: scenePhase) { _, yeniFaz in
+            switch yeniFaz {
+            case .background:
+                ayrilmaZamani = Date()
+            case .active:
+                if YenilemeKarari.gerekli(ayrilma: ayrilmaZamani, donus: Date()) {
+                    model.yenile()
+                }
+                ayrilmaZamani = nil
+            default:
+                break
             }
         }
     }
