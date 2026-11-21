@@ -72,14 +72,6 @@
     "ts": "2026-11-18T08:00:40.138Z"
   },
   {
-    "id": 10,
-    "baslik": "dbeaver-mm: yeni navigation pane (bağlantı/proje gezgini gibi, kendi UI'ı, kolay aranabilir)",
-    "not": "Mevcut connection/project navigator'a benzer ama kullanıcının istediği UI'a göre tasarlanacak yeni bir navigation pane; kolayca aranabilir olacak. Başka bir sohbette geliştirilecek (tasarım ayrıntıları orada konuşulacak). Bağlam: K112/K113/K130 gezgin işleri (tek şemalı zincir düzleştirme, aramada otomatik açma) mevcut navigator'ın sınırlarını gösterdi.",
-    "durum": "bekliyor",
-    "epic": null,
-    "ts": "2026-11-18T08:59:50.287Z"
-  },
-  {
     "id": 11,
     "baslik": "dbeaver-mm: Navigation Pane düzeltmeleri",
     "not": "v0.5.1 (ağaç) GUI'de denendikten sonra çıkan sorunlar düzeltilecek; kullanıcı denedikçe maddeler eklenecek. Bağlam: K137-K142.",
