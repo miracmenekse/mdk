@@ -53,10 +53,82 @@ struct HataGorunumu: View {
     }
 }
 
+struct AdresFormuGorunumu: View {
+    @State private var girdi: String
+    @State private var hataMesaji: String?
+    let onBaglan: (URL) -> Void
+
+    init(baslangicAdresi: String = "", onBaglan: @escaping (URL) -> Void) {
+        _girdi = State(initialValue: baslangicAdresi)
+        self.onBaglan = onBaglan
+    }
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            VStack(spacing: 8) {
+                Text("İlk açılış")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+
+                Text("Panel adresi")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+            }
+
+            VStack(spacing: 12) {
+                TextField("mac.tail….ts.net", text: $girdi)
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .keyboardType(.URL)
+
+                if let hata = hataMesaji {
+                    Text(hata)
+                        .font(.footnote)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                }
+
+                Button(action: baglanDene) {
+                    Text("Bağlan")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+            }
+            .padding(.horizontal, 36)
+            .padding(.top, 8)
+
+            Spacer()
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(UIColor.systemBackground))
+    }
+
+    private func baglanDene() {
+        if let url = PanelAdresi.cozumle(girdi) {
+            hataMesaji = nil
+            UserDefaults.standard.set(url.absoluteString, forKey: "panelAdresi")
+            onBaglan(url)
+        } else {
+            hataMesaji = "Geçersiz adres. Lütfen geçerli bir panel adresi girin."
+        }
+    }
+}
+
 struct ContentView: View {
     @StateObject private var model: WebGorunumModeli
 
-    init(url: URL) {
+    init(url: URL? = PanelAdresi.aktifURL()) {
         _model = StateObject(wrappedValue: WebGorunumModeli(url: url))
     }
 
@@ -66,29 +138,27 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
 
-            if model.hataVar {
+            if model.hataVar && !model.formAcik {
                 HataGorunumu(
                     yenidenDene: {
                         model.yenidenDene()
                     },
                     adresiDegistir: {
-                        model.yeniAdresGirdisi = model.url.absoluteString
-                        model.adresDegistirAcik = true
+                        model.adresiDegistirFormunuAc()
                     }
                 )
                 .ignoresSafeArea()
             }
-        }
-        .alert("Adresi değiştir", isPresented: $model.adresDegistirAcik) {
-            TextField("Panel adresi", text: $model.yeniAdresGirdisi)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled(true)
-            Button("Bağlan") {
-                model.adresiDegistir(yeniGirdi: model.yeniAdresGirdisi)
+
+            if model.formAcik {
+                AdresFormuGorunumu(
+                    baslangicAdresi: model.url?.absoluteString ?? "",
+                    onBaglan: { url in
+                        model.baglan(yeniURL: url)
+                    }
+                )
+                .ignoresSafeArea()
             }
-            Button("Vazgeç", role: .cancel) {}
-        } message: {
-            Text("Yeni panel adresini girin (ör. http://127.0.0.1:4747)")
         }
     }
 }

@@ -550,7 +550,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kabul: Panel sunucusu kapalıyken uygulama çökmeden "Mac'e ulaşılamıyor" ve "Mac uyuyor ya da panel kapalı" yerel ekranını (Yeniden dene ve Adresi değiştir düğmeleriyle) gösterir; bu ekrandayken 5 saniyede bir bağlantıyı kendiliğinden dener ve sunucu açıldığında panele geçip sayfayı yükler; WebContent süreci ölürse yeniden yükler
   - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-hata.test.mjs`
-- [ ] 116. İlk açılış adres ekranı
+- [x] 116. İlk açılış adres ekranı
   - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Etki: etki/ios-kabuk.html

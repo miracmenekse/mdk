@@ -1,8 +1,6 @@
 import Foundation
 
 public enum PanelAdresi {
-    public static let varsayilan = "http://127.0.0.1:4747"
-
     public static func cozumle(_ girdi: String) -> URL? {
         let temiz = girdi.trimmingCharacters(in: .whitespacesAndNewlines)
         if temiz.isEmpty || temiz.contains(" ") { return nil }
@@ -14,7 +12,7 @@ public enum PanelAdresi {
             ham = "https://" + temiz
         }
 
-        guard let bilesenler = URLComponents(string: ham),
+        guard var bilesenler = URLComponents(string: ham),
               let sema = bilesenler.scheme?.lowercased(),
               let host = bilesenler.host?.lowercased(),
               !host.isEmpty,
@@ -30,16 +28,15 @@ public enum PanelAdresi {
             }
         }
 
-        var sonuc = bilesenler
-        sonuc.scheme = sema
-        sonuc.host = host
-        if sonuc.path == "/" {
-            sonuc.path = ""
+        bilesenler.scheme = sema
+        bilesenler.host = host
+        while bilesenler.path.hasSuffix("/") {
+            bilesenler.path.removeLast()
         }
-        return sonuc.url
+        return bilesenler.url
     }
 
-    public static func aktifURL() -> URL {
+    public static func aktifURL() -> URL? {
         let env = ProcessInfo.processInfo.environment
         if let envUrlStr = env["MDK_PANEL_URL"] ?? env["SIMCTL_CHILD_MDK_PANEL_URL"],
            let url = cozumle(envUrlStr) {
@@ -49,6 +46,6 @@ public enum PanelAdresi {
            let url = cozumle(udStr) {
             return url
         }
-        return URL(string: varsayilan)!
+        return nil
     }
 }
