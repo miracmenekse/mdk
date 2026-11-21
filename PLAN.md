@@ -535,7 +535,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
 - [x] 113. Testleri çalıştır yalnız Mac'ten
   - Görev: kod
   - Kapı: `node panel/uzak-test-engel.test.mjs && node panel/test-api.test.mjs`
-- [ ] 114. iOS kabuğu: paneli WKWebView'da açar
+- [x] 114. iOS kabuğu: paneli WKWebView'da açar
   - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Kabul: Uygulama xcodegen ve xcodebuild ile derlenir, iOS simülatöründe açılır, MDK_PANEL_URL ortam değişkeni veya UserDefaults panelAdresi veya http://127.0.0.1:4747 adresini WKWebView içinde tam ekran yükler ve sayfadaki JavaScript çalışır
