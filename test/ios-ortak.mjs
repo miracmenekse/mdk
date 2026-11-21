@@ -17,6 +17,7 @@ export const APP = join(KOK, 'ios/.derle/Build/Products/Debug-iphonesimulator/MD
 const SWIFTC_ADAY = '/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc';
 const SWIFTC = existsSync(SWIFTC_ADAY) ? SWIFTC_ADAY : 'swiftc';
 const SIM_SDK = '/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk';
+const MAC_SDK = '/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk';
 const MODUL_BELLEK = '/tmp/swift-module-cache';
 
 export function derle() {
@@ -81,7 +82,11 @@ export function swiftTest(kaynak, test) {
   const D = mkdtempSync(join(tmpdir(), 'ios-swift-'));
   try {
     mkdirSync(MODUL_BELLEK, { recursive: true });
-    if (!kos(SWIFTC, ['-module-cache-path', MODUL_BELLEK, '-parse-as-library', join(KOK, kaynak), join(KOK, test), '-o', join(D, 't')])) process.exit(1);
+    const macSdk = existsSync(MAC_SDK)
+      ? MAC_SDK
+      : (spawnSync('xcrun', ['--sdk', 'macosx', '--show-sdk-path'], { encoding: 'utf8' }).stdout || '').trim();
+    const sdkArgs = macSdk ? ['-sdk', macSdk] : [];
+    if (!kos(SWIFTC, ['-module-cache-path', MODUL_BELLEK, ...sdkArgs, '-parse-as-library', join(KOK, kaynak), join(KOK, test), '-o', join(D, 't')])) process.exit(1);
     process.exit(spawnSync(join(D, 't'), [], { stdio: 'inherit' }).status ?? 1);
   } finally { rmSync(D, { recursive: true, force: true }); }
 }
