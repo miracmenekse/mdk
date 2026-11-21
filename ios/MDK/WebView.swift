@@ -88,11 +88,54 @@ final class WebGorunumModeli: ObservableObject {
     }
 }
 
-final class WebViewKoordinator: NSObject, WKNavigationDelegate {
+final class WebViewKoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     var model: WebGorunumModeli
 
     init(model: WebGorunumModeli) {
         self.model = model
+    }
+
+    private func enUstGorunumDenetleyicisi() -> UIViewController? {
+        let sahneler = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let pencere = sahneler.flatMap(\.windows).first(where: \.isKeyWindow)
+        var vc = pencere?.rootViewController
+        while let sunulan = vc?.presentedViewController {
+            vc = sunulan
+        }
+        return vc
+    }
+
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        guard let vc = enUstGorunumDenetleyicisi() else {
+            completionHandler()
+            return
+        }
+        let uyari = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        uyari.addAction(UIAlertAction(title: "Tamam", style: .default) { _ in completionHandler() })
+        vc.present(uyari, animated: true)
+    }
+
+    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+        guard let vc = enUstGorunumDenetleyicisi() else {
+            completionHandler(false)
+            return
+        }
+        let uyari = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        uyari.addAction(UIAlertAction(title: "Vazgeç", style: .cancel) { _ in completionHandler(false) })
+        uyari.addAction(UIAlertAction(title: "Evet", style: .destructive) { _ in completionHandler(true) })
+        vc.present(uyari, animated: true)
+    }
+
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        guard let vc = enUstGorunumDenetleyicisi() else {
+            completionHandler(nil)
+            return
+        }
+        let uyari = UIAlertController(title: nil, message: prompt, preferredStyle: .alert)
+        uyari.addTextField { $0.text = defaultText }
+        uyari.addAction(UIAlertAction(title: "Vazgeç", style: .cancel) { _ in completionHandler(nil) })
+        uyari.addAction(UIAlertAction(title: "Tamam", style: .default) { _ in completionHandler(uyari.textFields?.first?.text) })
+        vc.present(uyari, animated: true)
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -140,6 +183,7 @@ struct WebView: UIViewRepresentable {
         let configuration = WKWebViewConfiguration()
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
         model.webViewBagla(webView)
         return webView
     }
