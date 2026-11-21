@@ -571,7 +571,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Kabul: ios/kur.sh bağlı iPhone'u xcrun devicectl list devices ile arar, bağlı değilse ne yapılacağını açıklayıp çıkış 1 verir; bağlıysa xcodegen, imzalı xcodebuild, devicectl device install app ve devicectl device process launch adımlarını çalıştırır, imza hatasında Xcode hesap uyarısı basar
   - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.
   - Kapı: `node -e "import { existsSync, readFileSync } from 'node:fs'; import { spawnSync } from 'node:child_process'; if (!existsSync('ios/kur.sh')) process.exit(1); const s = readFileSync('ios/kur.sh', 'utf8'); for (const k of ['devicectl', 'xcodegen', 'xcodebuild', 'install', 'launch']) if (!s.includes(k)) process.exit(1); if (spawnSync('bash', ['-n', 'ios/kur.sh']).status !== 0) process.exit(1); const r = spawnSync('bash', ['ios/kur.sh'], { encoding: 'utf8' }); if (r.status === 0 || !((r.stdout || '') + (r.stderr || '')).trim()) process.exit(1);"`
-- [ ] 119. Uçtan uca doğrulama (hücresel ağ)
+- [x] 119. Uçtan uca doğrulama (hücresel ağ)
   - Yürütücü: kodcu
   - Ne: Elle yapılacaklar bitince: Serve'den gelen Host/Origin/kimlik başlıklarını gerçek istekle gör, SSE'nin tamponlanmadan aktığını ölç, telefondan bir yorum gönderip `etki/kararlar.jsonl`'de gör, Testleri çalıştır'ın reddedildiğini gör. Host beklenenden farklıysa `uzak.mjs` için yeni adım aç.
   - Kapı: elle — Wi-Fi kapalı iPhone'da panel açılır, canlı güncellenir, yorum kaydedilir, test reddedilir.
