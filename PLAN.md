@@ -539,7 +539,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Kabul: Uygulama xcodegen ve xcodebuild ile derlenir, iOS simülatöründe açılır, MDK_PANEL_URL ortam değişkeni veya UserDefaults panelAdresi veya http://127.0.0.1:4747 adresini WKWebView içinde tam ekran yükler ve sayfadaki JavaScript çalışır
-  - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza; `test/ios-ortak.mjs` bunu `xcodegen generate --quiet` (`cwd: ios`) ve `xcodebuild -project ios/MDK.xcodeproj -scheme MDK -destination id=561893AD-5010-42ED-AC97-72AD478CA460 -derivedDataPath ios/.derle CODE_SIGNING_ALLOWED=NO -quiet build` ile derler; `INFOPLIST_KEY_NSAppTransportSecurity` / Info.plist içinde `NSAppTransportSecurity -> NSAllowsLocalNetworking = true` olmalı), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz.
+  - Ne: `ios/project.yml` (xcodegen; hedef MDK, iOS 17, paket `com.miracmenekse.mdk`, ekip D3TZD57793, otomatik imza; `Info.plist` içinde `NSAppTransportSecurity -> NSAllowsLocalNetworking = true` olmalı), `ios/MDK/`: SwiftUI uygulama + `WKWebView` temsilcisi, tam ekran, güvenli alan içinde. Adres: `MDK_PANEL_URL` ortamı, yoksa `UserDefaults` `panelAdresi`, yoksa `http://127.0.0.1:4747`. ATS: yalnız `NSAllowsLocalNetworking`. Panel HTML'i pakete gömülmez, panele dokunulmaz. Not: Dosyaları yazdıktan sonra doğrudan xcodebuild çalıştırma; yalnız kapı komutunu (node test/ios-kabuk.test.mjs) çalıştırıp bitir.
   - Kapı: `node test/ios-kabuk.test.mjs`
 - [ ] 115. Bağlantı yok ekranı ve kendiliğinden yeniden deneme
   - Modeller: agy/gemini-3.8-flash-medium
@@ -548,7 +548,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Onay: evet
   - Değer: 4
   - Kabul: Panel sunucusu kapalıyken uygulama çökmeden "Mac'e ulaşılamıyor" ve "Mac uyuyor ya da panel kapalı" yerel ekranını (Yeniden dene ve Adresi değiştir düğmeleriyle) gösterir; bu ekrandayken 5 saniyede bir bağlantıyı kendiliğinden dener ve sunucu açıldığında panele geçip sayfayı yükler; WebContent süreci ölürse yeniden yükler
-  - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler.
+  - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-hata.test.mjs`
 - [ ] 116. İlk açılış adres ekranı
   - Modeller: agy/gemini-4-argon-low
@@ -557,13 +557,13 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Onay: evet
   - Değer: 4
   - Kabul: PanelAdresi.cozumle çıplak adları küçük harfli https adresine çevirir, sondaki eğik çizgiyi atar, uzak düz http adreslerini reddedip yalnızca 127.0.0.1 ve localhost için http kabul eder; kayıtlı adres yoksa ve MDK_PANEL_URL verilmemişse ilk açılış adres formunu gösterir, hata ekranındaki Adresi değiştir bu forma döner, MDK_PANEL_URL varken form açılmadan doğrudan bağlanır
-  - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar.
+  - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 117. Öne dönünce bayat paneli yenile
   - Modeller: agy/gemini-4-argon-low
   - Graf: evet
   - Kabul: YenilemeKarari.gerekli(ayrilma:donus:) ayrılma nil veya 120 saniyeden kısaysa ya da saat geri alındıysa false, 120 saniye ve üzerindeyse true döner; uygulama arka plana geçtiğinde zamanı kaydeder ve öne döndüğünde 120 saniye geçtiyse WebView'ı yeniler
-  - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez.
+  - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-yenile.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
   - Modeller: agy/gemini-4-argon-low
