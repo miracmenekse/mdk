@@ -551,7 +551,7 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Ne: Yükleme başarısızsa (`didFail`, `didFailProvisionalNavigation`, 5xx) yerel ekran: "Mac'e ulaşılamıyor", "Mac uyuyor ya da panel kapalı", Yeniden dene, Adresi değiştir. Bu ekrandayken 5 sn'de bir dener, olunca panele geçer. WebContent süreci ölürse yeniden yükler. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-hata.test.mjs`
 - [ ] 116. İlk açılış adres ekranı
-  - Modeller: agy/gemini-4-argon-low
+  - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Etki: etki/ios-kabuk.html
   - Onay: evet
@@ -560,13 +560,13 @@ Sonuç: doğrulandı (3 geçerli kart, 3 ayrı eksen; 6 seçenek, mentör kartı
   - Ne: `ios/MDK/PanelAdresi.swift`: `enum PanelAdresi { static func cozumle(_ s: String) -> URL? }`, çıplak ad https olur; düz http yalnız 127.0.0.1/localhost için; sondaki `/` atılır, ad küçük harf. Kayıtlı adres yoksa yerel form (alan + Bağlan, geçersizse satır içi uyarı), `panelAdresi`'ne yazar. Hata ekranındaki Adresi değiştir bu forma döner. `MDK_PANEL_URL` varken form açılmaz; varsayılan adres fallback'i kalkar. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-adres.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 117. Öne dönünce bayat paneli yenile
-  - Modeller: agy/gemini-4-argon-low
+  - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Kabul: YenilemeKarari.gerekli(ayrilma:donus:) ayrılma nil veya 120 saniyeden kısaysa ya da saat geri alındıysa false, 120 saniye ve üzerindeyse true döner; uygulama arka plana geçtiğinde zamanı kaydeder ve öne döndüğünde 120 saniye geçtiyse WebView'ı yeniler
   - Ne: `ios/MDK/YenilemeKarari.swift`: `enum YenilemeKarari { static func gerekli(ayrilma: Date?, donus: Date) -> Bool }`, 120 sn ve üzeri ayrılıkta `true`. `scenePhase` arka plana geçişte zamanı tutar, dönüşte gerekliyse WebView yeniden yükler. Kısa ayrılık yazılan yorumu silmez. Not: Doğrudan xcodebuild çalıştırma; yalnız kapı komutunu çalıştırıp bitir.
   - Kapı: `node test/ios-yenile.test.mjs && node test/ios-kabuk.test.mjs`
 - [ ] 118. Tek komutla iPhone'a kur (7 günlük imza için)
-  - Modeller: agy/gemini-4-argon-low
+  - Modeller: agy/gemini-3.8-flash-medium
   - Graf: evet
   - Kabul: ios/kur.sh bağlı iPhone'u xcrun devicectl list devices ile arar, bağlı değilse ne yapılacağını açıklayıp çıkış 1 verir; bağlıysa xcodegen, imzalı xcodebuild, devicectl device install app ve devicectl device process launch adımlarını çalıştırır, imza hatasında Xcode hesap uyarısı basar
   - Ne: `ios/kur.sh`: bağlı iPhone'u `xcrun devicectl list devices` ile bulur, yoksa ne yapılacağını söyleyip çıkış 1. `xcodegen`, imzalı `xcodebuild`, `devicectl device install app`, `devicectl device process launch`. İmza hatasında Xcode'da hesap açmayı söyler.

@@ -20,7 +20,7 @@
       "planlayici": [
         "agy",
         "--model",
-        "gemini-4-argon-medium",
+        "gemini-4-neon-medium",
         "-p",
         "{istem}",
         "--dangerously-skip-permissions",
@@ -41,26 +41,26 @@
         "{\"permissions\":{\"allow\":[\"command(node)\",\"command(npm)\",\"command(npx)\",\"command(git)\",\"command(grep)\",\"command(sed)\",\"command(awk)\",\"command(cat)\",\"command(ls)\",\"command(head)\",\"command(tail)\",\"command(wc)\",\"command(find)\",\"command(sort)\",\"command(diff)\",\"command(mkdir)\",\"command(cp)\",\"command(mv)\",\"command(rm)\",\"command(touch)\",\"command(echo)\",\"command(test)\",\"command(bash)\",\"command(sh)\",\"command(which)\",\"command(pwd)\",\"command(xargs)\",\"command(printf)\",\"command(env)\",\"command(dirname)\",\"command(basename)\",\"command(realpath)\",\"command(tr)\",\"command(cut)\",\"command(uniq)\",\"command(xcodegen)\",\"command(xcodebuild)\",\"command(xcrun)\",\"command(swiftc)\",\"command(chmod)\",\"command(defaults)\"],\"deny\":[\"command(sudo)\",\"command(git push)\",\"command(git stash)\"]}}"
       ],
       "roller": {
-        "kodcu": "agy/gemini-4-argon-low",
-        "tasarimci": "agy/gemini-4-argon-medium"
+        "kodcu": "agy/gemini-3.8-flash-medium",
+        "tasarimci": "agy/gemini-4-neon-medium"
       },
       "gorevler": {
         "kod": [
-          "agy/gemini-4-argon-low"
+          "agy/gemini-3.8-flash-medium"
         ],
         "kapi": [
           "agy/gemini-3.8-flash-medium"
         ],
         "eskale": [
-          "agy/gemini-4-argon-medium",
+          "agy/gemini-4-neon-medium",
           "agy/gemini-3.8-flash-medium"
         ],
         "hakem": [
-          "agy/gemini-4-argon-medium",
+          "agy/gemini-4-neon-medium",
           "agy/gemini-3.8-flash-medium"
         ],
         "inceleme": [
-          "agy/gemini-4-argon-medium",
+          "agy/gemini-4-neon-medium",
           "agy/gemini-3.8-flash-medium"
         ],
         "karar": [
