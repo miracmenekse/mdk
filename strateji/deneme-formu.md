@@ -1,5 +1,7 @@
 # Aday araç deneme formu (G3)
 
+**Orca kurulumu:** `brew install --cask stablyai/orca/orca`. Çıplak `brew install orca` başka bir ürün kurar, kullanma. Ya da https://orca.dev/download. Sonra Orca'da Ayarlar → General → Orca CLI ile `orca` komutunu kaydet.
+
 Amaç: masa başı araştırmanın göremediğini görmek: araç gerçekten MDK'nın bir katmanının yerine geçer mi? Süre: araç başına **en çok 1 saat**. Aynı küçük iş her araçta yapılır ki karşılaştırma adil olsun.
 
 **Deneme işi (sabit):** aşağıdaki "Deneme story'si". Aynı iş önce MDK'da (`node mdk-adim.mjs`), sonra Orca'da yapılır. Böylece iki araç doğrudan karşılaştırılır.
@@ -20,7 +22,7 @@ Amaç: masa başı araştırmanın göremediğini görmek: araç gerçekten MDK'
 ### Orca'ya özgü sorular (katmanlar.md'deki 6. ve 7. katman kararı bunlara bağlı)
 | Soru | Sonuç |
 |---|---|
-| `orca orchestration worker-start` arayüz (GUI) kapalıyken de çalışıyor mu? | |
+| `orca orchestration worker-start` arayüz (GUI) kapalıyken de çalışıyor mu? (Belgeye göre hayır, açık uygulamayı yönetiyor; doğrula) | |
 | `--agent opencode` (ve model seçimi) seçtiğim modeli gerçekten kullandı mı? | |
 | İşçi `worker_done` dedikten sonra MDK kapısını (aşağıdaki kapı komutunu) Orca'ya dokunmadan koşabildim mi? | |
 | Kullanım ekranı aboneliklerimi (Claude, Antigravity, OpenCode Go) gösterdi mi? | |

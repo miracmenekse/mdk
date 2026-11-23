@@ -126,7 +126,7 @@ Her yeni Epic açılmadan önce şu sorulur: "Bu iş hangi katmanda? O katman ta
 ## Aday Epic'ler (sırayla; hiçbiri onaysız açılmaz)
 1. **Senaryo kapısı.** "Kabul" satırı sade dilli davranış senaryolarına dönüşür; kapı yalnız onaylı senaryodan üretilir. Kabul: bir story'de kullanıcı yalnız senaryoları onaylar, kodu ya da testi görmez; kapı senaryo dışına çıkarsa reddedilir. (Raporlardan sonra 1. sıraya çıktı.)
 1b. **Maliyet politikası.** Ücretsiz modeller ana akıştan çıkar; model merdiveni yerine görev başına sabit model (en çok 2 deneme, sonra doğrudan güçlü model); hakem kod modelinden farklı aileden; abonelik tüketimi kayda girer. En büyük kullanılabilirlik kazancı, küçük iş.
-2. **Orca'dan mantık al** (kullanıcı kararı, 2026-11-23: Orca'ya bağlanma, mantığını al; Orca MIT, kod alınırsa bildirim korunur). Yalnız dört mantık: (A) kota bekleme ve kendiliğinden devam, (B) kota iletisinden yenilenme saati, (C) doğrulanan worktree kilidi, (D) bitti/soru/takıldı işçi sözleşmesi. Ayrıntı `katman-raporu.md`.
+2. **Orca adaptörü.** Kullanıcının son kararı (2026-11-23): Orca kullanılacak, tek adaptör dosyası üzerinden. Önceki "yalnız mantığını al" kararının yerine geçer. Ayrıntı `katman-raporu.md`. Eski not: Yalnız dört mantık: (A) kota bekleme ve kendiliğinden devam, (B) kota iletisinden yenilenme saati, (C) doğrulanan worktree kilidi, (D) bitti/soru/takıldı işçi sözleşmesi. Ayrıntı `katman-raporu.md`.
 3. **ACP yürütücü adaptörü + "Claude çıktı" tatbikatı.** agy planlayıcı, ACP üzerinden yürütücü. Kabul: bir Epic Claude'a hiç dokunmadan biter.
 4. **Panel dondurma ve küçültme.** Orca'ya devredilen ekranlar kaldırılır.
 

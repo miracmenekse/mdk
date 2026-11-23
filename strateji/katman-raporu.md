@@ -14,8 +14,15 @@ Her katman için yedi alan var: istenen beş alan (MDK'daki karşılığı, haz�
 
 ## Orca hakkında
 - Lisansı **MIT** (`LICENSE`, Copyright 2026 Lovecast Inc.). MIT kodu kullanmaya, değiştirmeye, satmaya izin verir. Tek şartı telif ve izin bildirimini korumak.
-- Kullanıcı kararı (2026-11-23): **Orca'ya bağlanmıyoruz, mantığını alıyoruz.** Ama "yeniden icat etme" riskine karşı yalnız aşağıda acı noktasına bağlanan dört mantık alınır, fazlası değil. Kod kopyalanırsa dosyanın başına MIT bildirimi eklenir.
-- G3 denemesi yine yararlı: mantığı almadan önce Orca'da nasıl hissettirdiğini görmek için.
+- **Kullanıcı kararı (2026-11-23, son): Orca'yı kullanıyoruz.** Önceki "yalnız mantığını al" kararının yerine geçer.
+  - Araç olarak kullanmanın yükümlülüğü yok. Yalnız kodundan parça kopyalanırsa MIT bildirimi eklenir.
+  - **Bağlanma kuralı:** MDK Orca'ya yalnız tek bir adaptör dosyasından bağlanır (öneri `mdk-orca.mjs`, `orca` CLI'ı çağırır). Gerekçe: Orca tek şirketin ürünü (Stably AI) ve vibe-kanban'ın kapanması bu riskin örneği. Orca giderse yalnız o dosya değişir.
+  - **Orca'ya bırakılanlar:** paralel ajan, worktree, koordinatör/işçi, canlı sohbet ve terminal izleme, hesap kotası görünümü. Bunlar (C) ve (D) mantıklarının yerine geçer; o mantıkları biz yazmayız.
+  - **MDK'da kalanlar:** Story + senaryo kapısı, kapı koşusu ve kurcalama koruması, model politikası, story başına maliyet, niyet doğrulama ekranı.
+- **Bilinen kısıtlar:**
+  - Orca CLI'ı **açık duran Orca uygulamasını** yönetir (`docs/site/content/docs/cli/overview.mdx`: "scripting a running Orca editor"). MDK, Orca'yı arka planda kendi başına çalıştıramaz; uygulama açık olmalı.
+  - Homebrew'daki çıplak `orca` paketi **başka bir üründür** (plotly). Doğru kurulum: `brew install --cask stablyai/orca/orca`.
+- G3 denemesi artık "kullanılabilir mi?" sorusuna değil, adaptörün sınırlarını öğrenmeye yarar.
 
 ---
 
@@ -73,7 +80,7 @@ Her katman için yedi alan var: istenen beş alan (MDK'daki karşılığı, haz�
 ## 6. Koşu düzeni, paralel, worktree, kilit
 - **MDK'da:** `mdk-adim`, `mdk-ortak`, `mdk-paralel`, `mdk-dagit`, kilit (1.485 satır; en çok değişen ikinci katman).
 - **Hazır:** Orca (MIT), OpenHands, Temporal, GitHub Actions; n8n (iş akışı, ağır, SUL lisans); vibe-kanban (kapandı).
-- **Karar:** Orca'nın mantığını al (kullanıcı kararı). Yeni özellik yok, yalnız aşağıdaki iki mantık.
+- **Karar:** **Orca'yı kullan** (kullanıcı kararı). `mdk-paralel` ve `mdk-dagit` işi Orca'ya devredilir. MDK'da yalnız tek koşu ve kapı kalır. (C) ve (D) aşağıda bilgi olarak duruyor, Orca bunları zaten yapıyor.
 - **Değiştirme maliyeti:** orta.
 - **Kullanılamazlığa katkısı:** **yüksek.**
   - Koşturucu hataları: 615 commit'in 28'i düzeltme.
@@ -153,9 +160,9 @@ Bu bir başarısızlık değil, doğal sonuç: bu katmanlar artık herkesin işi
 | 0 | Epic 0: bağlam diyeti. `PLAN.md`'yi Epic başına böl, planlayıcı yalnız ilgili Epic'i okusun, yürütücü istemi küçülsün | c1, a4 | Claude planlar, yürütücü yazar |
 | 1 | Epic 1: senaryo kapısı | c3, b6 | " |
 | 1b | Epic 1b: maliyet politikası + Orca (A)(B) kota bekleme | a1, a2, a3, a5 | " |
-| 2 | Epic 2: Orca mantığı (C)(D): kilit doğrulama, bitti/soru/takıldı sözleşmesi | b1, b2, c2 | " |
+| 2 | Epic 2: Orca adaptörü (`mdk-orca.mjs`): story'yi Orca worktree'sinde işçiye ver, `worker_done` gelince MDK kapısını koş; `mdk-paralel`/`mdk-dagit` emekliye ayrılır | b1, b2, c2 | " |
 | 3 | Epic 3: ACP + "Claude çıktı" | c4 | " |
 | 4 | Epic 4: panel küçült, niyet doğrulama ekranı, canlı satır, Figma onayı isteğe bağlı | b5, b6, c2 | " |
 | — | Windows'ta ilk gerçek koşu | b3 | **kullanıcı (elle)** |
-| — | Orca'yı 1 saat dene (`deneme-formu.md`) | (C)(D) mantığını almadan önce | **kullanıcı (elle)** |
+| — | Orca'yı kur (`brew install --cask stablyai/orca/orca`), CLI'ı Ayarlar → General → Orca CLI'dan kaydet, 1 saat dene (`deneme-formu.md`) | Epic 2'nin önkoşulu | **kullanıcı (elle)** |
 | — | "Katman kontrolü" kuralı | b4 | kullanıcı onayı → Claude `CLAUDE.md`'ye yazar |
