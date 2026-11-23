@@ -25,7 +25,7 @@ Henüz gelmeyenler: Gemini Deep Research İstem 4 (G1), NotebookLM (G2), elle de
 |---|---|---|---|
 | **n8n** | Genel iş akışı otomasyonu (webhook, entegrasyon); lisansı SUL (kaynağı açık ama kısıtlı) | 6, ama kod üretmez | MDK'nın rakibi değil. İleride "panelden iş gelsin, Slack'e haber gitsin" gibi yan işler için kullanılabilir. |
 | **"Harness"** | Ürün değil, 2026'da yerleşen bir kavram ([Fowler](https://martinfowler.com/articles/harness-engineering.html), [Osmani](https://addyosmani.com/blog/agent-harness-engineering/)): ajanın çevresindeki kurallar, testler ve kapılar. Harness.io ise ayrı bir CI/CD ürünü. | 3 (satıcının harness'ı: Claude Code, OpenCode, agy) + 5 (kullanıcının harness'ı: kapı, kural) | **MDK'nın kapı sistemi tam olarak "kullanıcı tarafı harness".** Fark yaratan bu, adı artık var. |
-| **Orca** ([stablyai/orca](https://github.com/stablyai/orca)) | 134 bin★, MIT. Masaüstü uygulaması: her ajan ayrı git worktree'de, paralel; CLI ile sürülür; kullanım/kota takibi var | 3 + 6 + 7 | MDK'nın koşu ve panel katmanının en güçlü hazır adayı. Kapı ve model merdiveni yok. |
+| **Orca** ([orca.dev](https://orca.dev), [stablyai/orca](https://github.com/stablyai/orca); kullanıcı arkadaşından duydu) | 134 bin★, MIT. Masaüstü uygulaması: her ajan ayrı git worktree'de, paralel; CLI ile sürülür; kullanım/kota takibi var | 3 + 6 + 7 | MDK'nın koşu ve panel katmanının en güçlü hazır adayı. Kapı ve model merdiveni yok. |
 
 ## Katman tablosu
 Değiştirme maliyeti şu soruyu yanıtlar: "bu araç yarın bırakılırsa ne kadar iş çıkar?"
@@ -41,6 +41,35 @@ Değiştirme maliyeti şu soruyu yanıtlar: "bu araç yarın bırakılırsa ne k
 | 7 | Panel | `panel/*.mjs` (4.487) | Orca'nın arayüzü (worktree, diff, kullanım); vibe-kanban önerilmez | **DONDUR ve KÜÇÜLT.** Panelde yalnız MDK'ya özgü olan kalır: Epic/Story durumu, onay kartı, kapı sonucu, story başına maliyet. Worktree, diff ve ajan izleme Orca'ya bırakılır. | orta |
 | 8 | Maliyet, metrik | `mdk-kayit`, `karsilastir` (164) | ccusage (Claude/OpenCode/Codex yerel kayıtları; OpenCode ve agy desteği doğrulanmadı), Orca kullanım takibi | **KENDİMİZ (story başına kayıt) + HAZIR (abonelik tüketimi).** Bugünkü 0,56 $ yanıltıcı; Claude ve agy tüketimi ölçülmüyor. | düşük |
 | 9 | Kural eşitleme | `mdk-esitle`, `esit/` (49) | [AGENTS.md](https://agents.md/) standardı; ruler/rulesync | **HAZIR STANDART.** Kök kural `AGENTS.md`. Eşitleme betiği küçük, şimdilik kalsın. | düşük |
+
+## 10. katman: görünürlük ve bağlam (2026-11-23, kullanıcının asıl derdi)
+Kullanıcının hissi: "ana ve alt yürütücüler çok bağlam ve token harcıyor, nasıl konuştuklarını canlı görmek istiyorum." Arkadaşı Orca'yı bu yüzden araştırmış.
+
+**Ölçüm.** Kaynak: bu Mac'teki 25 MDK Claude Code oturumu (`~/.claude/projects/-Users-mirac/*.jsonl` ve `subagents/`). Ölçen betik oturumda koşuldu, depoda değil.
+
+| | İstek | Toplam token | İstek başına bağlam |
+|---|---|---|---|
+| Ana yürütücü (planlayıcı Claude) | 1.689 | **362 M** (%98'i önbellekten okuma) | **~213k** |
+| Alt ajanlar (kodcu, tasarımcı) | 372 | 38 M | ~101k |
+
+- Oturumların en büyük bağlamı: medyan 152k, en yüksek 734k.
+- OpenCode tarafında her `opencode run` en küçük işte bile 55-110k (`gunluk.md`).
+- `PLAN.md` tek başına ~72k token. Planlayıcı onu her okuduğunda bu kadar yük biniyor.
+
+**Sonuç:** Yük devretmede (alt yürütücüye iş vermede) değil, **ana oturumun uzayıp şişmesinde**: token'ın %90'ı ana yürütücüde. Önbellekten okuma ucuzdur, ama Claude Pro kullanım sınırına sayılır. Kotanın çabuk bitmesinin bir nedeni bu.
+
+**Hazır araçlar** (kendimiz yazmayalım):
+- **Orca** ([orca.dev](https://orca.dev) = stablyai/orca): koordinatör ve işçi ajanların sohbet ve terminalleri yan yana, canlı. Ama ajan başına token ya da bağlam **göstermiyor**; yalnız hesap kotası ("%42 kullanıldı, 2 sa 48 dk'da yenilenir").
+- **Claude Code'un kendi OpenTelemetry çıktısı:** `claude_code.token.usage` (model ve tür başına). Alt ajan ayrımı beta ayarıyla geliyor (`CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`). Hazır panolar var: [Grafana](https://grafana.com/grafana/dashboards/25052/), [SigNoz](https://signoz.io/docs/claude-code-monitoring/). Ama ayrı bir sunucu gerekiyor, teknik olmayana ağır. Kaynaklar: [resmi belge](https://code.claude.com/docs/en/monitoring-usage.md), [Last9](https://last9.io/docs/integrations/claude-code/).
+- **ccusage:** yerel kayıtlardan kullanım özeti.
+- MDK'nın `panel/claude.mjs` dosyası bu kayıtları zaten okuyor; yalnız ana ve alt ayrımını ve bağlam boyunu göstermiyor.
+
+**Karar önerisi:**
+- **Canlı izleme:** Orca'dan al (G3 denemesinde bak).
+- **Token ve bağlam ölçümü:** panelin mevcut Claude okuyucusuna küçük bir ek ("bu oturum ~213k bağlamla çalışıyor, şu kadarı alt ajanda").
+- **Asıl kazanç ölçümden değil, bağlam diyetinden gelir:** kısa oturum ve devir notu, planlayıcının `PLAN.md`'nin tamamını değil yalnız ilgili Epic'i okuması, büyük okumaların alt ajana verilip özetinin alınması.
+
+Aday Epic 0 (en ucuz, en hızlı etki): **Bağlam diyeti.** İlk iş, `PLAN.md`'yi Epic başına dosyalara bölmek ya da arşivlemek. Kabul: planlayıcının istek başına ortalama bağlamı 213k'dan belirgin biçimde düşer. Ölçüm aynı betikle yapılır.
 
 ## Hedef mimari: ince çekirdek + adaptörler
 ```
