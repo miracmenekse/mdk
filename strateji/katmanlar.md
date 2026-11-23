@@ -28,6 +28,8 @@ G1 (Gemini Deep Research İstem 4: `rapor/Yapay Zekâ Yazılım Fabrikası Mimar
 | **Orca** ([orca.dev](https://orca.dev), [stablyai/orca](https://github.com/stablyai/orca); kullanıcı arkadaşından duydu) | 134 bin★, MIT. Masaüstü uygulaması: her ajan ayrı git worktree'de, paralel; CLI ile sürülür; kullanım/kota takibi var | 3 + 6 + 7 | MDK'nın koşu ve panel katmanının en güçlü hazır adayı. Kapı ve model merdiveni yok. |
 
 ## Katman tablosu
+> **Güncel ve tam hâli `katman-raporu.md`'de** (7 alan, "en iyisi miyiz?", acı noktası → aksiyon tablosu). Aşağıdaki ilk taslak tarihçe için duruyor.
+
 Değiştirme maliyeti şu soruyu yanıtlar: "bu araç yarın bırakılırsa ne kadar iş çıkar?"
 
 | # | Katman | MDK bugün (satır) | Hazır aday | Karar | Değiştirme maliyeti |
@@ -124,7 +126,7 @@ Her yeni Epic açılmadan önce şu sorulur: "Bu iş hangi katmanda? O katman ta
 ## Aday Epic'ler (sırayla; hiçbiri onaysız açılmaz)
 1. **Senaryo kapısı.** "Kabul" satırı sade dilli davranış senaryolarına dönüşür; kapı yalnız onaylı senaryodan üretilir. Kabul: bir story'de kullanıcı yalnız senaryoları onaylar, kodu ya da testi görmez; kapı senaryo dışına çıkarsa reddedilir. (Raporlardan sonra 1. sıraya çıktı.)
 1b. **Maliyet politikası.** Ücretsiz modeller ana akıştan çıkar; model merdiveni yerine görev başına sabit model (en çok 2 deneme, sonra doğrudan güçlü model); hakem kod modelinden farklı aileden; abonelik tüketimi kayda girer. En büyük kullanılabilirlik kazancı, küçük iş.
-2. **Orca denemesi (G3) → koşu adaptörü.** Deneme geçerse `mdk-adim` Orca üzerinden bir story koşturur. Kabul: aynı story Orca worktree'sinde başlar, MDK kapısı geçer, metrik yazılır.
+2. **Orca'dan mantık al** (kullanıcı kararı, 2026-11-23: Orca'ya bağlanma, mantığını al; Orca MIT, kod alınırsa bildirim korunur). Yalnız dört mantık: (A) kota bekleme ve kendiliğinden devam, (B) kota iletisinden yenilenme saati, (C) doğrulanan worktree kilidi, (D) bitti/soru/takıldı işçi sözleşmesi. Ayrıntı `katman-raporu.md`.
 3. **ACP yürütücü adaptörü + "Claude çıktı" tatbikatı.** agy planlayıcı, ACP üzerinden yürütücü. Kabul: bir Epic Claude'a hiç dokunmadan biter.
 4. **Panel dondurma ve küçültme.** Orca'ya devredilen ekranlar kaldırılır.
 
