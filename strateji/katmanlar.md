@@ -13,7 +13,7 @@ Henüz gelmeyenler: Gemini Deep Research İstem 4 (G1), NotebookLM (G2), elle de
 - MDK'nın iki katmanı (koşu düzeni ve panel) başkalarının olgun biçimde çözdüğü işler. Üretim kodunun ~%66'sı (5.972 / 8.977 satır) bu iki katmanda ve bakım yükünün çoğu buradan geliyor.
 - Son dört story (222, 224, 225, 226) hazır çözümleri sıfırdan yeniden yazdı.
 
-**Ama asıl sorun bu değil.** Story'lerin yalnız ~%18'i tasarlandığı gibi (ucuz model + kapı) bitti. Kullanılamazlığın birinci nedeni ücretsiz kotaya dayanmak. Bu, araç değiştirerek değil, **maliyet politikası** değiştirerek çözülür.
+**Ama asıl sorun bu değil.** Git kayıtlarına göre story'lerin yalnız ~üçte biri (%33-38) tasarlandığı gibi (ucuz model + kapı) bitti. Kullanılamazlığın birinci nedeni ücretsiz kotaya dayanmak. Bu, araç değiştirerek değil, **maliyet politikası** değiştirerek çözülür.
 
 ## Karar kuralı (değişmez)
 - Hazır araç katmanı karşılıyorsa ve düşük maliyeti ya da teknik olmayan kullanıcı deneyimini bozmuyorsa, **hazır al ya da sar**.

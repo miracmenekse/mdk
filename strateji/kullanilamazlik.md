@@ -7,17 +7,16 @@ Tarih: 2026-11-23. Kaynaklar: `metrikler.jsonl` (170 satır, yalnız bu Mac), `P
 | Ölçü | Değer | Kaynak |
 |---|---|---|
 | Biten story | 226 | `PLAN.md` `- [x]` |
-| Metrik kaydı olan story | 64 | `metrikler.jsonl` |
-| Tasarlandığı gibi biten story (ücretsiz/Go model + kapı) | **41**, yani bitenlerin ~%18'i | metrikte son geçen deneme `opencode` |
-| Pahalı ya da elle yürütücüyle biten, kaydı olan story | 21 (agy 13, kodcu 8) | metrik |
-| Kaydı olmayan story (çoğu Claude ya da kodcu elle yazdı) | ~160 | ör. 9-29, 151-163, 179-183; `gunluk.md`, bellek |
+| Story'yi kim bitirdi (git: her story'nin son `adım N:` commit'indeki yürütücü etiketi; tüm makineler) | opencode **74-85** (paralel koşular dahil), kodcu 40, agy 21, claude 9, etiketsiz 27; 40 story'nin kendi commit'i yok (toplu Epic commit'i) | `git log` |
+| Tasarlandığı gibi biten story (ucuz/ücretsiz model + kapı) | **~%33-38** (74-85 / 226) | yukarıdaki sayım |
+| Metrik kaydı olan story (yalnız bu Mac, story 104'ten sonra) | 64; bunların 41'ini opencode bitirdi | `metrikler.jsonl` |
 | Opencode denemelerinde başarı | 67/107 (%63) | metrik |
 | Başarısızlık nedeni: kota | 42 satır (ilki 2026-11-14) | metrik `neden` |
 | Başarısızlık nedeni: kapı/regresyon/süre/sorun | 9 + 5 + 5 + 5 | metrik `neden` |
 | Kayıtlı model maliyeti | 0,56 $ | metrik `maliyet` (Claude planlama token'ı ölçülmüyor) |
 | Story süresi | medyan 115 sn, p90 312 sn | metrik |
 
-**Ana bulgu:** MDK'nın vaadi "ucuz model yazar, kapı garanti eder". Bu vaat bitenlerin yalnız ~%18'inde gerçekleşti. Geri kalanı Claude, Haiku (kodcu) ya da Antigravity yazdı, yani asıl işi abonelik kotası taşıdı. 0,56 $'lık görünür maliyet bu yüzden yanıltıcı.
+**Ana bulgu:** MDK'nın vaadi "ucuz model yazar, kapı garanti eder". Git kayıtlarına göre bu vaat bitenlerin ~üçte birinde (%33-38) gerçekleşti. Geri kalan üçte ikiyi Claude, Haiku (kodcu) ya da Antigravity yazdı; yani asıl işi abonelik kotası taşıdı. Metrik dosyası yalnız koşturucudan geçen story'leri kaydeder (64 story, bunların 41'i opencode, ~%64); elle yazılanlar oraya hiç düşmez, bu yüzden tek başına oranı abartır. Not: ilk sürümde 41 yanlışlıkla 226'ya bölünüp "%18" yazılmıştı; düzeltildi. 0,56 $'lık görünür maliyet bu yüzden yanıltıcı.
 
 ## 2. Kullanılamazlık nedenleri, iki gruba ayrılmış
 

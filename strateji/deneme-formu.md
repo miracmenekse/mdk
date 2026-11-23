@@ -2,7 +2,7 @@
 
 Amaç: masa başı araştırmanın göremediğini görmek: araç gerçekten MDK'nın bir katmanının yerine geçer mi? Süre: araç başına **en çok 1 saat**. Aynı küçük iş her araçta yapılır ki karşılaştırma adil olsun.
 
-**Deneme işi (sabit):** easyFUT ya da dbeaver-mm'den 1-2 dosyalık, kabul şartı net bir story. Claude, deneme öncesi bu dosyanın sonuna seçilen story'yi ve kabul şartını yazar.
+**Deneme işi (sabit):** aşağıdaki "Deneme story'si". Aynı iş önce MDK'da (`node mdk-adim.mjs`), sonra Orca'da yapılır. Böylece iki araç doğrudan karşılaştırılır.
 
 | Soru | Araç 1: | Araç 2: |
 |---|---|---|
@@ -16,5 +16,19 @@ Amaç: masa başı araştırmanın göremediğini görmek: araç gerçekten MDK'
 | MDK'da yapamadığım, bunda kolay olan ne? | | |
 | Bunda olmayan, MDK'da olan ne (kapı, maliyet kaydı, Epic/Story)? | | |
 | Tek cümlelik his: | | |
+
+### Orca'ya özgü sorular (katmanlar.md'deki 6. ve 7. katman kararı bunlara bağlı)
+| Soru | Sonuç |
+|---|---|
+| `orca orchestration worker-start` arayüz (GUI) kapalıyken de çalışıyor mu? | |
+| `--agent opencode` (ve model seçimi) seçtiğim modeli gerçekten kullandı mı? | |
+| İşçi `worker_done` dedikten sonra MDK kapısını (aşağıdaki kapı komutunu) Orca'ya dokunmadan koşabildim mi? | |
+| Kullanım ekranı aboneliklerimi (Claude, Antigravity, OpenCode Go) gösterdi mi? | |
+
+## Deneme story'si (gerçek, açık kusur)
+- **Ne:** `mdk-hata.mjs`: `kota` sınıfında hata metni Go aylık kotasından geliyorsa (`go usage limit`, `gousagelimiterror`) ileti "Ücretsiz modelin bugünkü kullanım hakkı doldu" yerine aylık Go kotasının dolduğunu söylesin ve öneri "kota yenilenene kadar abonelik modellerine (Claude/Antigravity) geç" olsun. Ücretsiz günlük kota iletisi (`free usage limit`) aynen kalsın.
+- **Kabul:** Go kota hatasında kullanıcı "bugünkü" değil "aylık Go kotası" iletisini görür; ücretsiz kota hatasında eski ileti değişmez; mevcut `test/mdk-hata*.test.mjs` testleri yeşil kalır.
+- **Kapı:** `node --test test/mdk-hata.test.mjs test/mdk-hata-retry.test.mjs` + Go/ücretsiz ayrımını sınayan yeni vaka (MDK'da kapı modeli yazar; Orca'da aynı vakayı elle ekle).
+- Not: Claude story'yi PLAN.md'ye ancak sen "denemeye başlıyorum" deyince ekler (temiz ağaç ve numara için).
 
 Doldurduktan sonra Claude'a "deneme formu doldu" demen yeterli.

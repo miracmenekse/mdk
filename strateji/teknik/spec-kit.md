@@ -1,60 +1,6 @@
- ● Copilot Fusion selected GPT-6 Luna because it was the best choice out of the models available in
-   your plan.
+# spec-kit (github/spec-kit) teknik inceleme
 
- / Search "worktree|OpenCode|MCP|mcp|token|cost|quota|parallel|executor|plugin|API|… 100 files found
-
- / Search "src/**/*.py" 308 files found
-
- / Search "**/*{mcp,cli,workflow,agent,integration,task,template}*" 162 files found
-
- / Search "*" 1069 files found
-
- ✗ Shell Check worktree … Permission to run this tool was denied due to the following rules: `shell`
-   git status --short && printf '\nRoot entries:\n' && ls -a
-
- MD Read README.md L1:180 (180 lines read)
-
- MD Read docs/overview/core.md 181 lines read
-
- MD Read docs/reference/agentic-sdd.md 158 lines read
-
- YM Read workflows/speckit/workflow.yml 80 lines read
-
- MD Read docs/overview/mcp.md 140 lines read
-
- MD Read docs/integrations/opencode.md 61 lines read
-
- MD Read design/workflow-step.md 157 lines read
-
- TM Read pyproject.toml 98 lines read
-
- MD Read design/integration.md too large, not read
-
- MD Read docs/workflows/api.md L1:220 (220 lines read)
-
- MD Read docs/workflow-steps/types.md L1:220 (220 lines read)
-
- MD Read docs/workflows/cli.md 346 lines read
-
- ● Read LICENSE 21 lines read
-
- MD Read templates/spec-template.md 131 lines read
-
- MD Read templates/tasks-template.md 252 lines read
-
- / Search "git worktree|worktree|dashboard|token usage|token count|cost tracking|quo… 51 lines found
-
- MD Read docs/how-to/spec-of-specs.md 171 lines read
-
- PY Read src/specify_cli/integrations/opencode/__init__.py 494 lines read
-
- PY Read src/specify_cli/workflows/step/gate/__init__.py 375 lines read
-
- PY Read src/specify_cli/workflows/step/fan_out/__init__.py 105 lines read
-
- PY Read src/specify_cli/mcp_server/server.py L1:220 (100 lines read)
-
- / Search "fan-out|concurrency|max_concurrency|parallel" (docs/workflow-steps/types.… 33 lines found
+Tarih: 2026-11-23. GitHub Copilot CLI, salt okuma, sığ klon. Lisans MIT.
 
 **Sonuç:** Spec Kit, MDK’nın **şartname → plan → görev → ajanla uygulama** bölümünü karşılayabilir; fakat MDK’nın koşu orkestrasyonu, test zorunluluğu, worktree/merge yönetimi, pano ve maliyet katmanının yerine geçmez. En uygun kullanım, Spec Kit’i iş tanımı ve ajan komutları için kullanıp bu eksik katmanları MDK’da tutan ince bir adaptördür.
 
