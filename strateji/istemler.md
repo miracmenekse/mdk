@@ -38,3 +38,21 @@ Her başlık için en önemli 3-5 çalışma: bulgu, yöntem, örneklem, sınır
 ```
 Son 7 günde yapay zekâ ile yazılım geliştirme araçlarında ne değişti? Yeni çıkan ürün, büyük sürüm, fiyat değişikliği, kapanan ürün, yeni açık kaynak proje (500+ yıldız), önemli makale. Yalnız teknik olmayan kullanıcıya, maliyet düşürmeye ya da ajan denetimine dokunanları al. En fazla 10 madde, her biri bir cümle + bağlantı. Türkçe yaz.
 ```
+
+## İstem 4 — Katman bazlı "hazır al ya da kendin yaz" (2026-11-23)
+
+```
+Bir isteği (iş kullanıcısının yazdığı özellik isteği) düşük maliyetle ve yüksek kaliteyle çalışan yazılım özelliğine çeviren bir "yazılım fabrikası" kurmak istiyorum. Sistem teknolojiden bağımsız olmalı: arkadaki yapay zekâ modeli, kodlama ajanı ve araçlar değişebilmeli, kolayca güncellenebilmeli.
+Bu tür bir sistemi şu katmanlara ayırarak 2026 itibarıyla pazardaki olgun, hazır çözümleri araştır:
+1) istek alma ve şartname (spec-driven development: spec-kit, OpenSpec, Kiro), 2) işi parçalama ve planlama, 3) kodlama ajanı çerçevesi / "agent harness" (Claude Code, OpenCode, Codex, Antigravity, Gemini CLI, Agent SDK'lar, Agent Client Protocol), 4) model yönlendirme, yedek model ve kota yönetimi (LiteLLM, OpenRouter, Portkey), 5) kalite kapısı (test güdümlü ajan, LLM-hakem, eval), 6) koşu düzeni, paralel ajan, git worktree, durum (n8n, Temporal, GitHub Actions, Orca/stablyai, vibe-kanban, OpenHands), 7) teknik olmayan kişi için pano/arayüz, 8) maliyet ve token ölçümü, 9) ajan kural dosyalarının eşitlenmesi (AGENTS.md vb.).
+Her katman için: en olgun 2-4 çözüm, kimin için olduğu, lisans/fiyat, programla sürülebilirlik (CLI/API/MCP), birbirinin yerine geçebilirliği (bir araç bırakılırsa ne kadar iş çıkar).
+Ayrıca: (a) "agentic SDLC platformu" ya da "AI software factory" diye satılan uçtan uca ürünler hangileri, hangi katmanları kapsıyorlar, eksikleri ne; (b) bu alanda "hazır al ya da kendin yaz" kararı için yazılım mimarisi literatüründe önerilen ilkeler (ports & adapters, ince çekirdek, açık standartlar); (c) tek kişilik ve bütçesi dar bir geliştirici için hangi katmanları kendisinin yazması mantıklı, hangilerini almalı.
+Çıktı: katman tablosu, uçtan uca ürün tablosu, 10 maddelik karar ilkesi. Her iddiaya kaynak ver; doğrulayamadığını "doğrulanamadı" diye işaretle. Türkçe yaz.
+```
+
+## NotebookLM çapraz soruları (İstem 4 raporu geldikten sonra)
+"mdk pazar" not defterine dört raporu (İstem 1-4) ekle, sonra şunları sor ve yanıtları `strateji/rapor/notebook-<tarih>.md`'ye yapıştır:
+1. Dört rapora göre hangi katmanlar artık "herkesin yaptığı" (sıradan) iş, hangilerinde hâlâ boşluk var? Her biri için kaynak rapor ve sayfa.
+2. Raporlar arasında çelişen iddialar neler (ör. bir araç bir raporda olgun, ötekinde yetersiz)?
+3. "Ucuz modelle yaz, testle garanti et, başarısızsa pahalıya yükselt" fikrini doğrudan yapan bir ürün ya da makale geçiyor mu?
+4. Teknik olmayan kullanıcı için en çok bilişsel yük doğuran adımlar neler; raporlarda bunu azaltan kanıtlı arayüz kalıbı var mı?
